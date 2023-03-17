@@ -1,9 +1,12 @@
 import os
 
+from dotenv import load_dotenv
 import openai
 from docarray import DocumentArray, Document
 from jcloud.flow import CloudFlow
 from jina import Client
+
+load_dotenv()
 
 openai.api_key = os.environ['OPENAI_API_KEY']
 
