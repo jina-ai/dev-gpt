@@ -72,7 +72,7 @@ response = openai.ChatCompletion.create(
                 + test_description
                 + "Finally write the Dockerfile that defines the environment with all necessary dependencies which the executor uses. "
                   "It is important to make sure that all libs are installed that are required by the python packages. "
-                  "The base image of the Dockerfile is jinaai/jina:3.14.2-dev18-py310-standard. "
+                  "The base image of the Dockerfile is FROM jinaai/jina:3.14.2-dev18-py310-standard. "
                   "The Dockerfile runs the test during the build process (wrap the code in the string $$$start_dockerfile$$$ ... $$$end_dockerfile$$$)"
         },
 
@@ -96,7 +96,7 @@ def clean_content(content):
 
 executor_name = find_between(plain_text, f'$$$start_executor_name$$$', f'$$$end_executor_name$$$').strip()
 
-for tag, file_name in [['executor', f'{executor_name}py'], ['requirements', 'requirements.txt'], ['test_executor', 'test_executor.py'], ['ockerfile', 'Dockerfile']]:
+for tag, file_name in [['executor', f'{executor_name}.py'], ['requirements', 'requirements.txt'], ['test_executor', 'test_OCRDetectorExecutor.py'], ['dockerfile', 'Dockerfile']]:
     content = find_between(plain_text, f'$$$start_{tag}$$$', f'$$$end_{tag}$$$')
     clean = clean_content(content)
     folder = 'executor'
@@ -108,7 +108,7 @@ for tag, file_name in [['executor', f'{executor_name}py'], ['requirements', 'req
 config_content = f'''
 jtype: {executor_name}
 py_modules:
-  - executor.py
+  - {executor_name}.py
 metas:
   name: {executor_name}
 '''
