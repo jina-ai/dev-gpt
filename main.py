@@ -69,6 +69,7 @@ response = openai.ChatCompletion.create(
                   "Then, write the executor code. (wrap the code in the string $$$start_executor$$$ ... $$$end_executor$$$)"
                   "In addition write the content of the requirements.txt file. Make sure to include pytest.  (wrap the code in the string $$$start_requirements$$$ ... $$$end_requirements$$$)"
                   "Then write a small unit test for the executor. Start the test with an extensive comment about the test case (wrap the code in the string $$$start_test_executor$$$ ... $$$end_test_executor$$$)"
+                  "Comments can only be written between tags."
                 # "the snipped should take the local file wolf.obj as input and save the output as png files. "
                 + test_description
                 + "Finally write the Dockerfile that defines the environment with all necessary dependencies that the executor uses. "
