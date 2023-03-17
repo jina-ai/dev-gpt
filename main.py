@@ -138,12 +138,6 @@ executors:
     env:
       JINA_LOG_LEVEL: DEBUG
     jcloud:
-      expose: true
-      autoscale:
-        min: 4
-        max: 15
-        metric: concurrency
-        target: 1
       resources:
         instance: C4
         capacity: spot
