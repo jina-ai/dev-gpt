@@ -7,7 +7,7 @@ from jina import Client
 
 openai.api_key = os.environ['OPENAI_API_KEY']
 
-executor_description = "Write an executor that takes an images as byte input (document.blob within a DocumentArray) saves it locally and detects ocr " \
+executor_description = "Write an executor that takes image bytes as input (document.blob within a DocumentArray) and use BytesIO to convert it to PIL and detects ocr " \
                        "and returns the texts as output (as DocumentArray). "
 
 test_description = 'The test downloads the image ' \
@@ -42,7 +42,7 @@ response = openai.ChatCompletion.create(
                        "Here is an example of how a DocumentArray can be defined:"
                        '''
                        d1 = Document(text='hello')
-                       d2 = Document(blob=b'\f1')
+                       d2 = Document(blob=b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x03L\x00\x00\x01\x18\x08\x06\x00\x00\x00o...')
                        d3 = Document(tensor=numpy.array([1, 2, 3]), chunks=[Document(uri=/local/path/to/file)]
                        d4 = Document(
                            uri='https://docs.docarray.org',
@@ -63,14 +63,17 @@ response = openai.ChatCompletion.create(
             "role": "user",
             "content":
                 executor_description
-                + "The code you write is production ready. Start from top-level and then fully implement all methods."
+                + "The code you write is production ready. Every file starts with a 5 sentence comment of what the code is doing before the first import. Start from top-level and then fully implement all methods."
                   "First, write the executor name. (wrap the code in the string $$$start_executor_name$$$ ... $$$end_executor_name$$$)"
                   "Then, write the executor code. (wrap the code in the string $$$start_executor$$$ ... $$$end_executor$$$)"
                   "In addition write the content of the requirements.txt file. Make sure to include pytest.  (wrap the code in the string $$$start_requirements$$$ ... $$$end_requirements$$$)"
                   "Then write a small unit test for the executor. (wrap the code in the string $$$start_test_executor$$$ ... $$$end_test_executor$$$)"
                 # "the snipped should take the local file wolf.obj as input and save the output as png files. "
                 + test_description
-                + "Finally write the Dockerfile that defines the environment in which the executor runs. The dockerfile runs the test during the build process (wrap the code in the string $$$start_dockerfile$$$ ... $$$end_dockerfile$$$)"
+                + "Finally write the Dockerfile that defines the environment with all necessary dependencies which the executor uses. "
+                  "It is important to make sure that all libs are installed that are required by the python packages. "
+                  "The base image of the Dockerfile is jinaai/jina:3.14.2-dev18-py310-standard. "
+                  "The Dockerfile runs the test during the build process (wrap the code in the string $$$start_dockerfile$$$ ... $$$end_dockerfile$$$)"
         },
 
     ]
@@ -91,18 +94,17 @@ def find_between(input_string, start, end):
 def clean_content(content):
     return content.replace('```', '').strip()
 
+executor_name = find_between(plain_text, f'$$$start_executor_name$$$', f'$$$end_executor_name$$$').strip()
 
-for tag, file_ending in [['executor', 'py'], ['requirements', 'txt'], ['test_executor', 'py'], ['dockerfile', '']]:
+for tag, file_name in [['executor', f'{executor_name}py'], ['requirements', 'requirements.txt'], ['test_executor', 'test_executor.py'], ['ockerfile', 'Dockerfile']]:
     content = find_between(plain_text, f'$$$start_{tag}$$$', f'$$$end_{tag}$$$')
     clean = clean_content(content)
-    file_name = f'{tag}.{file_ending}' if file_ending else tag
     folder = 'executor'
     full_path = os.path.join(folder, file_name)
     os.makedirs(folder, exist_ok=True)
     with open(full_path, 'w') as f:
         f.write(clean)
 
-executor_name = find_between(plain_text, f'$$$start_executor_name$$$', f'$$$end_executor_name$$$').strip()
 config_content = f'''
 jtype: {executor_name}
 py_modules:
@@ -113,7 +115,7 @@ metas:
 with open('executor/config.yml', 'w') as f:
     f.write(config_content)
 
-cmd = 'jina hub push executor/.'
+cmd = 'jina hub push executor/. --verbose'
 os.system(cmd)
 
 flow = f'''
@@ -136,14 +138,10 @@ executors:
       JINA_LOG_LEVEL: DEBUG
     jcloud:
       expose: true
-      autoscale:
-        min: 4
-        max: 15
-        metric: concurrency
-        target: 1
       resources:
         instance: C4
         capacity: spot
+      replicas: 1
 '''
 full_flow_path = os.path.join('executor', 'flow.yml')
 with open(full_flow_path, 'w') as f:
@@ -153,7 +151,9 @@ cloud_flow = CloudFlow(path=full_flow_path).__enter__()
 host = cloud_flow.endpoints['gateway']
 client = Client(host=host)
 
-response = client.post('/index', inputs=DocumentArray([Document(uri='https://double-rhyme.com/logo_en_white2.png')]))
+d = Document(uri='https://double-rhyme.com/logo_en_white2.png')
+d.load_uri_to_blob()
+response = client.post('/index', inputs=DocumentArray([d]))
 response[0].summary()
 
 # "Write an executor using open3d that takes 3d models in obj format (within a DocumentArray) as input and returns 3 2d renderings for each 3d model from unique random angles as output (as DocumentArray). Each document of the output DocumentArray has 3 chunks. Each chunk is one of the 2d renderings as png.  "
