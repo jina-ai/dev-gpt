@@ -6,77 +6,51 @@ from docarray import DocumentArray, Document
 from jcloud.flow import CloudFlow
 from jina import Client
 
+from prompt_examples import executor_example, docarray_example
+
 openai.api_key = os.environ['OPENAI_API_KEY']
 
-executor_description = "Write an executor that takes image bytes as input (document.blob within a DocumentArray) and use BytesIO to convert it to PIL and detects ocr " \
+input_executor_description = "Write an executor that takes image bytes as input (document.blob within a DocumentArray) and use BytesIO to convert it to PIL and detects ocr " \
                        "and returns the texts as output (as DocumentArray). "
 
-test_description = 'The test downloads the image ' \
-                   'https://double-rhyme.com/logo_en_white2.png ' \
+input_test_description = 'The test downloads the image ' \
+                   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Onlineocr.png/640px-Onlineocr.png ' \
                    ' loads it as bytes, takes it as input to the executor and asserts that the output is "Double Rhyme".'
 
 response = openai.ChatCompletion.create(
     temperature=0,
-    model="gpt-3.5-turbo",
+    model="gpt-4",
     messages=[
         {
             "role": "system",
             "content": "You are a principal engineer working at Jina - an open source company."
                        "Using the Jina framework, users can define executors."
-                       "Here is an example of how an executor can be defined. It always starts with a comment:"
-                       '''
-                       # this executor takes ... as input and returns ... as output
-                       # it processes each document in the following way: ...
-                       from jina import Executor, requests, DocumentArray, Document, Deployment
-                       class MyExecutor(Executor):
-                           def __init__(self, **kwargs):
-                               super().__init__()
-                               
-                           @requests
-                           def foo(self, docs: DocumentArray, **kwargs) => DocumentArray:
-                               for d in docs:
-                                   d.text = 'hello world'"
-                               return docs
-                       '''
-                       "An executor gets a DocumentArray as input and returns a DocumentArray as output."
-                       "Here is an example of how a DocumentArray can be defined:"
-                       '''
-                       d1 = Document(text='hello')
-                       d2 = Document(blob=b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x03L\x00\x00\x01\x18\x08\x06\x00\x00\x00o...')
-                       d3 = Document(tensor=numpy.array([1, 2, 3]), chunks=[Document(uri=/local/path/to/file)]
-                       d4 = Document(
-                           uri='https://docs.docarray.org',
-                           tags={'foo': 'bar'},
-                       )
-                       
-                       docs = DocumentArray([
-                           d1, d2, d3, d4
-                       ])
-                       '''
-                       "these imports are needed:"
-                       '''
-                       from jina import DocumentArray, Document
-                       '''
+                       + executor_example
+                       + docarray_example
 
         },
         {
             "role": "user",
             "content":
-                executor_description
+                input_executor_description
                 + "The code you write is production ready. Every file starts with a 5 sentence comment of what the code is doing before the first import. Start from top-level and then fully implement all methods."
                   "First, write the executor name. (wrap the code in the string $$$start_executor_name$$$...$$$end_executor_name$$$) "
                   "The executor name only consists of lower case and upper case letters. "
-                  "Then, write the executor code. (wrap the code in the string $$$start_executor$$$ ... $$$end_executor$$$)"
+                  "Then, write the executor code. (executor.py) (wrap the code in the string $$$start_executor$$$ ... $$$end_executor$$$)"
                   "In addition write the content of the requirements.txt file. Make sure to include pytest.  (wrap the code in the string $$$start_requirements$$$ ... $$$end_requirements$$$)"
-                  "Then write a small unit test for the executor. Start the test with an extensive comment about the test case (wrap the code in the string $$$start_test_executor$$$ ... $$$end_test_executor$$$)"
+                  "Then write a small unit test for the executor (test_executor.py). Start the test with an extensive comment about the test case. "
+                  "Never do relative imports."
+                  "(wrap the code in the string $$$start_test_executor$$$ ... $$$end_test_executor$$$)"
                   "Comments can only be written between tags."
                 # "the snipped should take the local file wolf.obj as input and save the output as png files. "
-                + test_description
+                + input_test_description
                 + "Finally write the Dockerfile that defines the environment with all necessary dependencies that the executor uses. "
+                  'First start with comments that give an executor-specific description the Dockerfile. '
                   "It is important to make sure that all libs are installed that are required by the python packages. "
                   "The base image of the Dockerfile is FROM jinaai/jina:3.14.2-dev18-py310-standard. "
-                  'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]'
-                  # "The Dockerfile runs the test during the build process. "
+                  'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"] '
+                  
+                  "The Dockerfile runs the test during the build process. "
                   "(wrap the code in the string $$$start_dockerfile$$$ ... $$$end_dockerfile$$$)"
         },
 
@@ -115,7 +89,7 @@ def recreate_folder(folder_path):
 folder = 'executor'
 recreate_folder(folder)
 
-for tag, file_name in [['executor', f'{executor_name}.py'], ['requirements', 'requirements.txt'], ['test_executor', 'test_OCRDetectorExecutor.py'], ['dockerfile', 'Dockerfile']]:
+for tag, file_name in [['executor', f'executor.py'], ['requirements', 'requirements.txt'], ['test_executor', 'test_executor.py'], ['dockerfile', 'Dockerfile']]:
     content = find_between(plain_text, f'$$$start_{tag}$$$', f'$$$end_{tag}$$$')
     clean = clean_content(content)
     full_path = os.path.join(folder, file_name)
@@ -125,7 +99,7 @@ for tag, file_name in [['executor', f'{executor_name}.py'], ['requirements', 're
 config_content = f'''
 jtype: {executor_name}
 py_modules:
-  - {executor_name}.py
+  - executor.py
 metas:
   name: {executor_name}
 '''
@@ -164,7 +138,6 @@ full_flow_path = os.path.join('executor', 'flow.yml')
 with open(full_flow_path, 'w') as f:
     f.write(flow)
 
-exit(0)
 cloud_flow = CloudFlow(path=full_flow_path).__enter__()
 host = cloud_flow.endpoints['gateway']
 client = Client(host=host)
