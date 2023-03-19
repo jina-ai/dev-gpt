@@ -19,28 +19,24 @@ def deploy_flow(executor_name):
     flow = f'''
 jtype: Flow
 with:
-  monitoring: true
+  name: nowapi
   env:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
-  version: '3.14.2.dev18'
+  version: 3.14.2.dev18
   labels:
-    team: microchain
-gateway:
-  jcloud:
-    expose: true
+    team: now
+  name: mybelovedocrflow
 executors:
   - name: {executor_name.lower()}
     uses: jinaai+docker://{get_user_name()}/{executor_name}:latest
     env:
       JINA_LOG_LEVEL: DEBUG
     jcloud:
-      expose: true
       resources:
         instance: C4
         capacity: spot
-      replicas: 1
-    '''
+'''
     full_flow_path = os.path.join('executor', 'flow.yml')
     with open(full_flow_path, 'w') as f:
         f.write(flow)
