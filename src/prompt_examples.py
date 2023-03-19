@@ -39,7 +39,7 @@ message DocumentProto {
     string text = 4;
   }
 
-  // a uri of the document could be: a local file path, a remote url starts with http or https or data URI scheme
+  // a uri of the document is a remote url starts with http or https or data URI scheme
   string uri = 5;
 
   // list of the sub-documents of this document (recursive structure)
@@ -65,11 +65,12 @@ d1 = Document(text='hello')
 d2 = Document(blob=b'\\x89PNG\\r\\n\\x1a\\n\\x00\\x00\\x00\\rIHDR\\x00\\x00\\x03L\\x00\\x00\\x01\\x18\\x08\\x06\\x00\\x00\\x00o...')
 d3 = Document(tensor=numpy.array([1, 2, 3]), chunks=[Document(uri=/local/path/to/file)]
 d4 = Document(
-   uri='https://docs.docarray.org',
+   uri='https://docs.docarray.org/img/logo.png',
    tags={'foo': 'bar'},
 )
 d5 = Document()
 d5.tensor = np.ones((2,4))
+d5.uri = 'https://audio.com/audio.mp3'
 d6 = Document()
 d6.blob = b'RIFF\\x00\\x00\\x00\\x00WAVEfmt \\x10\\x00...'
 docs = DocumentArray([

@@ -48,15 +48,16 @@ def get_all_executor_files_with_content():
 
     return file_name_to_content
 
-def main(
+async def main(
         executor_name,
-        input_executor_description,
+        executor_description,
         input_modality,
         input_doc_field,
         output_modality,
         output_doc_field,
-        input_test_in,
-        input_test_out
+        test_in,
+        test_out,
+        do_validation=True
 ):
     recreate_folder(EXECUTOR_FOLDER)
     system_definition = (
@@ -69,9 +70,9 @@ def main(
 
     user_query = (
             general_guidelines()
-            + executor_file_task(executor_name, input_executor_description, input_modality, input_doc_field,
+            + executor_file_task(executor_name, executor_description, input_modality, input_doc_field,
                                  output_modality, output_doc_field)
-            + test_executor_file_task(executor_name, input_test_in, input_test_out)
+            + test_executor_file_task(executor_name, test_in, test_out)
             + requirements_file_task()
             + docker_file_task()
             + client_file_task()
@@ -85,9 +86,9 @@ def main(
 
     jina_cloud.push_executor()
 
-    host = jina_cloud.deploy_flow(executor_name)
+    host = await jina_cloud.deploy_flow(executor_name, do_validation)
 
-    run_client_file(f'executor/{CLIENT_FILE_NAME}', host)
+    run_client_file(f'executor/{CLIENT_FILE_NAME}', host, do_validation)
 
     return get_all_executor_files_with_content()
 
@@ -95,11 +96,11 @@ def main(
 if __name__ == '__main__':
     main(
         executor_name='MyCoolOcrExecutor',
-        input_executor_description="OCR detector",
+        executor_description="OCR detector",
         input_modality='image',
         input_doc_field='uri',
         output_modality='text',
         output_doc_field='text',
-        input_test_in='https://miro.medium.com/v2/resize:fit:1024/0*4ty0Adbdg4dsVBo3.png',
-        input_test_out='> Hello, world!_',
+        test_in='https://miro.medium.com/v2/resize:fit:1024/0*4ty0Adbdg4dsVBo3.png',
+        test_out='> Hello, world!_',
     )

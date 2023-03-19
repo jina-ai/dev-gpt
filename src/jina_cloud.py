@@ -1,3 +1,4 @@
+import asyncio
 import os
 from multiprocessing.connection import Client
 
@@ -18,7 +19,15 @@ def get_user_name():
     return response['data']['name']
 
 
-def deploy_flow(executor_name):
+async def deploy_on_jcloud(flow_yaml):
+    cloud_flow = CloudFlow(path=flow_yaml)
+    await cloud_flow.__aenter__()
+    return cloud_flow.endpoints['gateway']
+
+
+
+
+async def deploy_flow(executor_name, do_validation):
     flow = f'''
 jtype: Flow
 with:
@@ -44,12 +53,14 @@ executors:
     with open(full_flow_path, 'w') as f:
         f.write(flow)
 
-    # try local first
-    flow = Flow.load_config(full_flow_path)
-    with flow:
-        pass
+    if do_validation:
+        print('try local execution')
+        flow = Flow.load_config(full_flow_path)
+        with flow:
+            pass
+    print('deploy flow on jcloud')
+    return await deploy_on_jcloud(flow_yaml=full_flow_path)
 
-    return CloudFlow(path=full_flow_path).__enter__().endpoints['gateway']
 
 def replace_client_line(file_content: str, replacement: str) -> str:
     lines = file_content.split('\n')
@@ -59,7 +70,7 @@ def replace_client_line(file_content: str, replacement: str) -> str:
             break
     return '\n'.join(lines)
 
-def run_client_file(file_path, host):
+def run_client_file(file_path, host, do_validation):
     with open(file_path, 'r') as file:
         content = file.read()
 
@@ -69,4 +80,5 @@ def run_client_file(file_path, host):
     with open(file_path, 'w') as file:
         file.write(replaced_content)
 
-    import executor.client  # runs the client script for validation
+    if do_validation:
+        import executor.client  # runs the client script for validation

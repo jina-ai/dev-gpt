@@ -2,3 +2,4 @@ jina[perf]==3.14.2.dev18
 openai
 ptest
 jcloud
+uvicorn
