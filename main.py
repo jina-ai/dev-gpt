@@ -6,17 +6,10 @@ from jina import Client
 from src import gpt, jina_cloud
 from src.constants import TAG_TO_FILE_NAME, EXECUTOR_FOLDER
 from src.prompt_examples import executor_example, docarray_example
-from src.prompt_tasks import general_guidelines, executor_name_task, executor_file_task, requirements_file_task, \
+from src.prompt_tasks import general_guidelines, executor_file_task, requirements_file_task, \
     test_executor_file_task, docker_file_task
 from src.utils.io import recreate_folder
 from src.utils.string import find_between, clean_content
-
-input_executor_description = "Write an executor that takes image bytes as input (document.blob within a DocumentArray) and use BytesIO to convert it to PIL and detects ocr " \
-                             "and returns the texts as output (as DocumentArray). "
-
-input_test_description = 'The test downloads the image ' \
-                         'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Onlineocr.png/640px-Onlineocr.png ' \
-                         ' loads it as bytes, takes it as input to the executor and asserts that the output is "Hello World".'
 
 
 def extract_content_from_result(plain_text, tag):
@@ -35,17 +28,17 @@ def extract_and_write(plain_text):
 
 def write_config_yml(executor_name):
     config_content = f'''
-    jtype: {executor_name}
-    py_modules:
-      - executor.py
-    metas:
-      name: {executor_name}
+jtype: {executor_name}
+py_modules:
+  - executor.py
+metas:
+  name: {executor_name}
     '''
     with open('executor/config.yml', 'w') as f:
         f.write(config_content)
 
 
-def main():
+def main(executor_name, input_executor_description, input_test_description):
     recreate_folder(EXECUTOR_FOLDER)
     system_definition = (
             "You are a principal engineer working at Jina - an open source company."
@@ -57,9 +50,8 @@ def main():
     user_query = (
             input_executor_description
             + general_guidelines
-            + executor_name_task()
             + executor_file_task()
-            + test_executor_file_task()
+            + test_executor_file_task(executor_name)
             + requirements_file_task()
             + docker_file_task()
             + input_test_description
@@ -67,8 +59,6 @@ def main():
 
     plain_text = gpt.get_response(system_definition, user_query)
     extract_and_write(plain_text)
-
-    executor_name = extract_content_from_result(plain_text, 'executor_name')
 
     write_config_yml(executor_name)
 
@@ -85,4 +75,17 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(
+        executor_name='MyBelovedOcrExecutor',
+        input_executor_description=(
+            "Write an executor that takes image bytes as input (document.blob within a DocumentArray) "
+            # "and use BytesIO to convert it to PIL " \
+            "and detects ocr "
+            "and returns the texts as output (as DocumentArray). "
+        ),
+
+        input_test_description='The test downloads the image ' \
+                               'https://miro.medium.com/v2/resize:fit:1024/0*4ty0Adbdg4dsVBo3.png ' \
+                               ' loads it as bytes, takes it as input to the executor and asserts that the output is "> Hello, world!_".',
+
+    )

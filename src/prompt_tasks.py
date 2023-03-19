@@ -9,37 +9,40 @@ general_guidelines = (
 )
 
 
-def _task(task, tag_name, file_name=None):
-    return task + f"{f'The code will go into {file_name}. ' if tag_name else ''}. Wrap the code in the string $$$start_{tag_name}$$$...$$$end_{tag_name}$$$ "
+def _task(task, tag_name, file_name):
+    return task + f"The code will go into {file_name}. Wrap the code in the string $$$start_{tag_name}$$$...$$$end_{tag_name}$$$ "
 
-
-def executor_name_task():
-    return _task("Write the executor name. "
-                 "The executor name only consists of lower case and upper case letters.", 'executor_name'
-                 )
 
 
 def executor_file_task():
-    return _task("Write the executor code.", 'executor', EXECUTOR_FILE_NAME)
+    return _task("Write the executor code. ", 'executor', EXECUTOR_FILE_NAME)
 
 
 def requirements_file_task():
-    return _task("Write the content of the requirements.txt file. Make sure to include pytest.", 'requirements',
+    return _task("Write the content of the requirements.txt file. "
+                 "Make sure to include pytest. "
+                 "All versions are fixed. " , 'requirements',
                  REQUIREMENTS_FILE_NAME)
 
 
-def test_executor_file_task():
+def test_executor_file_task(executor_name):
     return _task(
         "Write a small unit test for the executor. "
         "Start the test with an extensive comment about the test case. "
-        "Never do relative imports.", 'test_executor', TEST_EXECUTOR_FILE_NAME)
+        "Use the following import to import the executor: "
+        f"from executor import {executor_name}",
+        'test_executor',
+        TEST_EXECUTOR_FILE_NAME
+    )
 
 
 def docker_file_task():
     return _task(
         "Write the Dockerfile that defines the environment with all necessary dependencies that the executor uses. "
         "The Dockerfile runs the test during the build process. "
-        "It is important to make sure that all libs are installed that are required by the python packages."
+        "It is important to make sure that all libs are installed that are required by the python packages. "
+        "Usually libraries are installed with apt-get. "
+        "Add the config.yml file to the Dockerfile. "
         "The base image of the Dockerfile is FROM jinaai/jina:3.14.2-dev18-py310-standard. "
         'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"] '
         "The Dockerfile runs the test during the build process. "
