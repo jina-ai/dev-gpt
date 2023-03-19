@@ -1,13 +1,11 @@
 import os
 
-from docarray import DocumentArray, Document
-from jina import Client
-
 from src import gpt, jina_cloud
-from src.constants import TAG_TO_FILE_NAME, EXECUTOR_FOLDER
-from src.prompt_examples import executor_example, docarray_example
+from src.constants import TAG_TO_FILE_NAME, EXECUTOR_FOLDER, CLIENT_FILE_NAME
+from src.jina_cloud import run_client_file
+from src.prompt_examples import executor_example, docarray_example, client_example
 from src.prompt_tasks import general_guidelines, executor_file_task, requirements_file_task, \
-    test_executor_file_task, docker_file_task
+    test_executor_file_task, docker_file_task, client_file_task
 from src.utils.io import recreate_folder
 from src.utils.string import find_between, clean_content
 
@@ -37,27 +35,50 @@ metas:
     with open('executor/config.yml', 'w') as f:
         f.write(config_content)
 
+def get_all_executor_files_with_content():
+    folder_path = 'executor'
+    file_name_to_content = {}
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
 
-def main(executor_name, input_executor_description, input_test_description):
+        if os.path.isfile(file_path):
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                file_name_to_content[filename] = content
+
+    return file_name_to_content
+
+def main(
+        executor_name,
+        input_executor_description,
+        input_modality,
+        input_doc_field,
+        output_modality,
+        output_doc_field,
+        input_test_in,
+        input_test_out
+):
     recreate_folder(EXECUTOR_FOLDER)
     system_definition = (
             "You are a principal engineer working at Jina - an open source company."
             "Using the Jina framework, users can define executors."
             + executor_example
             + docarray_example
+            + client_example
     )
 
     user_query = (
-            input_executor_description
-            + general_guidelines
-            + executor_file_task()
-            + test_executor_file_task(executor_name)
+            general_guidelines()
+            + executor_file_task(executor_name, input_executor_description, input_modality, input_doc_field,
+                                 output_modality, output_doc_field)
+            + test_executor_file_task(executor_name, input_test_in, input_test_out)
             + requirements_file_task()
             + docker_file_task()
-            + input_test_description
+            + client_file_task()
     )
 
     plain_text = gpt.get_response(system_definition, user_query)
+
     extract_and_write(plain_text)
 
     write_config_yml(executor_name)
@@ -66,26 +87,19 @@ def main(executor_name, input_executor_description, input_test_description):
 
     host = jina_cloud.deploy_flow(executor_name)
 
-    client = Client(host=host)
+    run_client_file(f'executor/{CLIENT_FILE_NAME}', host)
 
-    d = Document(uri='data/txt.png')
-    d.load_uri_to_blob()
-    response = client.post('/index', inputs=DocumentArray([d]))
-    response[0].summary()
+    return get_all_executor_files_with_content()
 
 
 if __name__ == '__main__':
     main(
-        executor_name='MyBelovedOcrExecutor',
-        input_executor_description=(
-            "Write an executor that takes image bytes as input (document.blob within a DocumentArray) "
-            # "and use BytesIO to convert it to PIL " \
-            "and detects ocr "
-            "and returns the texts as output (as DocumentArray). "
-        ),
-
-        input_test_description='The test downloads the image ' \
-                               'https://miro.medium.com/v2/resize:fit:1024/0*4ty0Adbdg4dsVBo3.png ' \
-                               ' loads it as bytes, takes it as input to the executor and asserts that the output is "> Hello, world!_".',
-
+        executor_name='MyCoolOcrExecutor',
+        input_executor_description="OCR detector",
+        input_modality='image',
+        input_doc_field='uri',
+        output_modality='text',
+        output_doc_field='text',
+        input_test_in='https://miro.medium.com/v2/resize:fit:1024/0*4ty0Adbdg4dsVBo3.png',
+        input_test_out='> Hello, world!_',
     )
