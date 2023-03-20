@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import axios from 'axios';
-import {Box, Button, Container, FormControl, InputLabel, MenuItem, Select, TextField, Typography,} from '@mui/material';
+import {Box, Container, FormControl, InputLabel, MenuItem, Select, TextField, Typography,} from '@mui/material';
+import copy from 'clipboard-copy';
+import Button from '@mui/material/Button';
 
 function App() {
     const [executorName, setExecutorName] = useState('MyCoolOcrExecutor');
@@ -30,6 +32,7 @@ function App() {
 
         try {
             const response = await axios.post('http://0.0.0.0:8000/create', requestBody);
+            console.log(response.data)
             setResponseText(response.data);
         } catch (error) {
             console.error(error);
@@ -37,6 +40,9 @@ function App() {
         }
     };
 
+    const handleCopy = (fileContent) => {
+        copy(fileContent);
+    };
 
     return (
         <Container maxWidth="md">
@@ -165,16 +171,23 @@ function App() {
                             Response
                         </Typography>
                         {Object.entries(responseText.result).map(([fileName, fileContent]) => (
-                            <Box key={fileName} sx={{my: 2}}>
+                            <Box key={fileName} sx={{my: 2, p: 2, border: '1px solid #ddd', borderRadius: '4px'}}>
                                 <Typography variant="subtitle1" gutterBottom>
                                     {fileName}
                                 </Typography>
                                 <pre>{fileContent}</pre>
+                                <Button
+                                    onClick={() => handleCopy(fileContent)}
+                                    variant="outlined"
+                                    color="primary"
+                                    size="small"
+                                >
+                                    Copy Code
+                                </Button>
                             </Box>
                         ))}
                     </Box>
                 )}
-
             </Box>
         </Container>
     );

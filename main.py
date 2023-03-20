@@ -62,10 +62,12 @@ async def main(
     recreate_folder(EXECUTOR_FOLDER)
     system_definition = (
             "You are a principal engineer working at Jina - an open source company."
-            "Using the Jina framework, users can define executors."
+            "Using the Jina framework, users can define executors. "
             + executor_example
             + docarray_example
             + client_example
+            + "The user is asking you to create an executor with all the necessary files "
+              "and you write the complete code without leaving something out. "
     )
 
     user_query = (
