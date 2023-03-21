@@ -1,4 +1,8 @@
 
+
+[![Watch the video](https://i.imgur.com/vKb2F1B.png)](https://user-images.githubusercontent.com/11627845/226220484-17810f7c-b184-4a03-9af2-3a977fbb014b.mov)
+
+
 # 🔮 vision
 create, deploy and update your microservice infrastructure
 
@@ -15,6 +19,7 @@ Based on this definition, the backend will be generated automatically.
 
 ## you get
 - a microservice together with a playground
+- the code to run requests
 
 # 🤏 limitations for now
 - stateless microservices only
