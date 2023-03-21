@@ -93,3 +93,12 @@ d.load_uri_to_blob()
 response = client.post('/process', inputs=DocumentArray([d]))
 response[0].summary()
 ''')
+
+
+system_base_definition = (
+        "You are a principal engineer working at Jina - an open source company."
+        "Using the Jina framework, users can define executors. "
+        + executor_example
+        + docarray_example
+        + client_example
+)

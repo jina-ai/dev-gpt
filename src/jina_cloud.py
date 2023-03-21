@@ -19,15 +19,13 @@ def get_user_name():
     return response['data']['name']
 
 
-async def deploy_on_jcloud(flow_yaml):
+def deploy_on_jcloud(flow_yaml):
     cloud_flow = CloudFlow(path=flow_yaml)
-    await cloud_flow.__aenter__()
-    return cloud_flow.endpoints['gateway']
+    return cloud_flow.__enter__().endpoints['gateway']
 
 
 
-
-async def deploy_flow(executor_name, do_validation):
+def deploy_flow(executor_name, do_validation):
     flow = f'''
 jtype: Flow
 with:
@@ -59,7 +57,7 @@ executors:
         with flow:
             pass
     print('deploy flow on jcloud')
-    return await deploy_on_jcloud(flow_yaml=full_flow_path)
+    return deploy_on_jcloud(flow_yaml=full_flow_path)
 
 
 def replace_client_line(file_content: str, replacement: str) -> str:
@@ -70,7 +68,7 @@ def replace_client_line(file_content: str, replacement: str) -> str:
             break
     return '\n'.join(lines)
 
-def run_client_file(file_path, host, do_validation):
+def update_client_line_in_file(file_path, host):
     with open(file_path, 'r') as file:
         content = file.read()
 
@@ -80,5 +78,4 @@ def run_client_file(file_path, host, do_validation):
     with open(file_path, 'w') as file:
         file.write(replaced_content)
 
-    if do_validation:
-        import executor.client  # runs the client script for validation
+
