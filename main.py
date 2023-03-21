@@ -1,3 +1,4 @@
+import importlib
 import os
 import re
 
@@ -8,7 +9,7 @@ from src.prompt_system import system_base_definition
 from src.prompt_tasks import general_guidelines, executor_file_task, requirements_file_task, \
     test_executor_file_task, docker_file_task, client_file_task, streamlit_file_task
 from src.utils.io import recreate_folder
-from src.utils.string import find_differences
+from src.utils.string_tools import find_differences
 
 
 def extract_content_from_result(plain_text, file_name):
@@ -17,7 +18,7 @@ def extract_content_from_result(plain_text, file_name):
     if match:
         return match.group(1).strip()
     else:
-        return None
+        raise ValueError(f'Could not find {file_name} in result')
 
 
 def extract_and_write(plain_text, dest_folder):
@@ -28,7 +29,7 @@ def extract_and_write(plain_text, dest_folder):
             f.write(clean)
 
 
-def write_config_yml(executor_name):
+def write_config_yml(executor_name, dest_folder):
     config_content = f'''
 jtype: {executor_name}
 py_modules:
@@ -36,7 +37,7 @@ py_modules:
 metas:
   name: {executor_name}
     '''
-    with open('executor/config.yml', 'w') as f:
+    with open(os.path.join(dest_folder, 'config.yml'), 'w') as f:
         f.write(config_content)
 
 
@@ -69,7 +70,9 @@ def build_prototype_implementation(executor_description, executor_name, input_do
             + docker_file_task()
             + client_file_task()
             + streamlit_file_task()
-            + "First, write down some non-obvious thoughts about the challenges of the task and how you handle them. "
+            + "First, write down some non-obvious thoughts about the challenges of the task and give multiple approaches on how you handle them. "
+              "For example, there are different libraries you could use. "
+              "Discuss the pros and cons for all of these approaches and then decide for one of the approaches. "
               "Then write as I told you. "
     )
     plain_text = gpt.get_response(system_definition, user_query)
@@ -81,14 +84,18 @@ def build_production_ready_implementation(all_executor_files_string):
             system_base_definition
             + f"The user gives you the code of the executor and all other files needed ({', '.join([e[0] for e in FILE_AND_TAG_PAIRS])}) "
               f"The files may contain bugs. Fix all of them. "
-              f"Some files might have only prototype implementations and are not production ready. Add all the missing code. "
-              f"Some imports might be missing. Make sure to add them. Output all the files in the same format like given to you. "
+
     )
     user_query = (
-        "Fix all files, add all missing code and imports. Make it production ready. "
+        'Make it production ready. '
+        "Fix all files and add all missing code. "
         "Keep the same format as given to you. "
-        "First write down some non-obvious thoughts about what parts could need an adjustment and why. "
-        "Then write as I told you. "
+        f"Some files might have only prototype implementations and are not production ready. Add all the missing code. "
+        f"Some imports might be missing. Make sure to add them. "
+        f"Some libraries might be missing. Make sure to install them in the requirements.txt and Dockerfile. "
+        "First write down an extensive list of obvious and non-obvious thoughts about what parts could need an adjustment and why. "
+        "Think about if all the changes are required and finally decide for the changes you want to make. "
+        f"Output all the files even the ones that did not change. "
         "Here are the files: \n\n"
         + all_executor_files_string
     )
@@ -119,59 +126,60 @@ def main(
 ):
     recreate_folder(EXECUTOR_FOLDER_v1)
     recreate_folder(EXECUTOR_FOLDER_v2)
+    recreate_folder('flow')
 
     all_executor_files_string = build_prototype_implementation(executor_description, executor_name, input_doc_field, input_modality,
                                                 output_doc_field, output_modality, test_in, test_out)
     extract_and_write(all_executor_files_string, EXECUTOR_FOLDER_v1)
-
+    write_config_yml(executor_name, EXECUTOR_FOLDER_v1)
     file_name_to_content_v1 = get_all_executor_files_with_content(EXECUTOR_FOLDER_v1)
-
     all_executor_files_string_no_instructions = files_to_string(file_name_to_content_v1)
 
     all_executor_files_string_improved = build_production_ready_implementation(all_executor_files_string_no_instructions)
-
     extract_and_write(all_executor_files_string_improved, EXECUTOR_FOLDER_v2)
+    write_config_yml(executor_name, EXECUTOR_FOLDER_v2)
 
-    write_config_yml(executor_name)
+    jina_cloud.push_executor(EXECUTOR_FOLDER_v2)
 
-    jina_cloud.push_executor()
+    host = jina_cloud.deploy_flow(executor_name, do_validation, 'flow')
 
-    host = jina_cloud.deploy_flow(executor_name, do_validation)
+    update_client_line_in_file(os.path.join(EXECUTOR_FOLDER_v1, CLIENT_FILE_NAME), host)
+    update_client_line_in_file(os.path.join(EXECUTOR_FOLDER_v1, STREAMLIT_FILE_NAME), host)
+    update_client_line_in_file(os.path.join(EXECUTOR_FOLDER_v2, CLIENT_FILE_NAME), host)
+    update_client_line_in_file(os.path.join(EXECUTOR_FOLDER_v2, STREAMLIT_FILE_NAME), host)
 
-    update_client_line_in_file(f'executor/{CLIENT_FILE_NAME}', host)
-    update_client_line_in_file(f'executor/{STREAMLIT_FILE_NAME}', host)
     if do_validation:
-        pass
+        importlib.import_module("executor_v1.client")
 
     return get_all_executor_files_with_content(EXECUTOR_FOLDER_v2)
 
 
 if __name__ == '__main__':
-    ######### Level 2 task #########
-    main(
-        executor_name='My3DTo2DExecutor',
-        executor_description="The executor takes 3D objects in obj format as input and outputs a 2D image projection of that object",
-        input_modality='3d',
-        input_doc_field='blob',
-        output_modality='image',
-        output_doc_field='blob',
-        test_in='https://raw.githubusercontent.com/makehumancommunity/communityassets-wip/master/clothes/leotard_fs/leotard_fs.obj',
-        test_out='the output should be exactly one image in png format',
-        do_validation=False
-    )
-
-    ######### Level 1 task #########
+    # ######### Level 2 task #########
     # main(
-    #     executor_name='MyCoolOcrExecutor',
-    #     executor_description="OCR detector",
-    #     input_modality='image',
-    #     input_doc_field='uri',
-    #     output_modality='text',
-    #     output_doc_field='text',
-    #     test_in='https://miro.medium.com/v2/resize:fit:1024/0*4ty0Adbdg4dsVBo3.png',
-    #     test_out='> Hello, world!_',
+    #     executor_name='My3DTo2DExecutor',
+    #     executor_description="The executor takes 3D objects in obj format as input and outputs a 2D image projection of that object",
+    #     input_modality='3d',
+    #     input_doc_field='blob',
+    #     output_modality='image',
+    #     output_doc_field='blob',
+    #     test_in='https://raw.githubusercontent.com/makehumancommunity/communityassets-wip/master/clothes/leotard_fs/leotard_fs.obj',
+    #     test_out='the output should be exactly one image in png format',
     #     do_validation=False
     # )
+
+    ######## Level 1 task #########
+    main(
+        executor_name='MyCoolOcrExecutor',
+        executor_description="OCR detector",
+        input_modality='image',
+        input_doc_field='uri',
+        output_modality='text',
+        output_doc_field='text',
+        test_in='https://miro.medium.com/v2/resize:fit:1024/0*4ty0Adbdg4dsVBo3.png',
+        test_out='> Hello, world!_',
+        do_validation=False
+    )
 
     # main(
     #     executor_name='MySentimentAnalyzer',

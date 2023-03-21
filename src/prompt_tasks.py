@@ -73,7 +73,7 @@ def docker_file_task():
         "It is important to make sure that all libs are installed that are required by the python packages. "
         "Usually libraries are installed with apt-get. "
         "Add the config.yml file to the Dockerfile. "
-        "The base image of the Dockerfile is FROM jinaai/jina:3.14.2-dev18-py310-standard. "
+        "The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard. "
         'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"] '
         "The Dockerfile runs the test during the build process. ",
         DOCKER_FILE_TAG,

@@ -1,4 +1,3 @@
-import asyncio
 import os
 from multiprocessing.connection import Client
 
@@ -9,8 +8,8 @@ from jina import Flow
 from src.constants import FLOW_URL_PLACEHOLDER
 
 
-def push_executor():
-    cmd = 'jina hub push executor/. --verbose'
+def push_executor(dir_path):
+    cmd = f'jina hub push {dir_path}/. --verbose'
     os.system(cmd)
 
 def get_user_name():
@@ -25,7 +24,7 @@ def deploy_on_jcloud(flow_yaml):
 
 
 
-def deploy_flow(executor_name, do_validation):
+def deploy_flow(executor_name, do_validation, dest_folder):
     flow = f'''
 jtype: Flow
 with:
@@ -47,7 +46,8 @@ executors:
         instance: C4
         capacity: spot
 '''
-    full_flow_path = os.path.join('executor', 'flow.yml')
+    full_flow_path = os.path.join(dest_folder,
+                     'flow.yml')
     with open(full_flow_path, 'w') as f:
         f.write(flow)
 

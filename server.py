@@ -29,9 +29,9 @@ class CreateResponse(BaseModel):
     message: Optional[str]
 
 @app.post("/create", response_model=CreateResponse)
-async def create_endpoint(request: CreateRequest):
+def create_endpoint(request: CreateRequest):
 
-    result = await main(
+    result = main(
         executor_name=request.executor_name,
         executor_description=request.executor_description,
         input_modality=request.input_modality,
@@ -55,7 +55,7 @@ app.add_middleware(
 
 # Add a custom exception handler for RequestValidationError
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
+def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
         status_code=422,
         content={"detail": exc.errors()},

@@ -6,14 +6,16 @@ executor_example = "Here is an example of how an executor can be defined. It alw
 # this executor takes ... as input and returns ... as output
 # it processes each document in the following way: ...
 from jina import Executor, requests, DocumentArray, Document
-class MyExecutor(Executor):
+class MyInfoExecutor(Executor):
     def __init__(self, **kwargs):
         super().__init__()
 
     @requests
     def foo(self, docs: DocumentArray, **kwargs) => DocumentArray:
         for d in docs:
-            d.text = 'hello world'"
+            d.load_uri_to_blob()
+            d.tags['my_info'] = {'byte_length': len(d.blob)}
+            d.blob = None
         return docs
 '''
 "An executor gets a DocumentArray as input and returns a DocumentArray as output. "
