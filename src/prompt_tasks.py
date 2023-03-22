@@ -11,8 +11,6 @@ def general_guidelines():
         "Then all imports are listed. "
         "It is important to import all modules that could be needed in the executor code. "
         "Always import: "
-        "from typing import Dict, List, Optional, Tuple, Union "
-        "from io import BytesIO "
         "from jina import Executor, DocumentArray, Document, requests "
         "Start from top-level and then fully implement all methods. "
         "\n"
@@ -21,7 +19,7 @@ def general_guidelines():
 
 def _task(task, tag_name, file_name):
     return (
-            task + f"The code will go into {file_name}. Wrap the code is wrapped into:\n"
+            task + f"The code will go into {file_name}. Wrap the code into:\n"
                    f"**{file_name}**\n"
                    f"```{tag_name}\n"
                    f"...code...\n"
@@ -31,34 +29,39 @@ def _task(task, tag_name, file_name):
 
 def executor_file_task(executor_name, executor_description, input_modality, input_doc_field,
                        output_modality, output_doc_field):
-    return _task(
-        f"Write the executor called '{executor_name}'. "
-        f"It matches the following description: '{executor_description}'. "
-        f"It gets a DocumentArray as input where each document has the input modality '{input_modality}' that is stored in document.{input_doc_field}. "
-        f"It returns a DocumentArray as output where each document has the output modality '{output_modality}' that is stored in document.{output_doc_field}. "
-        f"Have in mind that d.uri is never a path to a local file. It is always a url.",
-        EXECUTOR_FILE_TAG,
-        EXECUTOR_FILE_NAME
-    )
+    return _task(f'''
+Write the executor called '{executor_name}'.
+It matches the following description: '{executor_description}'.
+It gets a DocumentArray as input where each document has the input modality '{input_modality}' and can be accessed via document.{input_doc_field}.
+It returns a DocumentArray as output where each document has the output modality '{output_modality}' that is stored in document.{output_doc_field}.
+Have in mind that d.uri is never a path to a local file. It is always a url.
+The executor is not allowed to use the GPU.
+The executor is not allowed to access external apis. 
+''',
+                 EXECUTOR_FILE_TAG,
+                 EXECUTOR_FILE_NAME
+                 )
 
 
 def requirements_file_task():
     return _task(
         "Write the content of the requirements.txt file. "
         "Make sure to include pytest. "
-        "All versions are fixed. ",
+        "Make sure that jina==3.14.1. "
+        "All versions are fixed using ~=, ==, <, >, <=, >=. The package versions should not have conflicts. ",
         REQUIREMENTS_FILE_TAG,
         REQUIREMENTS_FILE_NAME
     )
 
 
-def test_executor_file_task(executor_name, test_in, test_out):
+def test_executor_file_task(executor_name, test_scenario):
     return _task(
         "Write a small unit test for the executor. "
         "Start the test with an extensive comment about the test case. "
-        + ((
-                   "Test that the executor converts the input '" + test_in + "' to the output '" + test_out + "'. "
-           ) if test_in and test_out else "")
+        + (
+            f"Write a single test case that tests the following scenario: '{test_scenario}'. "
+            if test_scenario else ""
+        )
         + "Use the following import to import the executor: "
           f"from executor import {executor_name} ",
         TEST_EXECUTOR_FILE_TAG,
@@ -72,6 +75,7 @@ def docker_file_task():
         "The Dockerfile runs the test during the build process. "
         "It is important to make sure that all libs are installed that are required by the python packages. "
         "Usually libraries are installed with apt-get. "
+        "Be aware that the machine the docker container is running on does not have a GPU - only CPU. "
         "Add the config.yml file to the Dockerfile. "
         "The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard. "
         'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"] '
@@ -94,4 +98,27 @@ def streamlit_file_task():
         "Write the streamlit file allowing to make requests . ",
         STREAMLIT_FILE_TAG,
         STREAMLIT_FILE_NAME
+    )
+
+
+def chain_of_thought_creation():
+    return (
+        "First, write down some non-obvious thoughts about the challenges of the task and give multiple approaches on how you handle them. "
+        "For example, there are different libraries you could use. "
+        "Discuss the pros and cons for all of these approaches and then decide for one of the approaches. "
+        "Then write as I told you. "
+    )
+
+
+def chain_of_thought_optimization(tag_name, file_name):
+    return _task(
+        f'First, write down an extensive list of obvious and non-obvious observations about {file_name} that could need an adjustment. Explain why. '
+        f"Think if all the changes are required and finally decide for the changes you want to make, "
+        f"but you are not allowed disregard the instructions in the previous message. "
+        f"Be very hesitant to change the code. Only make a change if you are sure that it is necessary. "
+
+        f"Output only {file_name} "
+        f"Write the whole content of {file_name} - even if you decided to change only a small thing or even nothing. ",
+        tag_name,
+        file_name
     )

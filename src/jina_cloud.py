@@ -9,7 +9,7 @@ from src.constants import FLOW_URL_PLACEHOLDER
 
 
 def push_executor(dir_path):
-    cmd = f'jina hub push {dir_path}/. --verbose'
+    cmd = f'jina hub push {dir_path}/. --verbose --replay'
     os.system(cmd)
 
 def get_user_name():

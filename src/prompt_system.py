@@ -1,30 +1,33 @@
 from src.constants import FLOW_URL_PLACEHOLDER
 
-executor_example = "Here is an example of how an executor can be defined. It always starts with a comment:"
-'''
+executor_example = '''
+Using the Jina framework, users can define executors. 
+Here is an example of how an executor can be defined. It always starts with a comment:
 
-# this executor takes ... as input and returns ... as output
-# it processes each document in the following way: ...
+**executor.py**
+```python
+# this executor binary files as input and returns the length of each binary file as output
 from jina import Executor, requests, DocumentArray, Document
 class MyInfoExecutor(Executor):
     def __init__(self, **kwargs):
         super().__init__()
 
-    @requests
+    @requests(on='/process') # this decorator is needed for every executor endpoint
     def foo(self, docs: DocumentArray, **kwargs) => DocumentArray:
         for d in docs:
             d.load_uri_to_blob()
             d.tags['my_info'] = {'byte_length': len(d.blob)}
             d.blob = None
         return docs
-'''
-"An executor gets a DocumentArray as input and returns a DocumentArray as output. "
+```
 
-docarray_example = (
-    "A DocumentArray is a python class that can be seen as a list of Documents. "
-    "A Document is a python class that represents a single document. "
-    "Here is the protobuf definition of a Document: "
+An executor gets a DocumentArray as input and returns a DocumentArray as output. 
 '''
+
+docarray_example = '''
+A DocumentArray is a python class that can be seen as a list of Documents.
+A Document is a python class that represents a single document.
+Here is the protobuf definition of a Document:
 
 message DocumentProto {
   // A hexdigest that represents a unique document ID
@@ -57,9 +60,8 @@ message DocumentProto {
   google.protobuf.Struct tags = 9;
 
 }
-'''
-    "Here is an example of how a DocumentArray can be defined: "
-'''
+
+Here is an example of how a DocumentArray can be defined:
 
 from jina import DocumentArray, Document
 
@@ -82,25 +84,27 @@ docs = DocumentArray([
 # For instance, d4.load_uri_to_blob() downloads the file from d4.uri and stores it in d4.blob. 
 # If d4.uri was something like 'https://website.web/img.jpg', then d4.blob would be something like  b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01... 
 '''
-)
 
-client_example = (
-"After the executor is deployed, it can be called via Jina Client. "
-"Here is an example of a client file: "
-f'''
+
+client_example = f'''
+After the executor is deployed, it can be called via Jina Client.
+Here is an example of a client file:
+
+**client.py**
+```python
 from jina import Client, Document, DocumentArray
 client = Client(host='{FLOW_URL_PLACEHOLDER}')
 d = Document(uri='data/img.png')
 d.load_uri_to_blob()
 response = client.post('/process', inputs=DocumentArray([d]))
 response[0].summary()
-''')
+```
+'''
 
 
-system_base_definition = (
-        "You are a principal engineer working at Jina - an open source company."
-        "Using the Jina framework, users can define executors. "
-        + executor_example
-        + docarray_example
-        + client_example
-)
+system_base_definition = f'''
+You are a principal engineer working at Jina - an open source company."  
+{executor_example}
+{docarray_example}
+{client_example}
+'''
