@@ -36,6 +36,8 @@ It gets a DocumentArray as input where each document has the input modality '{in
 It returns a DocumentArray as output where each document has the output modality '{output_modality}' that is stored in document.{output_doc_field}.
 Have in mind that d.uri is never a path to a local file. It is always a url.
 The executor is not allowed to use the GPU.
+The executor is not allowed to access a database.
+The executor is not allowed to access a display.
 The executor is not allowed to access external apis. 
 ''',
                  EXECUTOR_FILE_TAG,

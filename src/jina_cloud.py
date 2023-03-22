@@ -1,5 +1,7 @@
 import os
 from multiprocessing.connection import Client
+import subprocess
+import re
 
 import hubble
 from jcloud.flow import CloudFlow
@@ -78,4 +80,37 @@ def update_client_line_in_file(file_path, host):
     with open(file_path, 'w') as file:
         file.write(replaced_content)
 
+
+def build_docker(path):
+    def process_error_message(error_message):
+        lines = error_message.split('\n')
+        relevant_lines = []
+
+        pattern = re.compile(r"^#\d+ \[\d+/\d+\]")  # Pattern to match lines like "#11 [7/8]"
+        last_matching_line_index = None
+
+        for index, line in enumerate(lines):
+            if pattern.match(line):
+                last_matching_line_index = index
+
+        if last_matching_line_index is not None:
+            relevant_lines = lines[last_matching_line_index:]
+
+        return '\n'.join(relevant_lines)
+
+    # The command to build the Docker image
+    cmd = f"docker build -t micromagic {path}"
+
+    # Run the command and capture the output
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    stdout, stderr = process.communicate()
+
+    # Check if there was an error
+    if process.returncode != 0:
+        error_message = stderr.decode("utf-8")
+        relevant_error_message = process_error_message(error_message)
+        return relevant_error_message
+    else:
+        print("Docker build completed successfully.")
+        return ''
 

@@ -10,7 +10,7 @@ def recreate_folder(folder_path):
     os.makedirs(folder_path)
 
 def persist_file(file_content, file_name):
-    with open(f'executor/{file_name}', 'w') as f:
+    with open(f'{file_name}', 'w') as f:
         f.write(file_content)
 
 

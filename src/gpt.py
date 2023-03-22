@@ -30,7 +30,7 @@ def get_response(prompt_list: List[Tuple[str, str]]):
         try:
             response_generator = openai.ChatCompletion.create(
                 temperature=0,
-                max_tokens=4_000,
+                max_tokens=2_000,
                 model="gpt-4",
                 stream=True,
                 messages=[

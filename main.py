@@ -12,13 +12,16 @@ import re
 # from src.utils.string_tools import find_differences
 #
 #
+from src.constants import FILE_AND_TAG_PAIRS
+
+
 def extract_content_from_result(plain_text, file_name):
     pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?)```"
     match = re.search(pattern, plain_text, re.MULTILINE)
     if match:
         return match.group(1).strip()
     else:
-        raise ValueError(f'Could not find {file_name} in result')
+        return ''
 #
 #
 # def extract_and_write(plain_text, dest_folder):
@@ -41,17 +44,17 @@ metas:
         f.write(config_content)
 #
 #
-# def get_all_executor_files_with_content(folder_path):
-#     file_name_to_content = {}
-#     for filename in os.listdir(folder_path):
-#         file_path = os.path.join(folder_path, filename)
-#
-#         if os.path.isfile(file_path):
-#             with open(file_path, 'r', encoding='utf-8') as file:
-#                 content = file.read()
-#                 file_name_to_content[filename] = content
-#
-#     return file_name_to_content
+def get_all_executor_files_with_content(folder_path):
+    file_name_to_content = {}
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+
+        if os.path.isfile(file_path):
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                file_name_to_content[filename] = content
+
+    return file_name_to_content
 #
 #
 #
@@ -104,14 +107,15 @@ metas:
 #     print('DIFFERENCES:', find_differences(all_executor_files_string, all_executor_files_string_improved))
 #     return all_executor_files_string_improved
 #
-# def files_to_string(file_name_to_content):
-#     all_executor_files_string = ''
-#     for file_name, tag in FILE_AND_TAG_PAIRS:
-#         all_executor_files_string += f'**{file_name}**\n'
-#         all_executor_files_string += f'```{tag}\n'
-#         all_executor_files_string += file_name_to_content[file_name]
-#         all_executor_files_string += '\n```\n\n'
-#     return all_executor_files_string
+def files_to_string(file_name_to_content):
+    all_executor_files_string = ''
+    for file_name, tag in FILE_AND_TAG_PAIRS:
+        if file_name in file_name_to_content:
+            all_executor_files_string += f'**{file_name}**\n'
+            all_executor_files_string += f'```{tag}\n'
+            all_executor_files_string += file_name_to_content[file_name]
+            all_executor_files_string += '\n```\n\n'
+    return all_executor_files_string
 #
 #
 # def main(
