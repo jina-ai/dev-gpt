@@ -35,15 +35,27 @@ It matches the following description: '{executor_description}'.
 It gets a DocumentArray as input where each document has the input modality '{input_modality}' and can be accessed via document.{input_doc_field}.
 It returns a DocumentArray as output where each document has the output modality '{output_modality}' that is stored in document.{output_doc_field}.
 Have in mind that d.uri is never a path to a local file. It is always a url.
-The executor is not allowed to use the GPU.
-The executor is not allowed to access a database.
-The executor is not allowed to access a display.
-The executor is not allowed to access external apis. 
-''',
+''' + not_allowed(),
                  EXECUTOR_FILE_TAG,
                  EXECUTOR_FILE_NAME
                  )
 
+
+def test_executor_file_task(executor_name, test_scenario):
+    return _task(
+        "Write a small unit test for the executor. "
+        "Start the test with an extensive comment about the test case. "
+        + (
+            f"Write a single test case that tests the following scenario: '{test_scenario}'. "
+            if test_scenario else ""
+        )
+        + "Use the following import to import the executor: "
+          f"from executor import {executor_name} "
+        + not_allowed()
+        + "The test is not allowed to open local files. ",
+        TEST_EXECUTOR_FILE_TAG,
+        TEST_EXECUTOR_FILE_NAME
+    )
 
 def requirements_file_task():
     return _task(
@@ -56,21 +68,6 @@ def requirements_file_task():
     )
 
 
-def test_executor_file_task(executor_name, test_scenario):
-    return _task(
-        "Write a small unit test for the executor. "
-        "Start the test with an extensive comment about the test case. "
-        + (
-            f"Write a single test case that tests the following scenario: '{test_scenario}'. "
-            if test_scenario else ""
-        )
-        + "Use the following import to import the executor: "
-          f"from executor import {executor_name} ",
-        TEST_EXECUTOR_FILE_TAG,
-        TEST_EXECUTOR_FILE_NAME
-    )
-
-
 def docker_file_task():
     return _task(
         "Write the Dockerfile that defines the environment with all necessary dependencies that the executor uses. "
@@ -80,8 +77,9 @@ def docker_file_task():
         "Be aware that the machine the docker container is running on does not have a GPU - only CPU. "
         "Add the config.yml file to the Dockerfile. "
         "The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard. "
-        'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"] '
-        "The Dockerfile runs the test during the build process. ",
+        'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]. '
+        'Make sure the all files are in the /workdir. '
+        "The Dockerfile runs the test during the build process. " + not_allowed(),
         DOCKER_FILE_TAG,
         DOCKER_FILE_NAME
     )
@@ -106,8 +104,9 @@ def streamlit_file_task():
 def chain_of_thought_creation():
     return (
         "First, write down some non-obvious thoughts about the challenges of the task and give multiple approaches on how you handle them. "
-        "For example, there are different libraries you could use. "
-        "Discuss the pros and cons for all of these approaches and then decide for one of the approaches. "
+        "For example, there are different libraries you could use and not all of them obay the rules: "
+        + not_allowed()
+        + "Discuss the pros and cons for all of these approaches and then decide for one of the approaches. "
         "Then write as I told you. "
     )
 
@@ -124,3 +123,11 @@ def chain_of_thought_optimization(tag_name, file_name):
         tag_name,
         file_name
     )
+
+def not_allowed():
+    return '''
+The executor is not allowed to use the GPU.
+The executor is not allowed to access a database.
+The executor is not allowed to access a display.
+The executor is not allowed to access external apis. 
+'''

@@ -1,5 +1,4 @@
 import os
-from multiprocessing.connection import Client
 import subprocess
 import re
 
@@ -7,7 +6,6 @@ import hubble
 from jcloud.flow import CloudFlow
 from jina import Flow
 
-from src.constants import FLOW_URL_PLACEHOLDER
 
 
 def push_executor(dir_path):
@@ -26,7 +24,7 @@ def deploy_on_jcloud(flow_yaml):
 
 
 
-def deploy_flow(executor_name, do_validation, dest_folder):
+def deploy_flow(executor_name, dest_folder):
     flow = f'''
 jtype: Flow
 with:
@@ -53,11 +51,10 @@ executors:
     with open(full_flow_path, 'w') as f:
         f.write(flow)
 
-    if do_validation:
-        print('try local execution')
-        flow = Flow.load_config(full_flow_path)
-        with flow:
-            pass
+    print('try local execution')
+    flow = Flow.load_config(full_flow_path)
+    with flow:
+        pass
     print('deploy flow on jcloud')
     return deploy_on_jcloud(flow_yaml=full_flow_path)
 
@@ -86,7 +83,7 @@ def build_docker(path):
         lines = error_message.split('\n')
         relevant_lines = []
 
-        pattern = re.compile(r"^#\d+ \[\d+/\d+\]")  # Pattern to match lines like "#11 [7/8]"
+        pattern = re.compile(r"^#\d+ \[[ \d]+/[ \d]+\]")  # Pattern to match lines like "#11 [7/8]"
         last_matching_line_index = None
 
         for index, line in enumerate(lines):

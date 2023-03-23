@@ -66,7 +66,13 @@ Here is an example of how a DocumentArray can be defined:
 from jina import DocumentArray, Document
 
 d1 = Document(text='hello')
-d2 = Document(blob=b'\\x89PNG\\r\\n\\x1a\\n\\x00\\x00\\x00\\rIHDR\\x00\\x00\\x03L\\x00\\x00\\x01\\x18\\x08\\x06\\x00\\x00\\x00o...')
+
+# you can load binary data into a document
+url = 'https://...'
+response = requests.get(url)
+obj_data = response.content
+d2 = Document(blob=obj_data) # blob is bytes like b'\\x89PNG\\r\\n\\x1a\\n\
+
 d3 = Document(tensor=numpy.array([1, 2, 3]), chunks=[Document(uri=/local/path/to/file)]
 d4 = Document(
    uri='https://docs.docarray.org/img/logo.png',
@@ -76,13 +82,13 @@ d5 = Document()
 d5.tensor = np.ones((2,4))
 d5.uri = 'https://audio.com/audio.mp3'
 d6 = Document()
-d6.blob = b'RIFF\\x00\\x00\\x00\\x00WAVEfmt \\x10\\x00...'
+d6.blob # like b'RIFF\\x00\\x00\\x00\\x00WAVEfmt \\x10\\x00...'
 docs = DocumentArray([
    d1, d2, d3, d4
 ])
 # the document has a helper function load_uri_to_blob:
 # For instance, d4.load_uri_to_blob() downloads the file from d4.uri and stores it in d4.blob. 
-# If d4.uri was something like 'https://website.web/img.jpg', then d4.blob would be something like  b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01... 
+# If d4.uri was something like 'https://website.web/img.jpg', then d4.blob would be something like  b'\\xff\\xd8\\xff\\xe0\\x00\\x10JFIF\\x00\\x01\\x01... 
 '''
 
 
@@ -94,10 +100,10 @@ Here is an example of a client file:
 ```python
 from jina import Client, Document, DocumentArray
 client = Client(host='{FLOW_URL_PLACEHOLDER}')
-d = Document(uri='data/img.png')
+d = Document(uri='...')
 d.load_uri_to_blob()
 response = client.post('/process', inputs=DocumentArray([d]))
-response[0].summary()
+print(response[0].text)
 ```
 '''
 

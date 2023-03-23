@@ -1,5 +1,6 @@
-jina[perf]==3.14.2.dev18
-openai
-ptest
-jcloud
-uvicorn
+jina==3.14.1
+pyrender~=0.1.45
+trimesh~=3.10.0
+numpy~=1.22.3
+Pillow~=9.0.1
+requests~=2.27.1
