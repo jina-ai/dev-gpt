@@ -1,16 +1,59 @@
+import hashlib
+import json
 import os
 import subprocess
 import re
+from argparse import Namespace
+from pathlib import Path
 
 import hubble
+from hubble.executor.helper import upload_file, archive_package, get_request_header
 from jcloud.flow import CloudFlow
 from jina import Flow
 
 
 
 def push_executor(dir_path):
-    cmd = f'jina hub push {dir_path}/. --verbose --replay'
-    os.system(cmd)
+    dir_path = Path(dir_path)
+
+    md5_hash = hashlib.md5()
+    bytesio = archive_package(dir_path)
+    content = bytesio.getvalue()
+    md5_hash.update(content)
+    md5_digest = md5_hash.hexdigest()
+
+    form_data = {
+        'public': 'True',
+        'private': 'False',
+        'verbose': 'True',
+        'md5sum': md5_digest,
+    }
+    req_header = get_request_header()
+    resp = upload_file(
+        'https://api.hubble.jina.ai/v2/rpc/executor.push',
+        'filename',
+        content,
+        dict_data=form_data,
+        headers=req_header,
+        stream=False,
+        method='post',
+    )
+    json_lines_str = resp.content.decode('utf-8')
+    if 'exited on non-zero code' not in json_lines_str:
+        return ''
+    responses = []
+    for json_line in json_lines_str.splitlines():
+        if 'exit code:' in json_line:
+            break
+
+        d = json.loads(json_line)
+
+        if 'payload' in d and type(d['payload']) == str:
+            responses.append(d['payload'])
+        elif type(d) == str:
+            responses.append(d)
+    return '\n'.join(responses)
+
 
 def get_user_name():
     client = hubble.Client(max_retries=None, jsonify=True)
@@ -51,10 +94,10 @@ executors:
     with open(full_flow_path, 'w') as f:
         f.write(flow)
 
-    print('try local execution')
-    flow = Flow.load_config(full_flow_path)
-    with flow:
-        pass
+    # print('try local execution')
+    # flow = Flow.load_config(full_flow_path)
+    # with flow:
+    #     pass
     print('deploy flow on jcloud')
     return deploy_on_jcloud(flow_yaml=full_flow_path)
 
@@ -78,22 +121,24 @@ def update_client_line_in_file(file_path, host):
         file.write(replaced_content)
 
 
+def process_error_message(error_message):
+    lines = error_message.split('\n')
+    relevant_lines = []
+
+    pattern = re.compile(r"^#\d+ \[[ \d]+/[ \d]+\]")  # Pattern to match lines like "#11 [7/8]"
+    last_matching_line_index = None
+
+    for index, line in enumerate(lines):
+        if pattern.match(line):
+            last_matching_line_index = index
+
+    if last_matching_line_index is not None:
+        relevant_lines = lines[last_matching_line_index:]
+
+    return '\n'.join(relevant_lines[-25:])
+
 def build_docker(path):
-    def process_error_message(error_message):
-        lines = error_message.split('\n')
-        relevant_lines = []
 
-        pattern = re.compile(r"^#\d+ \[[ \d]+/[ \d]+\]")  # Pattern to match lines like "#11 [7/8]"
-        last_matching_line_index = None
-
-        for index, line in enumerate(lines):
-            if pattern.match(line):
-                last_matching_line_index = index
-
-        if last_matching_line_index is not None:
-            relevant_lines = lines[last_matching_line_index:]
-
-        return '\n'.join(relevant_lines)
 
     # The command to build the Docker image
     cmd = f"docker build -t micromagic {path}"

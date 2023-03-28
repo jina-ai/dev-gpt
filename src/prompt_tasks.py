@@ -27,11 +27,12 @@ def _task(task, tag_name, file_name):
     )
 
 
-def executor_file_task(executor_name, executor_description, input_modality, input_doc_field,
+def executor_file_task(executor_name, executor_description, test_scenario, input_modality, input_doc_field,
                        output_modality, output_doc_field):
     return _task(f'''
 Write the executor called '{executor_name}'.
 It matches the following description: '{executor_description}'.
+It will be tested with the following scenario: '{test_scenario}'.
 It gets a DocumentArray as input where each document has the input modality '{input_modality}' and can be accessed via document.{input_doc_field}.
 It returns a DocumentArray as output where each document has the output modality '{output_modality}' that is stored in document.{output_doc_field}.
 Have in mind that d.uri is never a path to a local file. It is always a url.
