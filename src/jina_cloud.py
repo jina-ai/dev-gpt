@@ -77,7 +77,7 @@ with:
 jcloud:
   version: 3.14.2.dev18
   labels:
-    team: now
+    creator: microchain
   name: mybelovedocrflow
 executors:
   - name: {executor_name.lower()}
@@ -86,7 +86,7 @@ executors:
       JINA_LOG_LEVEL: DEBUG
     jcloud:
       resources:
-        instance: C4
+        instance: C2
         capacity: spot
 '''
     full_flow_path = os.path.join(dest_folder,

@@ -1,3 +1,4 @@
+import json
 import random
 
 from main import extract_content_from_result, write_config_yml, get_all_executor_files_with_content, files_to_string
@@ -18,20 +19,17 @@ def create_executor(
         executor_description,
         test_scenario,
         executor_name,
+        package,
         is_chain_of_thought=False,
 ):
-
-    recreate_folder('executor')
-    EXECUTOR_FOLDER_v1 = 'executor/v1'
+    EXECUTOR_FOLDER_v1 = get_executor_path(package, 1)
     recreate_folder(EXECUTOR_FOLDER_v1)
     recreate_folder('flow')
-
-
 
     print_colored('', '############# Executor #############', 'red')
     user_query = (
             general_guidelines()
-            + executor_file_task(executor_name, executor_description, test_scenario)
+            + executor_file_task(executor_name, executor_description, test_scenario, package)
             + chain_of_thought_creation()
     )
     conversation = gpt.Conversation()
@@ -116,24 +114,32 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
     conversation = gpt.Conversation()
     conversation.query(user_query)
     playground_content_raw = conversation.query(
-        f"General rules: " + not_allowed() + chain_of_thought_optimization('python', 'playground.py'))
-    playground_content = extract_content_from_result(playground_content_raw, 'playground.py')
-    persist_file(playground_content, f'{executor_path}/playground.py')
+        f"General rules: " + not_allowed() + chain_of_thought_optimization('python', 'app.py'))
+    playground_content = extract_content_from_result(playground_content_raw, 'app.py')
+    persist_file(playground_content, f'{executor_path}/app.py')
 
+def get_executor_path(package, version):
+    package_path = '_'.join(package)
+    return f'executor/{package_path}/v{version}'
 
-def debug_executor():
-    MAX_DEBUGGING_ITERATIONS = 20
+def debug_executor(package, executor_description, test_scenario):
+    MAX_DEBUGGING_ITERATIONS = 10
     error_before = ''
     for i in range(1, MAX_DEBUGGING_ITERATIONS):
-        # error_docker = build_docker(f'executor/v{i}')
-        log_hubble = push_executor(f'executor/v{i}')
+        previous_executor_path = get_executor_path(package, i)
+        next_executor_path = get_executor_path(package, i + 1)
+        log_hubble = push_executor(previous_executor_path)
         error = process_error_message(log_hubble)
         if error:
-            recreate_folder(f'executor/v{i + 1}')
-            file_name_to_content = get_all_executor_files_with_content(f'executor/v{i}')
+            recreate_folder(next_executor_path)
+            file_name_to_content = get_all_executor_files_with_content(previous_executor_path)
             all_files_string = files_to_string(file_name_to_content)
             user_query = (
                     f"General rules: " + not_allowed()
+                    + 'Here is the description of the task the executor must solve:\n'
+                    + executor_description
+                    + '\n\nHere is the test scenario the executor must pass:\n'
+                    + test_scenario
                     + 'Here are all the files I use:\n'
                     + all_files_string
                     + (('This is an error that is already fixed before:\n'
@@ -158,38 +164,74 @@ def debug_executor():
                     file_name_to_content[file_name] = updated_file
 
             for file_name, content in file_name_to_content.items():
-                persist_file(content, f'executor/v{i + 1}/{file_name}')
+                persist_file(content, f'{next_executor_path}/{file_name}')
             error_before = error
 
         else:
             break
         if i == MAX_DEBUGGING_ITERATIONS - 1:
             raise Exception('Could not debug the executor.')
-    return f'executor/v{i}'
+    return get_executor_path(package, i)
 
 
 def main(
         executor_description,
-        input_modality,
-        output_modality,
         test_scenario,
+        threads=3,
 ):
     executor_name = f'MicroChainExecutor{random.randint(0, 1000_000)}'
-    create_executor(executor_description, test_scenario, executor_name)
-    # executor_name = 'MicroChainExecutor790050'
-    executor_path = debug_executor()
-    # print('Executor can be built locally, now we will push it to the cloud.')
-    # jina_cloud.push_executor(executor_path)
-    print('Deploy a jina flow')
-    host = jina_cloud.deploy_flow(executor_name, 'flow')
-    print(f'Flow is deployed create the playground for {host}')
-    create_playground(executor_name, executor_path, host)
-    print(
-        'Executor name:', executor_name, '\n',
-        'Executor path:', executor_path, '\n',
-        'Host:', host, '\n',
-        'Playground:', f'streamlit run {executor_path}/playground.py', '\n',
-    )
+
+    packages = get_possible_packages(executor_description, threads)
+    recreate_folder('executor')
+    for package in packages:
+        create_executor(executor_description, test_scenario, executor_name, package)
+        # executor_name = 'MicroChainExecutor790050'
+        executor_path = debug_executor(package, executor_description, test_scenario)
+        # print('Executor can be built locally, now we will push it to the cloud.')
+        # jina_cloud.push_executor(executor_path)
+        print('Deploy a jina flow')
+        host = jina_cloud.deploy_flow(executor_name, 'flow')
+        print(f'Flow is deployed create the playground for {host}')
+        create_playground(executor_name, executor_path, host)
+        print(
+            'Executor name:', executor_name, '\n',
+            'Executor path:', executor_path, '\n',
+            'Host:', host, '\n',
+            'Playground:', f'streamlit run {executor_path}/app.py', '\n',
+        )
+
+
+def get_possible_packages(executor_description, threads):
+    print_colored('', '############# What package to use? #############', 'red')
+    user_query = f'''
+Here is the task description of the problme you need to solve:
+"{executor_description}"
+First, write down all the subtasks you need to solve which require python packages.
+For each subtask:
+    Provide a list of 1 to 3 python packages you could use to solve the subtask.
+    For each package:
+        Write down some non-obvious thoughts about the challenges you might face for the task and give multiple approaches on how you handle them.
+        For example, there might be some packages you must not use because they do not obay the rules:
+        {not_allowed()}
+        Discuss the pros and cons for all of these packages.
+Create a list of package subsets that you could use to solve the task.
+The list is sorted in a way that the most promising subset of packages is at the top.
+The maximum length of the list is 5.
+
+The output must be a list of lists wrapped into ``` and starting with **packages.csv** like this:
+**packages.csv**
+```
+package1,package2
+package2,package3,...
+...
+```
+    '''
+    conversation = gpt.Conversation()
+    packages_raw = conversation.query(user_query)
+    packages_csv_string = extract_content_from_result(packages_raw, 'packages.csv')
+    packages = [package.split(',') for package in packages_csv_string.split('\n')]
+    packages = packages[:threads]
+    return packages
 
 
 if __name__ == '__main__':
@@ -201,12 +243,14 @@ if __name__ == '__main__':
     #     test_scenario='Takes https://www2.deloitte.com/content/dam/Deloitte/de/Documents/about-deloitte/Deloitte-Unternehmensgeschichte.pdf and returns a string that is at least 100 characters long',
     # )
 
+    # main(
+    #     executor_description="The executor takes a url of a website as input and returns the logo of the website as an image.",
+    #     test_scenario='Takes https://jina.ai/ as input  and returns an svg image of the logo.',
+    # )
 
     main(
-        executor_description="The executor takes a url of a website as input and returns the logo of the website as an image.",
-        input_modality='url',
-        output_modality='image',
-        test_scenario='Takes https://jina.ai/ as input  and returns an svg image of the logo.',
+        executor_description="The executor takes a url of a website as input and classifies it as either individual or business.",
+        test_scenario='Takes https://jina.ai/ as input  and returns "business". Takes https://hanxiao.io/ as input and returns "individual". ',
     )
 
     # # # ######## Level 1 task #########
