@@ -170,9 +170,11 @@ def debug_executor(package, executor_description, test_scenario):
         else:
             break
         if i == MAX_DEBUGGING_ITERATIONS - 1:
-            raise Exception('Could not debug the executor.')
+            raise MaxDebugTimeReachedException('Could not debug the executor.')
     return get_executor_path(package, i)
 
+class MaxDebugTimeReachedException(BaseException):
+    pass
 
 def main(
         executor_description,
@@ -184,21 +186,26 @@ def main(
     packages = get_possible_packages(executor_description, threads)
     recreate_folder('executor')
     for package in packages:
-        create_executor(executor_description, test_scenario, executor_name, package)
-        # executor_name = 'MicroChainExecutor790050'
-        executor_path = debug_executor(package, executor_description, test_scenario)
-        # print('Executor can be built locally, now we will push it to the cloud.')
-        # jina_cloud.push_executor(executor_path)
-        print('Deploy a jina flow')
-        host = jina_cloud.deploy_flow(executor_name, 'flow')
-        print(f'Flow is deployed create the playground for {host}')
-        create_playground(executor_name, executor_path, host)
+        try:
+            create_executor(executor_description, test_scenario, executor_name, package)
+            # executor_name = 'MicroChainExecutor790050'
+            executor_path = debug_executor(package, executor_description, test_scenario)
+            # print('Executor can be built locally, now we will push it to the cloud.')
+            # jina_cloud.push_executor(executor_path)
+            print('Deploy a jina flow')
+            host = jina_cloud.deploy_flow(executor_name, executor_path)
+            print(f'Flow is deployed create the playground for {host}')
+            create_playground(executor_name, executor_path, host)
+        except MaxDebugTimeReachedException:
+            print('Could not debug the executor.')
+            continue
         print(
             'Executor name:', executor_name, '\n',
             'Executor path:', executor_path, '\n',
             'Host:', host, '\n',
             'Playground:', f'streamlit run {executor_path}/app.py', '\n',
         )
+        break
 
 
 def get_possible_packages(executor_description, threads):
@@ -208,7 +215,7 @@ Here is the task description of the problme you need to solve:
 "{executor_description}"
 First, write down all the subtasks you need to solve which require python packages.
 For each subtask:
-    Provide a list of 1 to 3 python packages you could use to solve the subtask.
+    Provide a list of 1 to 3 python packages you could use to solve the subtask. Prefer modern packages.
     For each package:
         Write down some non-obvious thoughts about the challenges you might face for the task and give multiple approaches on how you handle them.
         For example, there might be some packages you must not use because they do not obay the rules:
@@ -235,6 +242,15 @@ package2,package3,...
 
 
 if __name__ == '__main__':
+    # accomplished tasks:
+
+    # main(
+    #     executor_description="The executor takes a url of a website as input and classifies it as either individual or business.",
+    #     test_scenario='Takes https://jina.ai/ as input  and returns "business". Takes https://hanxiao.io/ as input and returns "individual". ',
+    # )
+
+    # needs to prove:
+
     # ######## Level 1 task #########
     # main(
     #     executor_description="The executor takes a pdf file as input, parses it and returns the text.",
@@ -248,10 +264,6 @@ if __name__ == '__main__':
     #     test_scenario='Takes https://jina.ai/ as input  and returns an svg image of the logo.',
     # )
 
-    main(
-        executor_description="The executor takes a url of a website as input and classifies it as either individual or business.",
-        test_scenario='Takes https://jina.ai/ as input  and returns "business". Takes https://hanxiao.io/ as input and returns "individual". ',
-    )
 
     # # # ######## Level 1 task #########
     # main(
@@ -270,12 +282,10 @@ if __name__ == '__main__':
     # )
 
     # ######## Level 3 task #########
-    # main(
-    #     executor_description="The executor takes an mp3 file as input and returns bpm and pitch in a json.",
-    #     input_modality='audio',
-    #     output_modality='json',
-    #     test_scenario='Takes https://miro.medium.com/v2/resize:fit:1024/0*4ty0Adbdg4dsVBo3.png as input and returns a json with bpm and pitch',
-    # )
+    main(
+        executor_description="The executor takes an mp3 file as input and returns bpm and pitch in a json.",
+        test_scenario='Takes https://cdn.pixabay.com/download/audio/2023/02/28/audio_550d815fa5.mp3 as input and returns a json with bpm and pitch',
+    )
 
     ######### Level 4 task #########
     # main(

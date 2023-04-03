@@ -129,7 +129,7 @@ The executor is not allowed to use the GPU.
 The executor is not allowed to access a database.
 The executor is not allowed to access a display.
 The executor is not allowed to access external apis. 
-The executor is not allowed to access the file system.
+The executor is not allowed to load data from the local file system it did not create.
 The executor is not allowed to use a pre-trained model.
 The executor is not allowed to train a model.
 '''

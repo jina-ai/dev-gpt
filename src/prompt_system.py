@@ -16,7 +16,7 @@ class MyInfoExecutor(Executor):
     def foo(self, docs: DocumentArray, **kwargs) => DocumentArray:
         for d in docs:
             d.load_uri_to_blob()
-            d.tags['my_info'] = {'byte_length': len(d.blob)}
+            d.tags['my_info'] = {'byte_length': len(d.blob)} # tags can only be a flat dictionary where keys are strings and values are strings, ints, floats, or bools
             d.blob = None
         return docs
 ```

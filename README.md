@@ -24,3 +24,8 @@ Based on this definition, the backend will be generated automatically.
 # 🤏 limitations for now
 - stateless microservices only
 - deterministic microservices only to make sure input and output pairs can be used
+
+# TODO:
+- [ ] attach playground
+- [ ] subtask executors
+- 

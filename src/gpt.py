@@ -44,7 +44,7 @@ def get_response(prompt_list: List[Tuple[str, str]]):
                     for prompt in prompt_list
                 ]
             )
-            response_generator_with_timeout = timeout_generator_wrapper(response_generator, 5)
+            response_generator_with_timeout = timeout_generator_wrapper(response_generator, 10)
             total_chars_prompt += sum(len(prompt[1]) for prompt in prompt_list)
             complete_string = ''
             for chunk in response_generator_with_timeout:
