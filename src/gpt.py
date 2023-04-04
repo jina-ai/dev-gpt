@@ -15,8 +15,10 @@ total_chars_prompt = 0
 total_chars_generation = 0
 
 class Conversation:
-    def __init__(self):
-        self.prompt_list = [('system', system_base_definition)]
+    def __init__(self, prompt_list: List[Tuple[str, str]] = None):
+        if prompt_list is None:
+            prompt_list = [('system', system_base_definition)]
+        self.prompt_list = prompt_list
         print_colored('system', system_base_definition, 'magenta')
 
     def query(self, prompt: str):
