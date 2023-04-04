@@ -6,8 +6,13 @@ Simply describe your task using natural language, and the system will automatica
 To ensure the executor accurately aligns with your intended task, you can also provide test scenarios.
 
 # Quickstart
+## install
 ```bash
 pip install gptdeploy
+```
+
+## run
+```bash
 gptdeploy --description "Take a pdf file as input, and returns the text it contains." \
 --test "Takes https://www2.deloitte.com/content/dam/Deloitte/de/Documents/about-deloitte/Deloitte-Unternehmensgeschichte.pdf and returns a string that is at least 100 characters long"
 ```
