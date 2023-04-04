@@ -63,8 +63,8 @@ def wrap_content_in_code_block(executor_content, file_name, tag):
 
 
 def create_executor(
-        executor_description,
-        test_scenario,
+        description,
+        test,
         output_path,
         executor_name,
         package,
@@ -77,7 +77,7 @@ def create_executor(
     print_colored('', '############# Executor #############', 'red')
     user_query = (
             general_guidelines()
-            + executor_file_task(executor_name, executor_description, test_scenario, package)
+            + executor_file_task(executor_name, description, test, package)
             + chain_of_thought_creation()
     )
     conversation = gpt.Conversation()
@@ -93,7 +93,7 @@ def create_executor(
     user_query = (
             general_guidelines()
             + wrap_content_in_code_block(executor_content, 'executor.py', 'python')
-            + test_executor_file_task(executor_name, test_scenario)
+            + test_executor_file_task(executor_name, test)
     )
     conversation = gpt.Conversation()
     test_executor_content_raw = conversation.query(user_query)
@@ -170,7 +170,7 @@ def get_executor_path(output_path, package, version):
     package_path = '_'.join(package)
     return f'{output_path}/{package_path}/v{version}'
 
-def debug_executor(output_path, package, executor_description, test_scenario):
+def debug_executor(output_path, package, description, test):
     MAX_DEBUGGING_ITERATIONS = 10
     error_before = ''
     for i in range(1, MAX_DEBUGGING_ITERATIONS):
@@ -185,9 +185,9 @@ def debug_executor(output_path, package, executor_description, test_scenario):
             user_query = (
                     f"General rules: " + not_allowed()
                     + 'Here is the description of the task the executor must solve:\n'
-                    + executor_description
+                    + description
                     + '\n\nHere is the test scenario the executor must pass:\n'
-                    + test_scenario
+                    + test
                     + 'Here are all the files I use:\n'
                     + all_files_string
                     + (('This is an error that is already fixed before:\n'
@@ -225,11 +225,11 @@ class MaxDebugTimeReachedException(BaseException):
     pass
 
 
-def generate_executor_name(executor_description):
+def generate_executor_name(description):
     conversation = gpt.Conversation()
     user_query = f'''
 Generate a name for the executor matching the description:
-"{executor_description}"
+"{description}"
 The executor name must fulfill the following criteria:
 - camel case
 - start with a capital letter
@@ -246,50 +246,11 @@ PDFParserExecutor
     name = extract_content_from_result(name_raw, 'name.txt')
     return name
 
-@click.command()
-@click.option('--executor-description', required=True, help='Description of the executor.')
-@click.option('--test-scenario', required=True, help='Test scenario for the executor.')
-@click.option('--num_approaches', default=3, type=int, help='Number of num_approaches to use to fulfill the task (default: 3).')
-@click.option('--output_path', default='executor', help='Path to the output folder (must be empty). ')
-def main(
-        executor_description,
-        test_scenario,
-        num_approaches=3,
-        output_path='executor',
-):
-    generated_name = generate_executor_name(executor_description)
-    executor_name = f'{generated_name}{random.randint(0, 1000_000)}'
-
-    packages = get_possible_packages(executor_description, num_approaches)
-    recreate_folder(output_path)
-    for package in packages:
-        try:
-            create_executor(executor_description, test_scenario, output_path, executor_name, package)
-            # executor_name = 'MicroChainExecutor790050'
-            executor_path = debug_executor(output_path, package, executor_description, test_scenario)
-            # print('Executor can be built locally, now we will push it to the cloud.')
-            # jina_cloud.push_executor(executor_path)
-            print('Deploy a jina flow')
-            host = jina_cloud.deploy_flow(executor_name, executor_path)
-            print(f'Flow is deployed create the playground for {host}')
-            create_playground(executor_name, executor_path, host)
-        except MaxDebugTimeReachedException:
-            print('Could not debug the executor.')
-            continue
-        print(
-            'Executor name:', executor_name, '\n',
-            'Executor path:', executor_path, '\n',
-            'Host:', host, '\n',
-            'Playground:', f'streamlit run {executor_path}/app.py', '\n',
-        )
-        break
-
-
-def get_possible_packages(executor_description, threads):
+def get_possible_packages(description, threads):
     print_colored('', '############# What package to use? #############', 'red')
     user_query = f'''
 Here is the task description of the problme you need to solve:
-"{executor_description}"
+"{description}"
 First, write down all the subtasks you need to solve which require python packages.
 For each subtask:
     Provide a list of 1 to 3 python packages you could use to solve the subtask. Prefer modern packages.
@@ -318,66 +279,109 @@ package2,package3,...
     return packages
 
 
+@click.command()
+@click.option('--description', required=True, help='Description of the executor.')
+@click.option('--test', required=True, help='Test scenario for the executor.')
+@click.option('--num_approaches', default=3, type=int, help='Number of num_approaches to use to fulfill the task (default: 3).')
+@click.option('--output_path', default='executor', help='Path to the output folder (must be empty). ')
+def main(
+        description,
+        test,
+        num_approaches=3,
+        output_path='executor',
+):
+    generated_name = generate_executor_name(description)
+    executor_name = f'{generated_name}{random.randint(0, 1000_000)}'
+
+    packages = get_possible_packages(description, num_approaches)
+    recreate_folder(output_path)
+    for package in packages:
+        try:
+            create_executor(description, test, output_path, executor_name, package)
+            # executor_name = 'MicroChainExecutor790050'
+            executor_path = debug_executor(output_path, package, description, test)
+            # print('Executor can be built locally, now we will push it to the cloud.')
+            # jina_cloud.push_executor(executor_path)
+            print('Deploy a jina flow')
+            host = jina_cloud.deploy_flow(executor_name, executor_path)
+            print(f'Flow is deployed create the playground for {host}')
+            create_playground(executor_name, executor_path, host)
+        except MaxDebugTimeReachedException:
+            print('Could not debug the executor.')
+            continue
+        print(
+            'Executor name:', executor_name, '\n',
+            'Executor path:', executor_path, '\n',
+            'Host:', host, '\n',
+            'Playground:', f'streamlit run {executor_path}/app.py', '\n',
+        )
+        break
+
+
 if __name__ == '__main__':
+    main()
+'''
+python main.py --description "Input is a url of a website as input and classifies it as either individual or business." --test "Takes https://jina.ai/ as input  and returns 'business'. Takes https://hanxiao.io/ as input and returns 'individual'."
+'''
     # accomplished tasks:
 
     # main(
-    #     executor_description="The executor takes a url of a website as input and classifies it as either individual or business.",
-    #     test_scenario='Takes https://jina.ai/ as input  and returns "business". Takes https://hanxiao.io/ as input and returns "individual". ',
+    #     description="Input is a url of a website as input and classifies it as either individual or business.",
+    #     test='Takes https://jina.ai/ as input  and returns "business". Takes https://hanxiao.io/ as input and returns "individual". ',
     # )
 
     # needs to prove:
 
     # ######## Level 1 task #########
     # main(
-    #     executor_description="The executor takes a pdf file as input, parses it and returns the text.",
+    #     description="The executor takes a pdf file as input, parses it and returns the text.",
     #     input_modality='pdf',
     #     output_modality='text',
-    #     test_scenario='Takes https://www2.deloitte.com/content/dam/Deloitte/de/Documents/about-deloitte/Deloitte-Unternehmensgeschichte.pdf and returns a string that is at least 100 characters long',
+    #     test='Takes https://www2.deloitte.com/content/dam/Deloitte/de/Documents/about-deloitte/Deloitte-Unternehmensgeschichte.pdf and returns a string that is at least 100 characters long',
     # )
 
     # main(
-    #     executor_description="The executor takes a url of a website as input and returns the logo of the website as an image.",
-    #     test_scenario='Takes https://jina.ai/ as input  and returns an svg image of the logo.',
+    #     description="The executor takes a url of a website as input and returns the logo of the website as an image.",
+    #     test='Takes https://jina.ai/ as input  and returns an svg image of the logo.',
     # )
 
 
     # # # ######## Level 1 task #########
     # main(
-    #     executor_description="The executor takes a pdf file as input, parses it and returns the text.",
+    #     description="The executor takes a pdf file as input, parses it and returns the text.",
     #     input_modality='pdf',
     #     output_modality='text',
-    #     test_scenario='Takes https://www2.deloitte.com/content/dam/Deloitte/de/Documents/about-deloitte/Deloitte-Unternehmensgeschichte.pdf and returns a string that is at least 100 characters long',
+    #     test='Takes https://www2.deloitte.com/content/dam/Deloitte/de/Documents/about-deloitte/Deloitte-Unternehmensgeschichte.pdf and returns a string that is at least 100 characters long',
     # )
 
     # ######## Level 2 task #########
     # main(
-    #     executor_description="OCR detector",
+    #     description="OCR detector",
     #     input_modality='image',
     #     output_modality='text',
-    #     test_scenario='Takes https://miro.medium.com/v2/resize:fit:1024/0*4ty0Adbdg4dsVBo3.png as input and returns a string that contains "Hello, world"',
+    #     test='Takes https://miro.medium.com/v2/resize:fit:1024/0*4ty0Adbdg4dsVBo3.png as input and returns a string that contains "Hello, world"',
     # )
 
     # ######## Level 3 task #########
-    main(
-        executor_description="The executor takes an mp3 file as input and returns bpm and pitch in a json.",
-        test_scenario='Takes https://cdn.pixabay.com/download/audio/2023/02/28/audio_550d815fa5.mp3 as input and returns a json with bpm and pitch',
-    )
+    # main(
+    #     description="The executor takes an mp3 file as input and returns bpm and pitch in a json.",
+    #     test='Takes https://cdn.pixabay.com/download/audio/2023/02/28/audio_550d815fa5.mp3 as input and returns a json with bpm and pitch',
+    # )
 
     ######### Level 4 task #########
     # main(
-    #     executor_description="The executor takes 3D objects in obj format as input "
-    #                          "and outputs a 2D image projection of that object where the full object is shown. ",
+    #     description="The executor takes 3D objects in obj format as input "
+    #                          "and outputs a 2D image rendering of that object where the full object is shown. ",
     #     input_modality='3d',
     #     output_modality='image',
-    #     test_scenario='Test that 3d object from https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj '
+    #     test='Test that 3d object from https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj '
     #                   'is put in and out comes a 2d rendering of it',
     # )
 
     # ######## Level 8 task #########
     # main(
-    #     executor_description="The executor takes an image as input and returns a list of bounding boxes of all animals in the image.",
+    #     description="The executor takes an image as input and returns a list of bounding boxes of all animals in the image.",
     #     input_modality='blob',
     #     output_modality='json',
-    #     test_scenario='Take the image from https://thumbs.dreamstime.com/b/dog-professor-red-bow-tie-glasses-white-background-isolated-dog-professor-glasses-197036807.jpg as input and assert that the list contains at least one bounding box. ',
+    #     test='Take the image from https://thumbs.dreamstime.com/b/dog-professor-red-bow-tie-glasses-white-background-isolated-dog-professor-glasses-197036807.jpg as input and assert that the list contains at least one bounding box. ',
     # )

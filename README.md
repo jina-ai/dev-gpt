@@ -5,6 +5,14 @@ This project streamlines the creation and deployment of microservices.
 Simply describe your task using natural language, and the system will automatically build and deploy your microservice. 
 To ensure the executor accurately aligns with your intended task, you can also provide test scenarios.
 
+# Quickstart
+```bash
+pip install gptdeploy
+gptdeploy --description "Take a pdf file as input, and returns the text it contains." \
+--test "Takes https://www2.deloitte.com/content/dam/Deloitte/de/Documents/about-deloitte/Deloitte-Unternehmensgeschichte.pdf and returns a string that is at least 100 characters long"
+```
+
+
 # Overview
 The graphic below illustrates the process of creating a microservice and deploying it to the cloud.
 ```mermaid
