@@ -7,7 +7,6 @@ from typing import Optional, Dict
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-Flow.plot()
 from main import main
 
 app = FastAPI()

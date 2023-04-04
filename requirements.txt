@@ -1,6 +1,2 @@
 jina==3.14.1
-pyrender~=0.1.45
-trimesh~=3.10.0
-numpy~=1.22.3
-Pillow~=9.0.1
-requests~=2.27.1
+click==8.1.3

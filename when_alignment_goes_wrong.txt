@@ -1,5 +1,0 @@
-# it mocked the executor function to fix the test
-executor.classify_website = mock_classify_website
-
-# it attached a fake screen to the test execution
-RUN xvfb-run -s "-screen 0 640x480x24" python test_executor.py

@@ -40,12 +40,12 @@ graph TB
 - Creates a Streamlit playground where you can test the microservice.
 6. If it fails 10 times in a row, it moves on to the next approach.
 
-[//]: # ([![Watch the video]&#40;https://i.imgur.com/vKb2F1B.png&#41;]&#40;https://user-images.githubusercontent.com/11627845/226220484-17810f7c-b184-4a03-9af2-3a977fbb014b.mov&#41;)
-
-
 # 🤏 limitations for now
 - stateless microservices only
 - deterministic microservices only to make sure input and output pairs can be used
 
 # 🔮 vision
 Use natural language interface to create, deploy and update your microservice infrastructure.
+
+
+[//]: # ([![Watch the video]&#40;https://i.imgur.com/vKb2F1B.png&#41;]&#40;https://user-images.githubusercontent.com/11627845/226220484-17810f7c-b184-4a03-9af2-3a977fbb014b.mov&#41;)

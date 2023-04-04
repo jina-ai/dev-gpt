@@ -1,5 +1,7 @@
 import random
 
+import click
+
 from src import gpt, jina_cloud
 from src.jina_cloud import push_executor, process_error_message
 from src.prompt_tasks import general_guidelines, executor_file_task, chain_of_thought_creation, test_executor_file_task, \
@@ -63,11 +65,12 @@ def wrap_content_in_code_block(executor_content, file_name, tag):
 def create_executor(
         executor_description,
         test_scenario,
+        output_path,
         executor_name,
         package,
         is_chain_of_thought=False,
 ):
-    EXECUTOR_FOLDER_v1 = get_executor_path(package, 1)
+    EXECUTOR_FOLDER_v1 = get_executor_path(output_path, package, 1)
     recreate_folder(EXECUTOR_FOLDER_v1)
     recreate_folder('flow')
 
@@ -163,16 +166,16 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
     playground_content = extract_content_from_result(playground_content_raw, 'app.py')
     persist_file(playground_content, f'{executor_path}/app.py')
 
-def get_executor_path(package, version):
+def get_executor_path(output_path, package, version):
     package_path = '_'.join(package)
-    return f'executor/{package_path}/v{version}'
+    return f'{output_path}/{package_path}/v{version}'
 
-def debug_executor(package, executor_description, test_scenario):
+def debug_executor(output_path, package, executor_description, test_scenario):
     MAX_DEBUGGING_ITERATIONS = 10
     error_before = ''
     for i in range(1, MAX_DEBUGGING_ITERATIONS):
-        previous_executor_path = get_executor_path(package, i)
-        next_executor_path = get_executor_path(package, i + 1)
+        previous_executor_path = get_executor_path(output_path, package, i)
+        next_executor_path = get_executor_path(output_path, package, i + 1)
         log_hubble = push_executor(previous_executor_path)
         error = process_error_message(log_hubble)
         if error:
@@ -216,7 +219,7 @@ def debug_executor(package, executor_description, test_scenario):
             break
         if i == MAX_DEBUGGING_ITERATIONS - 1:
             raise MaxDebugTimeReachedException('Could not debug the executor.')
-    return get_executor_path(package, i)
+    return get_executor_path(output_path, package, i)
 
 class MaxDebugTimeReachedException(BaseException):
     pass
@@ -243,22 +246,27 @@ PDFParserExecutor
     name = extract_content_from_result(name_raw, 'name.txt')
     return name
 
-
+@click.command()
+@click.option('--executor-description', required=True, help='Description of the executor.')
+@click.option('--test-scenario', required=True, help='Test scenario for the executor.')
+@click.option('--num_approaches', default=3, type=int, help='Number of num_approaches to use to fulfill the task (default: 3).')
+@click.option('--output_path', default='executor', help='Path to the output folder (must be empty). ')
 def main(
         executor_description,
         test_scenario,
-        threads=3,
+        num_approaches=3,
+        output_path='executor',
 ):
     generated_name = generate_executor_name(executor_description)
     executor_name = f'{generated_name}{random.randint(0, 1000_000)}'
 
-    packages = get_possible_packages(executor_description, threads)
-    recreate_folder('executor')
+    packages = get_possible_packages(executor_description, num_approaches)
+    recreate_folder(output_path)
     for package in packages:
         try:
-            create_executor(executor_description, test_scenario, executor_name, package)
+            create_executor(executor_description, test_scenario, output_path, executor_name, package)
             # executor_name = 'MicroChainExecutor790050'
-            executor_path = debug_executor(package, executor_description, test_scenario)
+            executor_path = debug_executor(output_path, package, executor_description, test_scenario)
             # print('Executor can be built locally, now we will push it to the cloud.')
             # jina_cloud.push_executor(executor_path)
             print('Deploy a jina flow')
