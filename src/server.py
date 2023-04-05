@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from jina import Flow
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 from typing import Optional, Dict
 
 from starlette.middleware.cors import CORSMiddleware

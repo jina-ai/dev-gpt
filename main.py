@@ -87,7 +87,7 @@ def create_executor(
             f"General rules: " + not_allowed() + chain_of_thought_optimization('python', 'executor.py'))
     executor_content = extract_content_from_result(executor_content_raw, 'executor.py')
 
-    persist_file(executor_content, EXECUTOR_FOLDER_v1 + '/executor.py')
+    persist_file(executor_content, os.path.join(EXECUTOR_FOLDER_v1, 'executor.py'))
 
     print_colored('', '############# Test Executor #############', 'red')
     user_query = (
@@ -104,7 +104,7 @@ def create_executor(
             + "Don't add any additional tests. "
         )
     test_executor_content = extract_content_from_result(test_executor_content_raw, 'test_executor.py')
-    persist_file(test_executor_content, EXECUTOR_FOLDER_v1 + '/test_executor.py')
+    persist_file(test_executor_content, os.path.join(EXECUTOR_FOLDER_v1, 'test_executor.py'))
 
     print_colored('', '############# Requirements #############', 'red')
     user_query = (
@@ -120,7 +120,7 @@ def create_executor(
             chain_of_thought_optimization('', 'requirements.txt') + "Keep the same version of jina ")
 
     requirements_content = extract_content_from_result(requirements_content_raw, 'requirements.txt')
-    persist_file(requirements_content, EXECUTOR_FOLDER_v1 + '/requirements.txt')
+    persist_file(requirements_content, os.path.join(EXECUTOR_FOLDER_v1,'requirements.txt'))
 
     print_colored('', '############# Dockerfile #############', 'red')
     user_query = (
@@ -136,7 +136,7 @@ def create_executor(
         dockerfile_content_raw = conversation.query(
             f"General rules: " + not_allowed() + chain_of_thought_optimization('dockerfile', 'Dockerfile'))
     dockerfile_content = extract_content_from_result(dockerfile_content_raw, 'Dockerfile')
-    persist_file(dockerfile_content, EXECUTOR_FOLDER_v1 + '/Dockerfile')
+    persist_file(dockerfile_content, os.path.join(EXECUTOR_FOLDER_v1, 'Dockerfile'))
 
     write_config_yml(executor_name, EXECUTOR_FOLDER_v1)
 
@@ -164,11 +164,11 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
     playground_content_raw = conversation.query(
         f"General rules: " + not_allowed() + chain_of_thought_optimization('python', 'app.py'))
     playground_content = extract_content_from_result(playground_content_raw, 'app.py')
-    persist_file(playground_content, f'{executor_path}/app.py')
+    persist_file(playground_content, os.path.join(executor_path, 'app.py'))
 
 def get_executor_path(output_path, package, version):
     package_path = '_'.join(package)
-    return f'{output_path}/{package_path}/v{version}'
+    return os.path.join(output_path, package_path, f'v{version}')
 
 def debug_executor(output_path, package, description, test):
     MAX_DEBUGGING_ITERATIONS = 10
@@ -212,7 +212,7 @@ def debug_executor(output_path, package, description, test):
                     file_name_to_content[file_name] = updated_file
 
             for file_name, content in file_name_to_content.items():
-                persist_file(content, f'{next_executor_path}/{file_name}')
+                persist_file(content, os.path.join(next_executor_path, file_name))
             error_before = error
 
         else:
@@ -313,7 +313,7 @@ def main(
             'Executor name:', executor_name, '\n',
             'Executor path:', executor_path, '\n',
             'Host:', host, '\n',
-            'Playground:', f'streamlit run {executor_path}/app.py', '\n',
+            'Playground:', f'streamlit run {os.path.join(executor_path, "app.py")}', '\n',
         )
         break
 

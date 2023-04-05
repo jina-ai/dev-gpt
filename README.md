@@ -22,10 +22,11 @@ gptdeploy --description "Take a pdf file as input, and returns the text it conta
 The graphic below illustrates the process of creating a microservice and deploying it to the cloud.
 ```mermaid
 graph TB
-    A[User Input: Task Description & Test Scenarios] --> B{GPT Deploy}
-    B -->|Identify Strategies| C[Strategy 1]
-    B -->|Identify Strategies| D[Strategy 2]
-    B -->|Identify Strategies| E[Strategy N]
+    AA[Task: 2d rendering of 3d object] --> B{think a}
+    AB[Test: http://.../file.pdf contains the word ''] --> B{think a}
+    B -->|Identify Strategie 1| C[Strategy 1]
+    B -->|Identify Strategie 2| D[Strategy 2]
+    B -->|Identify Strategie N| E[Strategy N]
     C --> F[executor.py, test_executor.py, requirements.txt, Dockerfile]
     D --> G[executor.py, test_executor.py, requirements.txt, Dockerfile]
     E --> H[executor.py, test_executor.py, requirements.txt, Dockerfile]
@@ -53,6 +54,13 @@ graph TB
 - Creates a Streamlit playground where you can test the microservice.
 6. If it fails 10 times in a row, it moves on to the next approach.
 
+# Examples
+```bash
+gptdeploy --description "Generate a QR code from a given text or URL" --test "https://www.example.com"
+```
+![](res/qr_example.png)
+
+
 # 🤏 limitations for now
 - stateless microservices only
 - deterministic microservices only to make sure input and output pairs can be used
@@ -60,5 +68,8 @@ graph TB
 # 🔮 vision
 Use natural language interface to create, deploy and update your microservice infrastructure.
 
+# TODO
+- [ ] verbose mode
+- [ ] auto login for jina
 
 [//]: # ([![Watch the video]&#40;https://i.imgur.com/vKb2F1B.png&#41;]&#40;https://user-images.githubusercontent.com/11627845/226220484-17810f7c-b184-4a03-9af2-3a977fbb014b.mov&#41;)

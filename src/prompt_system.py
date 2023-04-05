@@ -12,7 +12,7 @@ class MyInfoExecutor(Executor):
     def __init__(self, **kwargs):
         super().__init__()
 
-    @requests(on='/process') # this decorator is needed for every executor endpoint
+    @requests() # each executor must have exactly this decorator without parameters
     def foo(self, docs: DocumentArray, **kwargs) => DocumentArray:
         for d in docs:
             d.load_uri_to_blob()
@@ -102,7 +102,7 @@ from jina import Client, Document, DocumentArray
 client = Client(host='{FLOW_URL_PLACEHOLDER}')
 d = Document(uri='...')
 d.load_uri_to_blob()
-response = client.post('/process', inputs=DocumentArray([d]))
+response = client.post('/', inputs=DocumentArray([d])) # the client must be called on '/'
 print(response[0].text)
 ```
 '''

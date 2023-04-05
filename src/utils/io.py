@@ -35,13 +35,3 @@ def timeout_generator_wrapper(generator, timeout):
                 raise GenerationTimeoutError(f"Generation took longer than {timeout} seconds")
 
     return wrapper()
-
-# def my_generator():
-#     for i in range(10):
-#         sleep(3)
-#         yield 1
-#
-#
-# my_generator_with_timeout = timeout_generator_wrapper(my_generator, 2.9)
-# for item in my_generator_with_timeout():
-#     print(item)
