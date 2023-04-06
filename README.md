@@ -59,7 +59,9 @@ graph TB
 gptdeploy --description "Generate a QR code from a given text or URL" --test "https://www.example.com"
 ```
 ![](res/qr_example.png)
-
+```bash
+gptdeploy --description "Extract information about a 3D model, such as vertex count and face count" --test "https://www.example.com/model.obj"
+```
 
 # 🤏 limitations for now
 - stateless microservices only
@@ -69,7 +71,12 @@ gptdeploy --description "Generate a QR code from a given text or URL" --test "ht
 Use natural language interface to create, deploy and update your microservice infrastructure.
 
 # TODO
-- [ ] verbose mode
+critical
 - [ ] auto login for jina
+
+Nice to have
+- [ ] verbose mode
+- [ ] tests
+- [ ] clean up duplicate code
 
 [//]: # ([![Watch the video]&#40;https://i.imgur.com/vKb2F1B.png&#41;]&#40;https://user-images.githubusercontent.com/11627845/226220484-17810f7c-b184-4a03-9af2-3a977fbb014b.mov&#41;)

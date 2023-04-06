@@ -293,13 +293,13 @@ def main(
     generated_name = generate_executor_name(description)
     executor_name = f'{generated_name}{random.randint(0, 1000_000)}'
 
-    packages = get_possible_packages(description, num_approaches)
+    packages_list = get_possible_packages(description, num_approaches)
     recreate_folder(output_path)
-    for package in packages:
+    for packages in packages_list:
         try:
-            create_executor(description, test, output_path, executor_name, package)
+            create_executor(description, test, output_path, executor_name, packages)
             # executor_name = 'MicroChainExecutor790050'
-            executor_path = debug_executor(output_path, package, description, test)
+            executor_path = debug_executor(output_path, packages, description, test)
             # print('Executor can be built locally, now we will push it to the cloud.')
             # jina_cloud.push_executor(executor_path)
             print('Deploy a jina flow')
