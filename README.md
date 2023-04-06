@@ -22,8 +22,8 @@ gptdeploy --description "Take a pdf file as input, and returns the text it conta
 The graphic below illustrates the process of creating a microservice and deploying it to the cloud.
 ```mermaid
 graph TB
-    AA[Task: 2d rendering of 3d object] --> B{think a}
-    AB[Test: http://.../file.pdf contains the word ''] --> B{think a}
+    AA[Task: Generate QR code from URL] --> B{think a}
+    AB[Test: https://www.example.com] --> B{think a}
     B -->|Identify Strategie 1| C[Strategy 1]
     B -->|Identify Strategie 2| D[Strategy 2]
     B -->|Identify Strategie N| E[Strategy N]
@@ -55,12 +55,18 @@ graph TB
 6. If it fails 10 times in a row, it moves on to the next approach.
 
 # Examples
+## OCR
 ```bash
-gptdeploy --description "Generate a QR code from a given text or URL" --test "https://www.example.com"
+gptdeploy --description "Generate QR code from URL" --test "https://www.example.com"
 ```
 ![](res/qr_example.png)
+## 3d model info
 ```bash
-gptdeploy --description "Extract information about a 3D model, such as vertex count and face count" --test "https://www.example.com/model.obj"
+gptdeploy --description "Given a 3d object, return vertex count and face count" --test "https://www.example.com/model.obj"
+```
+## Table extraction
+```bash
+--description "Given a URL, extract all tables as csv" --test "http://www.ins.tn/statistiques/90"
 ```
 
 # 🤏 limitations for now

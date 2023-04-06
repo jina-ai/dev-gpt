@@ -155,7 +155,7 @@ The executor is hosted on {host}.
 This is an example how you can connect to the executor assuming the document (d) is already defined:
 from jina import Client, Document, DocumentArray
 client = Client(host='{host}')
-response = client.post('/process', inputs=DocumentArray([d]))
+response = client.post('/', inputs=DocumentArray([d])) # always use '/'
 print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
 '''
     )
