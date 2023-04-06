@@ -62,7 +62,7 @@ gptdeploy --description "Generate QR code from URL" --test "https://www.example.
 ![](res/qr_example.png)
 ## 3d model info
 ```bash
-gptdeploy --description "Given a 3d object, return vertex count and face count" --test "https://www.example.com/model.obj"
+gptdeploy --description "Given a 3d object, return vertex count and face count" --test "https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj"
 ```
 ## Table extraction
 ```bash
@@ -78,11 +78,17 @@ Use natural language interface to create, deploy and update your microservice in
 
 # TODO
 critical
-- [x] auto login for jina
+- [ ] add buttons to README.md
+- [ ] fix problem with package installation
+- [ ] add more interesting examples to README.md
+- [ ] api key in install instruction
 
 Nice to have
-- [ ] verbose mode
+- [ ] hide prompts in normal mode and show them in verbose mode
 - [ ] tests
 - [ ] clean up duplicate code
+- [ ] support popular cloud providers
+- [ ] support local docker builds
+
 
 [//]: # ([![Watch the video]&#40;https://i.imgur.com/vKb2F1B.png&#41;]&#40;https://user-images.githubusercontent.com/11627845/226220484-17810f7c-b184-4a03-9af2-3a977fbb014b.mov&#41;)
