@@ -1,9 +1,9 @@
 import hashlib
 import json
 import os
-import subprocess
 import re
-from argparse import Namespace
+import subprocess
+import webbrowser
 from pathlib import Path
 
 import hubble
@@ -12,7 +12,11 @@ from jcloud.flow import CloudFlow
 
 
 def redirect_callback(href):
-    print(f'You need login to Jina first to use GPTDeploy\nPlease open this link in your browser: {href}')
+    print(
+        f'You need login to Jina first to use GPTDeploy\n'
+        f'Please open this link if it does not open automatically in your browser: {href}'
+    )
+    webbrowser.open(href, new=0, autoraise=True)
 
 
 def jina_auth_login():
@@ -75,7 +79,6 @@ def deploy_on_jcloud(flow_yaml):
     return cloud_flow.__enter__().endpoints['gateway']
 
 
-
 def deploy_flow(executor_name, dest_folder):
     flow = f'''
 jtype: Flow
@@ -99,7 +102,7 @@ executors:
         capacity: spot
 '''
     full_flow_path = os.path.join(dest_folder,
-                     'flow.yml')
+                                  'flow.yml')
     with open(full_flow_path, 'w') as f:
         f.write(flow)
 
@@ -119,12 +122,12 @@ def replace_client_line(file_content: str, replacement: str) -> str:
             break
     return '\n'.join(lines)
 
+
 def update_client_line_in_file(file_path, host):
     with open(file_path, 'r') as file:
         content = file.read()
 
     replaced_content = replace_client_line(content, f"client = Client(host='{host}')")
-
 
     with open(file_path, 'w') as file:
         file.write(replaced_content)
@@ -146,9 +149,8 @@ def process_error_message(error_message):
 
     return '\n'.join(relevant_lines[-25:])
 
+
 def build_docker(path):
-
-
     # The command to build the Docker image
     cmd = f"docker build -t micromagic {path}"
 
@@ -164,4 +166,3 @@ def build_docker(path):
     else:
         print("Docker build completed successfully.")
         return ''
-
