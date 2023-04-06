@@ -9,6 +9,7 @@ To ensure the executor accurately aligns with your intended task, you can also p
 ## install
 ```bash
 pip install gptdeploy
+
 ```
 
 ## run
@@ -82,6 +83,7 @@ critical
 - [ ] fix problem with package installation
 - [ ] add more interesting examples to README.md
 - [ ] api key in install instruction
+- [ ] add instruction about cleanup of deployments
 
 Nice to have
 - [ ] hide prompts in normal mode and show them in verbose mode
@@ -89,6 +91,7 @@ Nice to have
 - [ ] clean up duplicate code
 - [ ] support popular cloud providers
 - [ ] support local docker builds
+- [ ] autoscaling enabled for cost saving
 
 
 [//]: # ([![Watch the video]&#40;https://i.imgur.com/vKb2F1B.png&#41;]&#40;https://user-images.githubusercontent.com/11627845/226220484-17810f7c-b184-4a03-9af2-3a977fbb014b.mov&#41;)
