@@ -7,26 +7,19 @@ from argparse import Namespace
 from pathlib import Path
 
 import hubble
-from hubble import AuthenticationRequiredError
 from hubble.executor.helper import upload_file, archive_package, get_request_header
 from jcloud.flow import CloudFlow
-from jina import Flow
-
-from src.utils.common import cmd
 
 
-@hubble.login_required
-def _jina_auth_login():
-    pass
+def redirect_callback(href):
+    print(f'You need login to Jina first to use GPTDeploy\nPlease open this link in your browser: {href}')
 
 
 def jina_auth_login():
     try:
-        _jina_auth_login()
-    except AuthenticationRequiredError:
-        print('Please login to Jina first, to fully use GPTDeploy')
-        cmd('jina auth login')
-
+        hubble.Client(jsonify=True).get_user_info(log_error=False)
+    except hubble.AuthenticationRequiredError:
+        hubble.login(prompt='login', redirect_callback=redirect_callback)
 
 
 def push_executor(dir_path):
