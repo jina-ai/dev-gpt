@@ -78,7 +78,7 @@ Use natural language interface to create, deploy and update your microservice in
 
 # TODO
 critical
-- [ ] auto login for jina
+- [x] auto login for jina
 
 Nice to have
 - [ ] verbose mode
