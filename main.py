@@ -3,7 +3,7 @@ import random
 import click
 
 from src import gpt, jina_cloud
-from src.jina_cloud import push_executor, process_error_message
+from src.jina_cloud import push_executor, process_error_message, jina_auth_login
 from src.prompt_tasks import general_guidelines, executor_file_task, chain_of_thought_creation, test_executor_file_task, \
     chain_of_thought_optimization, requirements_file_task, docker_file_task, not_allowed
 from src.utils.io import recreate_folder, persist_file
@@ -290,6 +290,9 @@ def main(
         num_approaches=3,
         output_path='executor',
 ):
+    jina_auth_login()
+
+
     generated_name = generate_executor_name(description)
     executor_name = f'{generated_name}{random.randint(0, 1000_000)}'
 
