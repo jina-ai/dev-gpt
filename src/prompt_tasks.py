@@ -46,6 +46,7 @@ def test_executor_file_task(executor_name, test_scenario):
         "Start the test with an extensive comment about the test case. "
         + (
             f"Write a single test case that tests the following scenario: '{test_scenario}'. "
+            f"In case the test scenario is not precise enough, test the most general case without any assumptions."
             if test_scenario else ""
         )
         + "Use the following import to import the executor: "
