@@ -84,10 +84,12 @@ gptdeploy --description "Given a 3d object, return vertex count and face count" 
 ```bash
 --description "Given a URL, extract all tables as csv" --test "http://www.ins.tn/statistiques/90"
 ```
+![](res/table_extraction_example.png)
 
-# 🤏 limitations for now
-- stateless microservices only
-- deterministic microservices only to make sure input and output pairs can be used
+## Audio to mel spectrogram
+```bash
+gptdeploy --description "Create mel spectrograms from audio file" --test "https://cdn.pixabay.com/download/audio/2023/02/28/audio_550d815fa5.mp3"
+```
 
 # 🔮 vision
 Use natural language interface to create, deploy and update your microservice infrastructure.
