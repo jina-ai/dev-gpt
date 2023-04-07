@@ -90,7 +90,19 @@ gptdeploy --description "Given a 3d object, return vertex count and face count" 
 ```bash
 gptdeploy --description "Create mel spectrograms from audio file" --test "https://cdn.pixabay.com/download/audio/2023/02/28/audio_550d815fa5.mp3"
 ```
+![](res/audio_to_mel_example.png)
+## Text to speech
+```bash
+gptdeploy --description "Convert text to speech" --test "Hello, welcome to GPT Deploy!"
+```
+![](res/text_to_speech_example.png)
+wav:
+<audio controls>
+  <source src="res/text_to_spech_example.wav" type="audio/wav"/>
+  Your browser does not support the audio element.
+</audio>
 
+##
 # 🔮 vision
 Use natural language interface to create, deploy and update your microservice infrastructure.
 
@@ -101,14 +113,25 @@ critical
 - [ ] add more interesting examples to README.md
 - [ ] api key in install instruction
 - [ ] add instruction about cleanup of deployments
+- [ ] add logo
 
 Nice to have
 - [ ] hide prompts in normal mode and show them in verbose mode
 - [ ] tests
 - [ ] clean up duplicate code
-- [ ] support popular cloud providers
+- [ ] support popular cloud providers - lambda, cloud run, cloud functions, ...
 - [ ] support local docker builds
 - [ ] autoscaling enabled for cost saving
-
+- [ ] don't show this message: 
+🔐 You are logged in to Jina AI as florian.hoenicke (username:auth0-unified-448f11965ce142b6). 
+To log out, use jina auth logout.
+- [ ] add more examples to README.md
+- [ ] support multiple endpoints - example: todolist microservice with endpoints for adding, deleting, and listing todos
+- [ ] support stateful microservices
+- [ ] The playground is currently printed twice even if it did not change. 
+Make sure it is only printed twice in case it changed.
+- [ ] allow to update your microservice by providing feedback
+- [ ] bug: it can happen that the code generation is hanging forever - in this case aboard and redo the generation
+- [ ] feat: make playground more stylish by adding attributes like: clean design, beautiful, like it was made by a professional designer, ...
 
 [//]: # ([![Watch the video]&#40;https://i.imgur.com/vKb2F1B.png&#41;]&#40;https://user-images.githubusercontent.com/11627845/226220484-17810f7c-b184-4a03-9af2-3a977fbb014b.mov&#41;)

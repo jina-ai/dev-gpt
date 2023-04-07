@@ -52,8 +52,9 @@ def test_executor_file_task(executor_name, test_scenario):
         + "Use the following import to import the executor: "
           f"from executor import {executor_name} "
         + not_allowed()
-        + "The test is not allowed to open local files. "
-        + "The test is not allowed to mock a function of the executor. ",
+        + "The test must not open local files. "
+        + "The test must not mock a function of the executor. "
+        + "The test must not use other data than the one provided in the test scenario. ",
         TEST_EXECUTOR_FILE_TAG,
         TEST_EXECUTOR_FILE_NAME
     )

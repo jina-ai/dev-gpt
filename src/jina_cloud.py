@@ -90,7 +90,7 @@ jcloud:
   version: 3.14.2.dev18
   labels:
     creator: microchain
-  name: mybelovedocrflow
+  name: gptdeploy
 executors:
   - name: {executor_name.lower()}
     uses: jinaai+docker://{get_user_name()}/{executor_name}:latest
