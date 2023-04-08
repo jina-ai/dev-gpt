@@ -111,6 +111,13 @@ gptdeploy --description "Convert text to speech" --test "Hello, welcome to GPT D
 ```
 <a href=res/text_to_speech_example.wav><img src="res/text_to_speech_example.png" alt="Text to Speech" width="600" /></a>
 
+
+<audio id="audioPlayer" src="res/text_to_speech_example.wav" preload="none" style="display:none;"></audio>
+<a href="#" onclick="document.getElementById('audioPlayer').play(); return false;">
+<img src="res/text_to_speech_example.png" alt="Text to Speech" width="600" />
+</a>
+
+
 ## QR Code Generator
 ```bash
 gptdeploy --description "Generate QR code from URL" --test "https://www.example.com"
