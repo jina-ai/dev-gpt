@@ -8,6 +8,7 @@ GPT Deploy: The Microservice Magician 🧙🚀
 </p>
 <p align="center">
 Turn your natural language descriptions into fully functional, deployed microservices with a single command!
+Your imagination is the limit!
 </p>
 
 <p align="center">
@@ -38,7 +39,7 @@ pip install gptdeploy
 ## run
 ```bash
 gptdeploy --description "Take a pdf file as input, and returns the text it contains." \
---test "https://www2.deloitte.com/content/dam/Deloitte/de/Documents/about-deloitte/Deloitte-Unternehmensgeschichte.pdf"
+--test "https://www.africau.edu/images/default/sample.pdf"
 ```
 
 
@@ -83,28 +84,32 @@ graph TB
 ```bash
 gptdeploy --description "Given a 3d object, return vertex count and face count" --test "https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj"
 ```
-![](res/obj_info_example.png)
+<img src="res/obj_info_example.png" alt="3D Model Info" width="600" />
+
 ## Table extraction
 ```bash
 --description "Given a URL, extract all tables as csv" --test "http://www.ins.tn/statistiques/90"
 ```
-![](res/table_extraction_example.png)
+<img src="res/table_extraction_example.png" alt="Table Extraction" width="600" />
+
 
 ## Audio to mel spectrogram
 ```bash
 gptdeploy --description "Create mel spectrograms from audio file" --test "https://cdn.pixabay.com/download/audio/2023/02/28/audio_550d815fa5.mp3"
 ```
-![](res/audio_to_mel_example.png)
+<img src="res/audio_to_mel_example.png" alt="Audio to Mel Spectrogram" width="600" />
+
 ## Text to speech
 ```bash
 gptdeploy --description "Convert text to speech" --test "Hello, welcome to GPT Deploy!"
 ```
-[![](res/text_to_speech_example.png)](res/text_to_speech_example.wav)
-## OCR
+<a href=text_to_speech_example.wav><img src="res/text_to_speech_example.png" alt="Text to Speech" width="600" /></a>
+
+## QR Code Generator
 ```bash
 gptdeploy --description "Generate QR code from URL" --test "https://www.example.com"
 ```
-![](res/qr_example.png)
+<img src="res/qr_example.png" alt="QR Code Generator" width="600" />
 
 
 # TO BE TESTED
