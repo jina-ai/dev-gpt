@@ -28,6 +28,8 @@ Your imagination is the limit!
     <img src="https://img.shields.io/badge/platform-mac%20%7C%20linux%20%7C%20windows-blue" alt="Supported platforms">
 </a>
 
+[//]: # ([![Watch the video]&#40;https://i.imgur.com/vKb2F1B.png&#41;]&#40;https://user-images.githubusercontent.com/11627845/226220484-17810f7c-b184-4a03-9af2-3a977fbb014b.mov&#41;)
+
 </p>
 This project streamlines the creation and deployment of microservices. 
 Simply describe your task using natural language, and the system will automatically build and deploy your microservice. 
@@ -107,7 +109,7 @@ gptdeploy --description "Create mel spectrograms from audio file" --test "https:
 ```bash
 gptdeploy --description "Convert text to speech" --test "Hello, welcome to GPT Deploy!"
 ```
-<a href=text_to_speech_example.wav><img src="res/text_to_speech_example.png" alt="Text to Speech" width="600" /></a>
+<a href=res/text_to_speech_example.wav><img src="res/text_to_speech_example.png" alt="Text to Speech" width="600" /></a>
 
 ## QR Code Generator
 ```bash
@@ -255,4 +257,8 @@ Make sure it is only printed twice in case it changed.
 - [ ] bug: it can happen that the code generation is hanging forever - in this case aboard and redo the generation
 - [ ] feat: make playground more stylish by adding attributes like: clean design, beautiful, like it was made by a professional designer, ...
 
-[![Watch the video](https://i.imgur.com/vKb2F1B.png)](https://user-images.githubusercontent.com/11627845/226220484-17810f7c-b184-4a03-9af2-3a977fbb014b.mov)
+# challenging tasks:
+- The executor takes an image as input and returns a list of bounding boxes of all animals in the image.
+- The executor takes 3D objects in obj format as input and outputs a 2D image rendering of that object where the full object is shown. 
+- The executor takes an mp3 file as input and returns bpm and pitch.
+- The executor takes a url of a website as input and returns the logo of the website as an image.
