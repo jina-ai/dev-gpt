@@ -111,12 +111,10 @@ gptdeploy --description "Convert text to speech" --test "Hello, welcome to GPT D
 ```
 <a href=res/text_to_speech_example.wav><img src="res/text_to_speech_example.png" alt="Text to Speech" width="600" /></a>
 
-
-<audio id="audioPlayer" src="res/text_to_speech_example.wav" preload="none" style="display:none;"></audio>
-<a href="#" onclick="document.getElementById('audioPlayer').play(); return false;">
-<img src="res/text_to_speech_example.png" alt="Text to Speech" width="600" />
-</a>
-
+<audio controls>
+  <source src="res/text_to_speech_example.wav" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
 
 ## QR Code Generator
 ```bash
