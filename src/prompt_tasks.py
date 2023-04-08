@@ -127,11 +127,11 @@ def chain_of_thought_optimization(tag_name, file_name):
 
 def not_allowed():
     return '''
-The executor is not allowed to use the GPU.
-The executor is not allowed to access a database.
-The executor is not allowed to access a display.
-The executor is not allowed to access external apis. 
-The executor is not allowed to load data from the local file system it did not create.
-The executor is not allowed to use a pre-trained model.
+The executor must not use the GPU.
+The executor must not access a database.
+The executor must not access a display.
+The executor must not access external apis except unless it is explicitly mentioned in the description. 
+The executor must not load data from the local file system unless it was created by the executor itself.
+The executor is not allowed to use a pre-trained model unless it is explicitly mentioned in the description.
 The executor is not allowed to train a model.
 '''
