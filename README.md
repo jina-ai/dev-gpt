@@ -1,5 +1,14 @@
-# GPT Deploy: The Microservice Magician 🧙🚀
+<h1 align="center">
+GPT Deploy: The Microservice Magician 🧙🚀
+</h1>
+
+
+<p align="center">
+<img src="res/gpt-deploy-logo.png" alt="Jina NOW logo" width="150px">
+</p>
+<p align="center">
 Turn your natural language descriptions into fully functional, deployed microservices with a single command!
+</p>
 
 <p align="center">
 <a href="https://github.com/tiangolo/fastapi/actions?query=workflow%3ATest+event%3Apush+branch%3Amaster" target="_blank">
@@ -9,12 +18,12 @@ Turn your natural language descriptions into fully functional, deployed microser
     <img src="https://coverage-badge.samuelcolvin.workers.dev/tiangolo/fastapi.svg" alt="Coverage">
 </a>
 <a href="https://pypi.org/project/fastapi" target="_blank">
-    <img src="https://img.shields.io/pypi/v/fastapi?color=%2334D058&label=pypi%20package" alt="Package version">
+    <img src="https://img.shields.io/pypi/v/gptdeploy?color=%2334D058&label=pypi%20package" alt="Package version">
 </a>
 <a href="https://pypi.org/project/fastapi" target="_blank">
-    <img src="https://img.shields.io/pypi/pyversions/fastapi.svg?color=%2334D058" alt="Supported Python versions">
+    <img src="https://img.shields.io/pypi/pyversions/gptdeploy.svg?color=%2334D058" alt="Supported Python versions">
 </a>
-
+</p>
 This project streamlines the creation and deployment of microservices. 
 Simply describe your task using natural language, and the system will automatically build and deploy your microservice. 
 To ensure the executor accurately aligns with your intended task, you can also provide test scenarios.
