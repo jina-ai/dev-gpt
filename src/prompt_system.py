@@ -103,6 +103,7 @@ from jina import Client, Document, DocumentArray
 client = Client(host='{FLOW_URL_PLACEHOLDER}')
 d = Document(uri='...')
 d.load_uri_to_blob()
+d.tags['style'] = 'abstract' # tags must be a flat dictionary where keys are strings and values are strings, ints, floats, or bools
 response = client.post('/', inputs=DocumentArray([d])) # the client must be called on '/'
 print(response[0].text)
 ```

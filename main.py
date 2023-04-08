@@ -4,6 +4,7 @@ import click
 
 from src import gpt, jina_cloud
 from src.jina_cloud import push_executor, process_error_message, jina_auth_login
+from src.key_handling import set_api_key
 from src.prompt_tasks import general_guidelines, executor_file_task, chain_of_thought_creation, test_executor_file_task, \
     chain_of_thought_optimization, requirements_file_task, docker_file_task, not_allowed
 from src.utils.io import recreate_folder, persist_file
@@ -15,6 +16,7 @@ import re
 
 from src.constants import FILE_AND_TAG_PAIRS
 
+gpt_session = gpt.GPTSession()
 
 def extract_content_from_result(plain_text, file_name):
     pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?)```"
@@ -80,7 +82,7 @@ def create_executor(
             + executor_file_task(executor_name, description, test, package)
             + chain_of_thought_creation()
     )
-    conversation = gpt.Conversation()
+    conversation = gpt_session.get_conversation()
     executor_content_raw = conversation.query(user_query)
     if is_chain_of_thought:
         executor_content_raw = conversation.query(
@@ -95,7 +97,7 @@ def create_executor(
             + wrap_content_in_code_block(executor_content, 'executor.py', 'python')
             + test_executor_file_task(executor_name, test)
     )
-    conversation = gpt.Conversation()
+    conversation = gpt_session.get_conversation()
     test_executor_content_raw = conversation.query(user_query)
     if is_chain_of_thought:
         test_executor_content_raw = conversation.query(
@@ -113,7 +115,7 @@ def create_executor(
             + wrap_content_in_code_block(test_executor_content, 'test_executor.py', 'python')
             + requirements_file_task()
     )
-    conversation = gpt.Conversation()
+    conversation = gpt_session.get_conversation()
     requirements_content_raw = conversation.query(user_query)
     if is_chain_of_thought:
         requirements_content_raw = conversation.query(
@@ -130,7 +132,7 @@ def create_executor(
             + wrap_content_in_code_block(requirements_content, 'requirements.txt', '')
             + docker_file_task()
     )
-    conversation = gpt.Conversation()
+    conversation = gpt_session.get_conversation()
     dockerfile_content_raw = conversation.query(user_query)
     if is_chain_of_thought:
         dockerfile_content_raw = conversation.query(
@@ -150,7 +152,9 @@ def create_playground(executor_name, executor_path, host):
             + wrap_content_in_code_block(file_name_to_content['executor.py'], 'executor.py', 'python')
             + wrap_content_in_code_block(file_name_to_content['test_executor.py'], 'test_executor.py', 'python')
             + f'''
-Create a playground for the executor {executor_name} using streamlit. 
+Create a playground for the executor {executor_name} using streamlit.
+The playground must look like it was made by a professional designer.
+All the ui elements are well thought out and the user experience is great.
 The executor is hosted on {host}. 
 This is an example how you can connect to the executor assuming the document (d) is already defined:
 from jina import Client, Document, DocumentArray
@@ -159,7 +163,7 @@ response = client.post('/', inputs=DocumentArray([d])) # always use '/'
 print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
 '''
     )
-    conversation = gpt.Conversation()
+    conversation = gpt_session.get_conversation()
     conversation.query(user_query)
     playground_content_raw = conversation.query(
         f"General rules: " + not_allowed() + chain_of_thought_optimization('python', 'app.py'))
@@ -204,7 +208,7 @@ def debug_executor(output_path, package, description, test):
                       f"...code...\n"
                       f"```\n\n"
             )
-            conversation = gpt.Conversation()
+            conversation = gpt_session.get_conversation()
             returned_files_raw = conversation.query(user_query)
             for file_name, tag in FILE_AND_TAG_PAIRS:
                 updated_file = extract_content_from_result(returned_files_raw, file_name)
@@ -226,7 +230,7 @@ class MaxDebugTimeReachedException(BaseException):
 
 
 def generate_executor_name(description):
-    conversation = gpt.Conversation()
+    conversation = gpt_session.get_conversation()
     user_query = f'''
 Generate a name for the executor matching the description:
 "{description}"
@@ -271,20 +275,23 @@ package2,package3,...
 ...
 ```
     '''
-    conversation = gpt.Conversation()
+    conversation = gpt_session.get_conversation()
     packages_raw = conversation.query(user_query)
     packages_csv_string = extract_content_from_result(packages_raw, 'packages.csv')
     packages = [package.split(',') for package in packages_csv_string.split('\n')]
     packages = packages[:threads]
     return packages
 
+@click.group(invoke_without_command=True)
+def main():
+    pass
 
-@click.command()
+@main.command()
 @click.option('--description', required=True, help='Description of the executor.')
 @click.option('--test', required=True, help='Test scenario for the executor.')
 @click.option('--num_approaches', default=3, type=int, help='Number of num_approaches to use to fulfill the task (default: 3).')
 @click.option('--output_path', default='executor', help='Path to the output folder (must be empty). ')
-def main(
+def create(
         description,
         test,
         num_approaches=3,
@@ -319,6 +326,11 @@ def main(
             'Playground:', f'streamlit run {os.path.join(executor_path, "app.py")}', '\n',
         )
         break
+
+@main.command()
+@click.option('--key', required=True, help='Your OpenAI API key.')
+def configure(key):
+    set_api_key(key)
 
 
 if __name__ == '__main__':

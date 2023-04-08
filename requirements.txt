@@ -2,3 +2,4 @@ jina==3.14.1
 click==8.1.3
 streamlit==1.20.0
 openai==0.27.4
+psutil==5.9.4
