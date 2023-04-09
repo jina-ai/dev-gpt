@@ -148,131 +148,230 @@ gptdeploy create --description "Generate QR code from URL" --test "https://www.e
 <img src="res/qr_example.png" alt="QR Code Generator" width="600" />
 
 
-## TO BE TESTED
-### ASCII Art Generator
-```bash
-gptdeploy create --description "Convert image to ASCII art" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff"
-```
-### Password Strength Checker
-```bash
-gptdeploy create --description "Given a password, return a score from 1 to 10 indicating the strength of the password" --test "Pa$$w0rd"
-```
-### Morse Code Translator
-```bash
-gptdeploy create --description "Convert text to morse code" --test "Hello, welcome to GPT Deploy!"
-```
-### IP Geolocation
-```bash
-gptdeploy create --description "Given an IP address, return the geolocation information" --test "142.251.46.174"
-```
-### Currency Converter
-```bash
-gptdeploy create --description "Converts any currency into any other" --test "1 usd to eur"
-```
-### Image Resizer
-```bash
-gptdeploy create --description "Given an image, resize it to a specified width and height" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff"
-```
-### Weather API
-```bash
-gptdeploy create --description "Given a city, return the current weather" --test "Berlin"
-```
+[//]: # (## TO BE TESTED)
 
-### Sudoku Solver
-```bash
-gptdeploy create --description "Given a sudoku puzzle, return the solution" --test "[[2, 5, 0, 0, 3, 0, 9, 0, 1], [0, 1, 0, 0, 0, 4, 0, 0, 0], [4, 0, 7, 0, 0, 0, 2, 0, 8], [0, 0, 5, 2, 0, 0, 0, 0, 0], [0, 0, 0, 0, 9, 8, 1, 0, 0], [0, 4, 0, 0, 0, 3, 0, 0, 0], [0, 0, 0, 3, 6, 0, 0, 7, 2], [0, 7, 0, 0, 0, 0, 0, 0, 3], [9, 0, 3, 0, 0, 0, 6, 0, 4]]"
-```
+[//]: # (### ASCII Art Generator)
 
-### Carbon Footprint Calculator
-```bash
-gptdeploy create --description "Estimate a company's carbon footprint based on factors like transportation, electricity usage, waste production etc..." --test "Jina AI"
-```
+[//]: # (```bash)
 
-### Real Estate Valuation Estimator
-```bash
-gptdeploy create --description "Create a microservice that estimates the value of a property based on factors like location, property type, age, and square footage." --test "Berlin Friedrichshain, Flat, 100m², 10 years old"
-```
+[//]: # (gptdeploy create --description "Convert image to ASCII art" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff")
 
-### Gene Sequence Alignment
-```bash
-gptdeploy create --description "Align two DNA or RNA sequences using the Needleman-Wunsch algorithm" --test "AGTC, GTCA"
-```
+[//]: # (```)
 
-### Markdown to HTML Converter
-```bash
-gptdeploy create --description "Convert markdown to HTML" --test "# Hello, welcome to GPT Deploy!"
-```
+[//]: # (### Password Strength Checker)
 
-### Barcode Generator
-```bash
-gptdeploy create --description "Generate a barcode from a string" --test "Hello, welcome to GPT Deploy!"
-```
+[//]: # (```bash)
 
-### File Compression
-```bash
-gptdeploy create --description "Compress a file using the gzip algorithm" --test "content of the file: Hello, welcome to GPT Deploy!"
-```
+[//]: # (gptdeploy create --description "Given a password, return a score from 1 to 10 indicating the strength of the password" --test "Pa$$w0rd")
 
-### Watermarking Images
-```bash
-gptdeploy create --description "Add a watermark (GPT Deploy) to an image" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff"
-```
+[//]: # (```)
 
-### File Metadata Extractor
-```bash
-gptdeploy create --description "Extract metadata from a file" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff"
-```
+[//]: # (### Morse Code Translator)
 
-### Video Thumbnail Extractor
-```bash
-gptdeploy create --description "Extract a thumbnail from a video" --test "http://techslides.com/demos/sample-videos/small.mp4"
-```
+[//]: # (```bash)
 
-### Gif Maker
-```bash
-gptdeploy create --description "Create a gif from a list of images" --test "https://images.unsplash.com/photo-1564725075388-cc8338732289, https://images.unsplash.com/photo-1584555684040-bad07f46a21f, https://images.unsplash.com/photo-1584555613497-9ecf9dd06f68"
-```
+[//]: # (gptdeploy create --description "Convert text to morse code" --test "Hello, welcome to GPT Deploy!")
 
-### Word Cloud Generator
-```bash
-gptdeploy create --description "Generate a word cloud from a given text" --test "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-```
+[//]: # (```)
 
-### Mandelbrot Set Visualizer
-```bash
-gptdeploy create --description "Visualize the Mandelbrot set with custom parameters" --test "center=-0.5+0i, zoom=1.0, size=800x800, iterations=1000"
-```
+[//]: # (### IP Geolocation)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Given an IP address, return the geolocation information" --test "142.251.46.174")
+
+[//]: # (```)
+
+[//]: # (### Currency Converter)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Converts any currency into any other" --test "1 usd to eur")
+
+[//]: # (```)
+
+[//]: # (### Image Resizer)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Given an image, resize it to a specified width and height" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff")
+
+[//]: # (```)
+
+[//]: # (### Weather API)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Given a city, return the current weather" --test "Berlin")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Sudoku Solver)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Given a sudoku puzzle, return the solution" --test "[[2, 5, 0, 0, 3, 0, 9, 0, 1], [0, 1, 0, 0, 0, 4, 0, 0, 0], [4, 0, 7, 0, 0, 0, 2, 0, 8], [0, 0, 5, 2, 0, 0, 0, 0, 0], [0, 0, 0, 0, 9, 8, 1, 0, 0], [0, 4, 0, 0, 0, 3, 0, 0, 0], [0, 0, 0, 3, 6, 0, 0, 7, 2], [0, 7, 0, 0, 0, 0, 0, 0, 3], [9, 0, 3, 0, 0, 0, 6, 0, 4]]")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Carbon Footprint Calculator)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Estimate a company's carbon footprint based on factors like transportation, electricity usage, waste production etc..." --test "Jina AI")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Real Estate Valuation Estimator)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Create a microservice that estimates the value of a property based on factors like location, property type, age, and square footage." --test "Berlin Friedrichshain, Flat, 100m², 10 years old")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Gene Sequence Alignment)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Align two DNA or RNA sequences using the Needleman-Wunsch algorithm" --test "AGTC, GTCA")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Markdown to HTML Converter)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Convert markdown to HTML" --test "# Hello, welcome to GPT Deploy!")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Barcode Generator)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Generate a barcode from a string" --test "Hello, welcome to GPT Deploy!")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### File Compression)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Compress a file using the gzip algorithm" --test "content of the file: Hello, welcome to GPT Deploy!")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Watermarking Images)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Add a watermark &#40;GPT Deploy&#41; to an image" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### File Metadata Extractor)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Extract metadata from a file" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Video Thumbnail Extractor)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Extract a thumbnail from a video" --test "http://techslides.com/demos/sample-videos/small.mp4")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Gif Maker)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Create a gif from a list of images" --test "https://images.unsplash.com/photo-1564725075388-cc8338732289, https://images.unsplash.com/photo-1584555684040-bad07f46a21f, https://images.unsplash.com/photo-1584555613497-9ecf9dd06f68")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Word Cloud Generator)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Generate a word cloud from a given text" --test "Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Mandelbrot Set Visualizer)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Visualize the Mandelbrot set with custom parameters" --test "center=-0.5+0i, zoom=1.0, size=800x800, iterations=1000")
+
+[//]: # (```)
 
 
-## Upcoming Challenges
-### Chemical Structure Drawing
-```bash
-gptdeploy create --description "Convert a chemical formula into a 2D chemical structure diagram" --test "C6H6"
-```
-### Color Palette Generator
-```bash
-gptdeploy create --description "creates aesthetically pleasing color palettes based on a seed color, using color theory principles like complementary or analogous colors" --test "red"
-```
+[//]: # (## Upcoming Challenges)
 
-### Depth Map Generator
-```bash
-gptdeploy create --description "Generate a depth map from a 3d Object" --test "https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj"
-```
+[//]: # (### Chemical Structure Drawing)
 
-### Bounding Box
-```bash
-gptdeploy create --description "Given an image, return the bounding boxes of all animals" --test "..."
-```
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Convert a chemical formula into a 2D chemical structure diagram" --test "C6H6")
+
+[//]: # (```)
+
+[//]: # (### Color Palette Generator)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "creates aesthetically pleasing color palettes based on a seed color, using color theory principles like complementary or analogous colors" --test "red")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Depth Map Generator)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Generate a depth map from a 3d Object" --test "https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj")
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (### Bounding Box)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Given an image, return the bounding boxes of all animals" --test "...")
+
+[//]: # (```)
 
 ## 🔮 vision
 Use natural language interface to create, deploy and update your microservice infrastructure.
 
-## TODO
-critical
+## ✨ Contributers 
+If you want to contribute to this project, feel free to open a PR or an issue.
+In the following, you can find a list of things that need to be done.
+
+Critical:
 - [ ] fix problem with package installation
 - [ ] add instruction about cleanup of deployments
 
-Nice to have
+Nice to have:
 - [ ] hide prompts in normal mode and show them in verbose mode
 - [ ] tests
 - [ ] clean up duplicate code
