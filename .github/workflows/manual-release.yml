@@ -13,6 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          ref: main
           token: ${{ secrets.JINA_DEV_BOT }}
           fetch-depth: 100
       - uses: actions/setup-python@v2
@@ -28,7 +29,7 @@ jobs:
           JINA_SLACK_WEBHOOK: ${{ secrets.JINA_SLACK_WEBHOOK }}
       - if: failure()
         run: echo "nothing to release"
-      - name: bumping master version
+      - name: bumping main version
         uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.JINA_DEV_BOT }}
