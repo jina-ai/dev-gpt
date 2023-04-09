@@ -244,7 +244,7 @@ gptdeploy create --description "Visualize the Mandelbrot set with custom paramet
 ```
 
 
-## Open Challenges
+## Upcoming Challenges
 ### Chemical Structure Drawing
 ```bash
 gptdeploy create --description "Convert a chemical formula into a 2D chemical structure diagram" --test "C6H6"
@@ -259,17 +259,18 @@ gptdeploy create --description "creates aesthetically pleasing color palettes ba
 gptdeploy create --description "Generate a depth map from a 3d Object" --test "https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj"
 ```
 
+### Bounding Box
+```bash
+gptdeploy create --description "Given an image, return the bounding boxes of all animals" --test "..."
+```
+
 ## 🔮 vision
 Use natural language interface to create, deploy and update your microservice infrastructure.
 
 ## TODO
 critical
-- [ ] add buttons to README.md
 - [ ] fix problem with package installation
-- [ ] add more interesting examples to README.md
-- [ ] api key in install instruction
 - [ ] add instruction about cleanup of deployments
-- [ ] add logo
 
 Nice to have
 - [ ] hide prompts in normal mode and show them in verbose mode
@@ -291,9 +292,3 @@ Make sure it is only printed twice in case it changed.
 - [ ] feat: make playground more stylish by adding attributes like: clean design, beautiful, like it was made by a professional designer, ...
 - [ ] support for other large language models like ChatGLM
 - [ ] for cost savings, it should be possible to insert less context during the code generation of the main functionality - no jina knowledge is required
-
-## challenging tasks:
-- The executor takes an image as input and returns a list of bounding boxes of all animals in the image.
-- The executor takes 3D objects in obj format as input and outputs a 2D image rendering of that object where the full object is shown. 
-- The executor takes an mp3 file as input and returns bpm and pitch.
-- The executor takes a url of a website as input and returns the logo of the website as an image.
