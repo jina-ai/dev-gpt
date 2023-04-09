@@ -154,7 +154,7 @@ def create_playground(executor_name, executor_path, host):
             + f'''
 Create a playground for the executor {executor_name} using streamlit.
 The playground must look like it was made by a professional designer.
-All the ui elements are well thought out and the user experience is great.
+All the ui elements are well thought out to make them visually appealing and easy to use.
 The executor is hosted on {host}. 
 This is an example how you can connect to the executor assuming the document (d) is already defined:
 from jina import Client, Document, DocumentArray
@@ -304,6 +304,10 @@ def create(
 
     packages_list = get_possible_packages(description, num_approaches)
     recreate_folder(output_path)
+    # packages_list = [['a']]
+    # executor_name = 'ColorPaletteGeneratorExecutor5946'
+    # executor_path = '/Users/florianhonicke/jina/gptdeploy/executor/colorsys_colorharmony/v5'
+    # host = 'grpcs://gptdeploy-5f6ea44fc8.wolf.jina.ai'
     for packages in packages_list:
         try:
             create_executor(description, test, output_path, executor_name, packages)

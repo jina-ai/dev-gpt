@@ -93,6 +93,13 @@ graph TB
 
 ## Examples
 
+### Meme Generator
+```bash
+gptdeploy create --description "Generate a meme from an image and a caption" --test "Surprised Pikachu: https://media.wired.com/photos/5f87340d114b38fa1f8339f9/master/w_1600%2Cc_limit/Ideas_Surprised_Pikachu_HD.jpg, TOP:When you discovered GPTDeploy"
+```
+
+<img src="res/meme_example.png" alt="Meme Generator" width="600" />
+
 ### Rhyme Generator
 ```bash
 gptdeploy create --description "Given a word, return a list of rhyming words using the datamuse api" --test "hello"
@@ -146,10 +153,6 @@ gptdeploy create --description "Generate QR code from URL" --test "https://www.e
 ```bash
 gptdeploy create --description "Convert image to ASCII art" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff"
 ```
-### Color Palette Generator
-```bash
-gptdeploy create --description "creates aesthetically pleasing color palettes based on a seed color, using color theory principles like complementary or analogous colors" --test "red"
-```
 ### Password Strength Checker
 ```bash
 gptdeploy create --description "Given a password, return a score from 1 to 10 indicating the strength of the password" --test "Pa$$w0rd"
@@ -190,7 +193,6 @@ gptdeploy create --description "Estimate a company's carbon footprint based on f
 gptdeploy create --description "Create a microservice that estimates the value of a property based on factors like location, property type, age, and square footage." --test "Berlin Friedrichshain, Flat, 100m², 10 years old"
 ```
 
-
 ### Gene Sequence Alignment
 ```bash
 gptdeploy create --description "Align two DNA or RNA sequences using the Needleman-Wunsch algorithm" --test "AGTC, GTCA"
@@ -209,11 +211,6 @@ gptdeploy create --description "Generate a barcode from a string" --test "Hello,
 ### File Compression
 ```bash
 gptdeploy create --description "Compress a file using the gzip algorithm" --test "content of the file: Hello, welcome to GPT Deploy!"
-```
-
-### Meme Generator
-```bash
-gptdeploy create --description "Generate a meme from an image and a caption" --test "Surprised Pikachu: https://media.wired.com/photos/5f87340d114b38fa1f8339f9/master/w_1600%2Cc_limit/Ideas_Surprised_Pikachu_HD.jpg, TOP:When you see GPT Deploy create and deploy a microservice in seconds"
 ```
 
 ### Watermarking Images
@@ -236,13 +233,30 @@ gptdeploy create --description "Extract a thumbnail from a video" --test "http:/
 gptdeploy create --description "Create a gif from a list of images" --test "https://images.unsplash.com/photo-1564725075388-cc8338732289, https://images.unsplash.com/photo-1584555684040-bad07f46a21f, https://images.unsplash.com/photo-1584555613497-9ecf9dd06f68"
 ```
 
+### Word Cloud Generator
+```bash
+gptdeploy create --description "Generate a word cloud from a given text" --test "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+```
 
+### Mandelbrot Set Visualizer
+```bash
+gptdeploy create --description "Visualize the Mandelbrot set with custom parameters" --test "center=-0.5+0i, zoom=1.0, size=800x800, iterations=1000"
+```
 
 
 ## Open Challenges
 ### Chemical Structure Drawing
 ```bash
 gptdeploy create --description "Convert a chemical formula into a 2D chemical structure diagram" --test "C6H6"
+```
+### Color Palette Generator
+```bash
+gptdeploy create --description "creates aesthetically pleasing color palettes based on a seed color, using color theory principles like complementary or analogous colors" --test "red"
+```
+
+### Depth Map Generator
+```bash
+gptdeploy create --description "Generate a depth map from a 3d Object" --test "https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj"
 ```
 
 ## 🔮 vision
