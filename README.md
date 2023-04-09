@@ -128,6 +128,12 @@ gptdeploy create --description "Convert text to speech" --test "Hello, welcome t
   Your browser does not support the audio element.
 </audio>
 
+### Heatmap Generator
+```bash
+gptdeploy create --description "Create a heatmap from an image and a list of relative coordinates" --test "https://images.unsplash.com/photo-1574786198875-49f5d09fe2d2, [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.2, 0.1], [0.7, 0.2], [0.4, 0.2]]"
+```
+<img src="res/heatmap_example.png" alt="Heatmap Generator" width="600" />
+
 ### QR Code Generator
 ```bash
 gptdeploy create --description "Generate QR code from URL" --test "https://www.example.com"
@@ -230,10 +236,8 @@ gptdeploy create --description "Extract a thumbnail from a video" --test "http:/
 gptdeploy create --description "Create a gif from a list of images" --test "https://images.unsplash.com/photo-1564725075388-cc8338732289, https://images.unsplash.com/photo-1584555684040-bad07f46a21f, https://images.unsplash.com/photo-1584555613497-9ecf9dd06f68"
 ```
 
-### Heatmap Generator
-```bash
-gptdeploy create --description "Create a heatmap from an image and a list of relative coordinates" --test "https://images.unsplash.com/photo-1574786198875-49f5d09fe2d2, [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.2, 0.1], [0.7, 0.2], [0.4, 0.2]]"
-```
+
+
 
 ## Open Challenges
 ### Chemical Structure Drawing
@@ -271,7 +275,8 @@ Make sure it is only printed twice in case it changed.
 - [ ] allow to update your microservice by providing feedback
 - [ ] bug: it can happen that the code generation is hanging forever - in this case aboard and redo the generation
 - [ ] feat: make playground more stylish by adding attributes like: clean design, beautiful, like it was made by a professional designer, ...
-- [ ] support for other large language models like ChatGLM]
+- [ ] support for other large language models like ChatGLM
+- [ ] for cost savings, it should be possible to insert less context during the code generation of the main functionality - no jina knowledge is required
 
 ## challenging tasks:
 - The executor takes an image as input and returns a list of bounding boxes of all animals in the image.

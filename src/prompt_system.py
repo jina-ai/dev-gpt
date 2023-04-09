@@ -16,8 +16,6 @@ class MyInfoExecutor(Executor):
     def foo(self, docs: DocumentArray, **kwargs) => DocumentArray:
         for d in docs:
             d.load_uri_to_blob()
-            d.tags['byte_length'] = len(d.blob) # tags must be a flat dictionary where keys are strings and values are strings, ints, floats, or bools
-            d.tags['radius'] = 'large'
             d.blob = None
         return docs
 ```
@@ -25,16 +23,16 @@ class MyInfoExecutor(Executor):
 An executor gets a DocumentArray as input and returns a DocumentArray as output. 
 '''
 
-docarray_example = '''
+docarray_example = f'''
 A DocumentArray is a python class that can be seen as a list of Documents.
 A Document is a python class that represents a single document.
 Here is the protobuf definition of a Document:
 
-message DocumentProto {
+message DocumentProto {{
   // A hexdigest that represents a unique document ID
   string id = 1;
 
-  oneof content {
+  oneof content {{
     // the raw binary content of this document, which often represents the original document when comes into jina
     bytes blob = 2;
 
@@ -43,7 +41,7 @@ message DocumentProto {
 
     // a text document
     string text = 4;
-  }
+  }}
 
   // a uri of the document is a remote url starts with http or https or data URI scheme
   string uri = 5;
@@ -56,11 +54,7 @@ message DocumentProto {
 
   // the embedding of this document
   NdArrayProto embedding = 8;
-
-  // a structured data value, consisting of field which map to dynamically typed values.
-  google.protobuf.Struct tags = 9;
-
-}
+}}
 
 Here is an example of how a DocumentArray can be defined:
 
@@ -77,7 +71,6 @@ d2 = Document(blob=obj_data) # blob is bytes like b'\\x89PNG\\r\\n\\x1a\\n\
 d3 = Document(tensor=numpy.array([1, 2, 3]), chunks=[Document(uri=/local/path/to/file)]
 d4 = Document(
    uri='https://docs.docarray.org/img/logo.png',
-   tags={'foo': 'bar'},
 )
 d5 = Document()
 d5.tensor = np.ones((2,4))
@@ -87,6 +80,10 @@ d6.blob # like b'RIFF\\x00\\x00\\x00\\x00WAVEfmt \\x10\\x00...'
 docs = DocumentArray([
    d1, d2, d3, d4
 ])
+d7 = Document()
+d7.text = 'test string'
+d8 = Document()
+d8.text = json.dumps([{{"id": "1", "text": ["hello", 'test']}}, {{"id": "2", "text": "world"}}])
 # the document has a helper function load_uri_to_blob:
 # For instance, d4.load_uri_to_blob() downloads the file from d4.uri and stores it in d4.blob. 
 # If d4.uri was something like 'https://website.web/img.jpg', then d4.blob would be something like  b'\\xff\\xd8\\xff\\xe0\\x00\\x10JFIF\\x00\\x01\\x01... 
@@ -103,7 +100,6 @@ from jina import Client, Document, DocumentArray
 client = Client(host='{FLOW_URL_PLACEHOLDER}')
 d = Document(uri='...')
 d.load_uri_to_blob()
-d.tags['style'] = 'abstract' # tags must be a flat dictionary where keys are strings and values are strings, ints, floats, or bools
 response = client.post('/', inputs=DocumentArray([d])) # the client must be called on '/'
 print(response[0].text)
 ```

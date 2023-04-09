@@ -299,7 +299,6 @@ def create(
 ):
     jina_auth_login()
 
-
     generated_name = generate_executor_name(description)
     executor_name = f'{generated_name}{random.randint(0, 1000_000)}'
 
@@ -308,10 +307,7 @@ def create(
     for packages in packages_list:
         try:
             create_executor(description, test, output_path, executor_name, packages)
-            # executor_name = 'MicroChainExecutor790050'
             executor_path = debug_executor(output_path, packages, description, test)
-            # print('Executor can be built locally, now we will push it to the cloud.')
-            # jina_cloud.push_executor(executor_path)
             print('Deploy a jina flow')
             host = jina_cloud.deploy_flow(executor_name, executor_path)
             print(f'Flow is deployed create the playground for {host}')

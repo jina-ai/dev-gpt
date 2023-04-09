@@ -7,7 +7,7 @@ def general_guidelines():
     return (
         "The code you write is production ready. "
         "Every file starts with comments describing what the code is doing before the first import. "
-        "Comments can only be written between tags. "
+        "Comments can only be written within code blocks. "
         "Then all imports are listed. "
         "It is important to import all modules that could be needed in the executor code. "
         "Always import: "
@@ -130,8 +130,9 @@ def not_allowed():
 The executor must not use the GPU.
 The executor must not access a database.
 The executor must not access a display.
-The executor must not access external apis except unless it is explicitly mentioned in the description. 
+The executor must not access external apis except unless it is explicitly mentioned in the description or test case (e.g. by mentioning the api that should be used or by providing a URL to access the data). 
 The executor must not load data from the local file system unless it was created by the executor itself.
-The executor is not allowed to use a pre-trained model unless it is explicitly mentioned in the description.
-The executor is not allowed to train a model.
+The executor must not use a pre-trained model unless it is explicitly mentioned in the description.
+The executor must not train a model.
+The executor must not use Document.tags.
 '''
