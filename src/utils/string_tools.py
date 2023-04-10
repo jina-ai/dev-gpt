@@ -1,5 +1,9 @@
 import difflib
+import os
+import platform
 
+if platform.system() == "Windows":
+    os.system("color")
 
 def find_between(input_string, start, end):
     try:
