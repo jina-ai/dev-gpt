@@ -7,7 +7,7 @@ def read_requirements():
 
 setup(
     name='gptdeploy',
-    version='0.18.2',
+    version='0.18.3',
     description='Use natural language interface to create, deploy and update your microservice infrastructure.',
     long_description=open('README.md', 'r', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
@@ -18,7 +18,7 @@ setup(
     install_requires=read_requirements(),
     entry_points={
         'console_scripts': [
-            'gptdeploy=gptdeploy:main',
+            'gptdeploy = src:main',
         ],
     },
 
