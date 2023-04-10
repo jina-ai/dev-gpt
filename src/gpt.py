@@ -54,9 +54,10 @@ class GPTSession:
         print('\n')
         money_prompt = round(self.chars_prompt_so_far / 3.4 * self.pricing_prompt / 1000, 2)
         money_generation = round(self.chars_generation_so_far / 3.4 * self.pricing_generation / 1000, 2)
-        print('money prompt:', f'${money_prompt}')
-        print('money generation:', f'${money_generation}')
-        print('total money:', f'${money_prompt + money_generation}')
+        print('Estimated costs on openai.com:')
+        # print('money prompt:', f'${money_prompt}')
+        # print('money generation:', f'${money_generation}')
+        print('total money so far:', f'${money_prompt + money_generation}')
         print('\n')
 
     def get_conversation(self):

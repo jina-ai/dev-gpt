@@ -80,6 +80,7 @@ def deploy_on_jcloud(flow_yaml):
 
 
 def deploy_flow(executor_name, dest_folder):
+    print('Deploy a jina flow')
     flow = f'''
 jtype: Flow
 with:
@@ -106,12 +107,9 @@ executors:
     with open(full_flow_path, 'w') as f:
         f.write(flow)
 
-    # print('try local execution')
-    # flow = Flow.load_config(full_flow_path)
-    # with flow:
-    #     pass
-    print('deploy flow on jcloud')
-    return deploy_on_jcloud(flow_yaml=full_flow_path)
+    host = deploy_on_jcloud(flow_yaml=full_flow_path)
+    print(f'Flow is deployed create the playground for {host}')
+    return host
 
 
 def replace_client_line(file_content: str, replacement: str) -> str:

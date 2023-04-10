@@ -7,7 +7,7 @@ def read_requirements():
 
 setup(
     name='gptdeploy',
-    version='0.18.9',
+    version='0.18.10',
     description='Use natural language interface to create, deploy and update your microservice infrastructure.',
     long_description=open('README.md', 'r', encoding='utf-8').read(),
     long_description_content_type='text/markdown',

@@ -136,6 +136,12 @@ gptdeploy create --description "Given a word, return a list of rhyming words usi
 ```
 <img src="res/rhyme_generator_example.png" alt="Rhyme Generator" width="600" />
 
+### Word Cloud Generator
+```bash
+gptdeploy create --description "Generate a word cloud from a given text" --test "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+```
+<img src="res/word_cloud_example.png" alt="Word Cloud Generator" width="600" />
+
 ### 3d model info
 ```bash
 gptdeploy create --description "Given a 3d object, return vertex count and face count" --test "https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj"
@@ -336,13 +342,6 @@ gptdeploy create --description "Generate QR code from URL" --test "https://www.e
 [//]: # (```)
 
 [//]: # ()
-[//]: # (### Word Cloud Generator)
-
-[//]: # (```bash)
-
-[//]: # (gptdeploy create --description "Generate a word cloud from a given text" --test "Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
-
-[//]: # (```)
 
 [//]: # ()
 [//]: # (### Mandelbrot Set Visualizer)
@@ -426,3 +425,5 @@ Make sure it is only printed twice in case it changed.
 - [ ] use gptdeploy list to show all deployments
 - [ ] gptdeploy delete to delete a deployment
 - [ ] gptdeploy update to update a deployment
+- [ ] if the user runs gptdeploy without any arguments, show the help message
+- [ ] start streamlit playground automatically after the deployment

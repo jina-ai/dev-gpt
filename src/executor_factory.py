@@ -1,16 +1,14 @@
+import os
 import random
+import re
 
 from src import gpt, jina_cloud
+from src.constants import FILE_AND_TAG_PAIRS
 from src.jina_cloud import push_executor, process_error_message
 from src.prompt_tasks import general_guidelines, executor_file_task, chain_of_thought_creation, test_executor_file_task, \
     chain_of_thought_optimization, requirements_file_task, docker_file_task, not_allowed
 from src.utils.io import recreate_folder, persist_file
 from src.utils.string_tools import print_colored
-
-import os
-import re
-
-from src.constants import FILE_AND_TAG_PAIRS
 
 
 class ExecutorFactory:
@@ -72,7 +70,6 @@ class ExecutorFactory:
     ):
         EXECUTOR_FOLDER_v1 = self.get_executor_path(output_path, package, 1)
         recreate_folder(EXECUTOR_FOLDER_v1)
-        recreate_folder('../flow')
 
         print_colored('', '############# Executor #############', 'red')
         user_query = (
@@ -107,6 +104,7 @@ class ExecutorFactory:
         persist_file(test_executor_content, os.path.join(EXECUTOR_FOLDER_v1, 'test_executor.py'))
 
         print_colored('', '############# Requirements #############', 'red')
+        requirements_path = os.path.join(EXECUTOR_FOLDER_v1, 'requirements.txt')
         user_query = (
                 general_guidelines()
                 + self.wrap_content_in_code_block(executor_content, 'executor.py', 'python')
@@ -117,17 +115,17 @@ class ExecutorFactory:
         requirements_content_raw = conversation.query(user_query)
         if is_chain_of_thought:
             requirements_content_raw = conversation.query(
-                chain_of_thought_optimization('', '../requirements.txt') + "Keep the same version of jina ")
+                chain_of_thought_optimization('', requirements_path) + "Keep the same version of jina ")
 
-        requirements_content = self.extract_content_from_result(requirements_content_raw, '../requirements.txt')
-        persist_file(requirements_content, os.path.join(EXECUTOR_FOLDER_v1, '../requirements.txt'))
+        requirements_content = self.extract_content_from_result(requirements_content_raw, 'requirements.txt')
+        persist_file(requirements_content, requirements_path)
 
         print_colored('', '############# Dockerfile #############', 'red')
         user_query = (
                 general_guidelines()
                 + self.wrap_content_in_code_block(executor_content, 'executor.py', 'python')
                 + self.wrap_content_in_code_block(test_executor_content, 'test_executor.py', 'python')
-                + self.wrap_content_in_code_block(requirements_content, '../requirements.txt', '')
+                + self.wrap_content_in_code_block(requirements_content, 'requirements.txt', '')
                 + docker_file_task()
         )
         conversation = self.gpt_session.get_conversation()
@@ -139,6 +137,7 @@ class ExecutorFactory:
         persist_file(dockerfile_content, os.path.join(EXECUTOR_FOLDER_v1, 'Dockerfile'))
 
         self.write_config_yml(executor_name, EXECUTOR_FOLDER_v1)
+        print('First version of the executor created. Start iterating on it to make the tests pass...')
 
     def create_playground(self, executor_name, executor_path, host):
         print_colored('', '############# Playground #############', 'red')
@@ -176,6 +175,7 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
         MAX_DEBUGGING_ITERATIONS = 10
         error_before = ''
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
+            print('Debugging iteration', i)
             previous_executor_path = self.get_executor_path(output_path, package, i)
             next_executor_path = self.get_executor_path(output_path, package, i + 1)
             log_hubble = push_executor(previous_executor_path)
@@ -279,31 +279,26 @@ package2,package3,...
         packages = packages[:threads]
         return packages
 
-
     def create(self, description, num_approaches, output_path, test):
         generated_name = self.generate_executor_name(description)
         executor_name = f'{generated_name}{random.randint(0, 1000_000)}'
         packages_list = self.get_possible_packages(description, num_approaches)
         recreate_folder(output_path)
-        # packages_list = [['a']]
-        # executor_name = 'ColorPaletteGeneratorExecutor5946'
-        # executor_path = '/Users/florianhonicke/jina/gptdeploy/executor/colorsys_colorharmony/v5'
-        # host = 'grpcs://gptdeploy-5f6ea44fc8.wolf.jina.ai'
         for packages in packages_list:
             try:
                 self.create_executor(description, test, output_path, executor_name, packages)
                 executor_path = self.debug_executor(output_path, packages, description, test)
-                print('Deploy a jina flow')
                 host = jina_cloud.deploy_flow(executor_name, executor_path)
-                print(f'Flow is deployed create the playground for {host}')
                 self.create_playground(executor_name, executor_path, host)
             except self.MaxDebugTimeReachedException:
                 print('Could not debug the executor.')
                 continue
-            print(
-                'Executor name:', executor_name, '\n',
-                'Executor path:', executor_path, '\n',
-                'Host:', host, '\n',
-                'Playground:', f'streamlit run {os.path.join(executor_path, "app.py")}', '\n',
-            )
+            print(f'''
+Executor name: {executor_name}
+Executor path: {executor_path}
+Host: {host}
+
+Playground: streamlit run {os.path.join(executor_path, "app.py")}
+'''
+                  )
             break
