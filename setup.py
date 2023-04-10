@@ -1,5 +1,8 @@
 from setuptools import setup, find_packages
+import sys
+from os.path import dirname, abspath
 
+sys.path.append(dirname(abspath(__file__)))
 def read_requirements():
     with open('requirements.txt', 'r', encoding='utf-8') as f:
         return [line.strip() for line in f.readlines() if not line.startswith('#')]
@@ -7,7 +10,7 @@ def read_requirements():
 
 setup(
     name='gptdeploy',
-    version='0.1.7',
+    version='0.18.1',
     description='Use natural language interface to create, deploy and update your microservice infrastructure.',
     long_description=open('README.md', 'r', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
