@@ -112,7 +112,7 @@ class _GPTConversation:
 
             except (RateLimitError, Timeout, ConnectionError, GenerationTimeoutError) as e:
                 print(e)
-                print('retrying, be aware that this affects the cost calculation')
+                print('retrying, be aware that this might affect the cost calculation')
                 sleep(3)
                 continue
             chars_prompt = sum(len(prompt[1]) for prompt in prompt_list)
