@@ -107,7 +107,13 @@ executors:
     with open(full_flow_path, 'w') as f:
         f.write(flow)
 
-    host = deploy_on_jcloud(flow_yaml=full_flow_path)
+    for i in range(3):
+        try:
+            host = deploy_on_jcloud(flow_yaml=full_flow_path)
+            break
+        except Exception as e:
+            raise e
+
     print(f'Flow is deployed create the playground for {host}')
     return host
 
