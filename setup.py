@@ -1,8 +1,5 @@
 from setuptools import setup, find_packages
-import sys
-from os.path import dirname, abspath
 
-sys.path.append(dirname(abspath(__file__)))
 def read_requirements():
     with open('requirements.txt', 'r', encoding='utf-8') as f:
         return [line.strip() for line in f.readlines() if not line.startswith('#')]
@@ -21,7 +18,7 @@ setup(
     install_requires=read_requirements(),
     entry_points={
         'console_scripts': [
-            'gptdeploy=main:main',
+            'gptdeploy=gptdeploy:main',
         ],
     },
 
