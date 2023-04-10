@@ -43,7 +43,7 @@ gptdeploy configure --key <your openai api key>
 ```
 If you set the environment variable `OPENAI_API_KEY`, the configuration step can be skipped.
 
-### run
+### Create Microservice
 ```bash
 gptdeploy create --description "Given a PDF, return it's text" --test "https://www.africau.edu/images/default/sample.pdf"
 ```
@@ -52,8 +52,18 @@ To create your personal microservice two things are required:
 - A `test` scenario that ensures the microservice works as expected.
 
 The creation process should take between 5 and 15 minutes.
-During this time, GPT iteratively builds your microservice until it finds a strategy that make you test scenario pass.
+During this time, GPT iteratively builds your microservice until it finds a strategy that make your test scenario pass.
 Once the microservice is created and deployed, you can test it using the generated Streamlit playground.
+The deployment is made on the Jina`s infrastructure. 
+When creating a Jina account, you get some free credits, which you can use to deploy your microservice ($0.025/hour).
+If you run out of credits, you can purchase more.
+
+### Delete Microservice
+To save credits you can delete your microservice via the following commands:
+```bash
+jc list # get the microservice id
+jc delete <microservice id>
+```
 
 ## Overview
 The graphic below illustrates the process of creating a microservice and deploying it to the cloud.
@@ -368,7 +378,7 @@ If you want to contribute to this project, feel free to open a PR or an issue.
 In the following, you can find a list of things that need to be done.
 
 Critical:
-- [ ] fix problem with package installation
+- [x] fix problem with key setup
 - [ ] add instruction about cleanup of deployments
 
 Nice to have:
@@ -391,3 +401,6 @@ Make sure it is only printed twice in case it changed.
 - [ ] feat: make playground more stylish by adding attributes like: clean design, beautiful, like it was made by a professional designer, ...
 - [ ] support for other large language models like ChatGLM
 - [ ] for cost savings, it should be possible to insert less context during the code generation of the main functionality - no jina knowledge is required
+- [ ] use gptdeploy list to show all deployments
+- [ ] gptdeploy delete to delete a deployment
+- [ ] gptdeploy update to update a deployment
