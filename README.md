@@ -42,6 +42,8 @@ pip install gptdeploy
 gptdeploy configure --key <your openai api key>
 ```
 If you set the environment variable `OPENAI_API_KEY`, the configuration step can be skipped.
+Your api key must have access to gpt-4 to use this tool. 
+We are working on a way to use gpt-3.5-turbo as well.
 
 ### Create Microservice
 ```bash
@@ -66,27 +68,45 @@ jc delete <microservice id>
 ```
 
 ## Overview
-The graphic below illustrates the process of creating a microservice and deploying it to the cloud.
+The graphic below illustrates the process of creating a microservice and deploying it to the cloud elaboration two different implementation strategies.
+
 ```mermaid
+
 graph TB
-    AA[Task: Generate QR code from URL] --> B{think a}
-    AB[Test: https://www.example.com] --> B{think a}
-    B -->|Identify Strategie 1| C[Strategy 1]
-    B -->|Identify Strategie 2| D[Strategy 2]
-    B -->|Identify Strategie N| E[Strategy N]
-    C --> F[executor.py, test_executor.py, requirements.txt, Dockerfile]
-    D --> G[executor.py, test_executor.py, requirements.txt, Dockerfile]
-    E --> H[executor.py, test_executor.py, requirements.txt, Dockerfile]
-    F --> I{Build Image}
-    G --> I
-    H --> I
-    I -->|Fail| J[Apply Fix and Retry]
-    J --> I
-    I -->|Success| K[Push Docker Image to Registry]
-    K --> L[Deploy Microservice]
-    L --> M[Create Streamlit Playground]
-    M --> N[User Tests Microservice]
+
+    description[description: generate QR code from URL] --> make_strat{think a}
+
+    test[test: https://www.example.com] --> make_strat[generate strategies]
+
+    make_strat --> implement1[implement strategy 1]
+
+    implement1 --> build1{build image}
+
+    build1 -->|error message| implement1
+
+    build1 -->|failed 10 times| implement2[implement strategy 2]
+
+    build1 -->|success| registry[push docker image to registry]
+
+    implement2 --> build2{build image}
+
+    build2 -->|error message| implement2
+
+    build2 -->|failed 10 times| all_failed[all strategies failed]
+
+    build2 -->|success| registry[push docker image to registry]
+
+    registry --> deploy[deploy microservice]
+
+    deploy --> streamlit[create streamlit playground]
+
+    streamlit --> user_run[user tests microservice]
+
 ```
+
+
+
+
 1. GPT Deploy identifies several strategies to implement your task.
 2. It tests each strategy until it finds one that works.
 3. For each strategy, it creates the following files:
@@ -378,8 +398,10 @@ If you want to contribute to this project, feel free to open a PR or an issue.
 In the following, you can find a list of things that need to be done.
 
 Critical:
-- [x] fix problem with key setup
-- [ ] add instruction about cleanup of deployments
+- [ ] check if windows and linux support works
+- [ ] support gpt3.5-turbo
+
+
 
 Nice to have:
 - [ ] hide prompts in normal mode and show them in verbose mode
