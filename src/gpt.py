@@ -32,13 +32,18 @@ class GPTSession:
 
     def is_gpt4_available(self):
         try:
-            openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=[{
-                    "role": 'system',
-                    "content": 'test'
-                }]
-            )
+            for i in range(5):
+                try:
+                    openai.ChatCompletion.create(
+                        model="gpt-4",
+                        messages=[{
+                            "role": 'system',
+                            "content": 'test'
+                        }]
+                    )
+                except RateLimitError:
+                    sleep(1)
+                    continue
             return True
         except openai.error.InvalidRequestError:
             return False
