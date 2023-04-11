@@ -11,15 +11,19 @@ from src.prompt_system import system_base_definition
 from src.utils.io import timeout_generator_wrapper, GenerationTimeoutError
 from src.utils.string_tools import print_colored
 
+
 class GPTSession:
-    def __init__(self):
+    def __init__(self, model: str = 'gpt-4'):
         self.get_openai_api_key()
-        if self.is_gpt4_available():
+        if model == 'gpt-4' and self.is_gpt4_available():
             self.supported_model = 'gpt-4'
             self.pricing_prompt = PRICING_GPT4_PROMPT
             self.pricing_generation = PRICING_GPT4_GENERATION
-        else:
-            self.supported_model = 'gpt-3.5-turbo'
+        elif (model == 'gpt-4' and not self.is_gpt4_available()) or model == 'gpt-3.5-turbo':
+            if model == 'gpt-4':
+                print_colored('GPT-4 is not available. Using GPT-3.5-turbo instead.', 'yellow')
+                model = 'gpt-3.5-turbo'
+            self.supported_model = model
             self.pricing_prompt = PRICING_GPT3_5_TURBO_PROMPT
             self.pricing_generation = PRICING_GPT3_5_TURBO_GENERATION
         self.chars_prompt_so_far = 0
@@ -52,8 +56,8 @@ class GPTSession:
         self.chars_prompt_so_far += chars_prompt
         self.chars_generation_so_far += chars_generation
         print('\n')
-        money_prompt = round(self.chars_prompt_so_far / 3.4 * self.pricing_prompt / 1000, 2)
-        money_generation = round(self.chars_generation_so_far / 3.4 * self.pricing_generation / 1000, 2)
+        money_prompt = round(self.chars_prompt_so_far / 3.4 * self.pricing_prompt / 1000, 3)
+        money_generation = round(self.chars_generation_so_far / 3.4 * self.pricing_generation / 1000, 3)
         print('Estimated costs on openai.com:')
         # print('money prompt:', f'${money_prompt}')
         # print('money generation:', f'${money_generation}')

@@ -16,13 +16,15 @@ def main():
 @click.option('--num_approaches', default=3, type=int,
               help='Number of num_approaches to use to fulfill the task (default: 3).')
 @click.option('--output_path', default='executor', help='Path to the output folder (must be empty). ')
+@click.option('--model', default='gpt-4', help='GPT model to use (default: gpt-4).')
 def create(
         description,
         test,
         num_approaches=3,
         output_path='executor',
+        model='gpt-4'
 ):
-    executor_factory = ExecutorFactory()
+    executor_factory = ExecutorFactory(model=model)
     executor_factory.create(description, num_approaches, output_path, test)
 
 

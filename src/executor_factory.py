@@ -12,8 +12,8 @@ from src.utils.string_tools import print_colored
 
 
 class ExecutorFactory:
-    def __init__(self):
-        self.gpt_session = gpt.GPTSession()
+    def __init__(self, model='gpt-4'):
+        self.gpt_session = gpt.GPTSession(model=model)
 
     def extract_content_from_result(self, plain_text, file_name):
         pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?)```"
@@ -21,7 +21,13 @@ class ExecutorFactory:
         if match:
             return match.group(1).strip()
         else:
-            return ''
+            # Check for a single code block
+            single_code_block_pattern = r"^```(?:\w+\n)?([\s\S]*?)```"
+            single_code_block_match = re.findall(single_code_block_pattern, plain_text, re.MULTILINE)
+            if len(single_code_block_match) == 1:
+                return single_code_block_match[0].strip()
+            else:
+                return ''
 
     def write_config_yml(self, executor_name, dest_folder):
         config_content = f'''
