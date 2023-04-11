@@ -427,3 +427,7 @@ Make sure it is only printed twice in case it changed.
 - [ ] gptdeploy update to update a deployment
 - [ ] if the user runs gptdeploy without any arguments, show the help message
 - [ ] start streamlit playground automatically after the deployment
+- [ ] test param optional
+- [ ] rest endpoint instead of grpc since it is more popular
+- [ ] section for microservices built by the community
+- [ ] selenium test for playground
