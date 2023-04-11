@@ -38,9 +38,10 @@ class GPTSession:
                         model="gpt-4",
                         messages=[{
                             "role": 'system',
-                            "content": 'test'
+                            "content": 'you respond nothing'
                         }]
                     )
+                    break
                 except RateLimitError:
                     sleep(1)
                     continue

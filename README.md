@@ -352,6 +352,14 @@ gptdeploy create --description "Generate QR code from URL" --test "https://www.e
 
 [//]: # (```)
 
+[//]: # (### Sound Visualizer)
+
+[//]: # ()
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Visualize a sound file and output the visualization as video combined with the sound" --test "some/mp3/file.mp3")
+
+[//]: # (```)
 
 [//]: # (## Upcoming Challenges)
 
@@ -399,35 +407,36 @@ In the following, you can find a list of things that need to be done.
 Critical:
 - [ ] check if windows and linux support works
 - [ ] support gpt3.5-turbo
+- [ ] add video to README.md
+- [ ] bug: it can happen that the code generation is hanging forever - in this case aboard and redo the generation
 
 
 
 Nice to have:
+- [ ] if the user runs gptdeploy without any arguments, show the help message
+- [ ] don't show this message: 
+🔐 You are logged in to Jina AI as florian.hoenicke (username:auth0-unified-448f11965ce142b6). 
+To log out, use jina auth logout.
+- [ ] rest endpoint instead of grpc since it is more popular
+- [ ] put the playground into the custom gateway (without rebuilding the custom gateway)
 - [ ] hide prompts in normal mode and show them in verbose mode
 - [ ] tests
 - [ ] clean up duplicate code
 - [ ] support popular cloud providers - lambda, cloud run, cloud functions, ...
 - [ ] support local docker builds
 - [ ] autoscaling enabled for cost saving
-- [ ] don't show this message: 
-🔐 You are logged in to Jina AI as florian.hoenicke (username:auth0-unified-448f11965ce142b6). 
-To log out, use jina auth logout.
 - [ ] add more examples to README.md
 - [ ] support multiple endpoints - example: todolist microservice with endpoints for adding, deleting, and listing todos
 - [ ] support stateful microservices
 - [ ] The playground is currently printed twice even if it did not change. 
 Make sure it is only printed twice in case it changed.
 - [ ] allow to update your microservice by providing feedback
-- [ ] bug: it can happen that the code generation is hanging forever - in this case aboard and redo the generation
-- [ ] feat: make playground more stylish by adding attributes like: clean design, beautiful, like it was made by a professional designer, ...
-- [ ] support for other large language models like ChatGLM
+- [ ] support for other large language models like Open Assistent
 - [ ] for cost savings, it should be possible to insert less context during the code generation of the main functionality - no jina knowledge is required
 - [ ] use gptdeploy list to show all deployments
 - [ ] gptdeploy delete to delete a deployment
 - [ ] gptdeploy update to update a deployment
-- [ ] if the user runs gptdeploy without any arguments, show the help message
-- [ ] start streamlit playground automatically after the deployment
-- [ ] test param optional
-- [ ] rest endpoint instead of grpc since it is more popular
+- [ ] test param optional - but how would you test the pdf extractor without a pdf?
 - [ ] section for microservices built by the community
-- [ ] selenium test for playground
+- [ ] test feedback for playground generation (could be part of the debugging)
+- [ ] should we send everything via json in the text attribute for simplicity?
