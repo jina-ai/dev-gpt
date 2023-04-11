@@ -10,6 +10,8 @@ import hubble
 from hubble.executor.helper import upload_file, archive_package, get_request_header
 from jcloud.flow import CloudFlow
 
+from src.utils.io import suppress_stdout
+
 
 def redirect_callback(href):
     print(
@@ -41,7 +43,9 @@ def push_executor(dir_path):
         'verbose': 'True',
         'md5sum': md5_digest,
     }
-    req_header = get_request_header()
+    with suppress_stdout():
+        req_header = get_request_header()
+
     resp = upload_file(
         'https://api.hubble.jina.ai/v2/rpc/executor.push',
         'filename',

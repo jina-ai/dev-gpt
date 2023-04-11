@@ -135,4 +135,5 @@ The executor must not load data from the local file system unless it was created
 The executor must not use a pre-trained model unless it is explicitly mentioned in the description.
 The executor must not train a model.
 The executor must not use Document.tags.
+The executor must only use Document.uri, Document.blob and Document.text.
 '''

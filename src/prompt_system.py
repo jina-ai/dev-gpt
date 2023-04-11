@@ -66,7 +66,7 @@ d1 = Document(text='hello')
 url = 'https://...'
 response = requests.get(url)
 obj_data = response.content
-d2 = Document(blob=obj_data) # blob is bytes like b'\\x89PNG\\r\\n\\x1a\\n\
+d2 = Document(blob=obj_data) # blob is bytes like b'\\x89PNG\\r\\n\\x1a\\n...'
 
 d3 = Document(tensor=numpy.array([1, 2, 3]), chunks=[Document(uri=/local/path/to/file)]
 d4 = Document(

@@ -183,6 +183,13 @@ gptdeploy create --description "Generate QR code from URL" --test "https://www.e
 ```
 <img src="res/qr_example.png" alt="QR Code Generator" width="600" />
 
+### Mandelbrot Set Visualizer
+
+```bash
+gptdeploy create --description "Visualize the Mandelbrot set with custom parameters" --test "center=-0+1i, zoom=1.0, size=800x800, iterations=1000"
+```
+<img src="res/mandelbrot_example.png" alt="Mandelbrot Set Visualizer" width="600" />
+
 
 [//]: # (## TO BE TESTED)
 
@@ -344,13 +351,6 @@ gptdeploy create --description "Generate QR code from URL" --test "https://www.e
 [//]: # ()
 
 [//]: # ()
-[//]: # (### Mandelbrot Set Visualizer)
-
-[//]: # (```bash)
-
-[//]: # (gptdeploy create --description "Visualize the Mandelbrot set with custom parameters" --test "center=-0.5+0i, zoom=1.0, size=800x800, iterations=1000")
-
-[//]: # (```)
 
 [//]: # (### Sound Visualizer)
 
@@ -440,3 +440,6 @@ Make sure it is only printed twice in case it changed.
 - [ ] section for microservices built by the community
 - [ ] test feedback for playground generation (could be part of the debugging)
 - [ ] should we send everything via json in the text attribute for simplicity?
+
+Proposal:
+- [ ] just generate the non-jina related code and insert it into an executor template
