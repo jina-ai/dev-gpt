@@ -19,6 +19,7 @@ class GPTSession:
             self.pricing_prompt = PRICING_GPT4_PROMPT
             self.pricing_generation = PRICING_GPT4_GENERATION
         else:
+            raise Exception('The OPENAI_API_KEY does not have access to GPT-4. We are working on 3.5-turbo - support')
             self.supported_model = 'gpt-3.5-turbo'
             self.pricing_prompt = PRICING_GPT3_5_TURBO_PROMPT
             self.pricing_generation = PRICING_GPT3_5_TURBO_GENERATION
