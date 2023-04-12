@@ -28,7 +28,11 @@ class GPTSession:
 
     def get_openai_api_key(self):
         if 'OPENAI_API_KEY' not in os.environ:
-            raise Exception('You need to set OPENAI_API_KEY in your environment')
+            raise Exception('''
+You need to set OPENAI_API_KEY in your environment.
+If you have updated it already, please restart your terminal.
+'''
+)
         openai.api_key = os.environ['OPENAI_API_KEY']
 
     def is_gpt4_available(self):
