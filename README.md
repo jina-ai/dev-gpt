@@ -67,58 +67,10 @@ jc list # get the microservice id
 jc delete <microservice id>
 ```
 
-## Overview
-The graphic below illustrates the process of creating a microservice and deploying it to the cloud elaboration two different implementation strategies.
-
-```mermaid
-
-graph TB
-
-    description[description: generate QR code from URL] --> make_strat{think a}
-
-    test[test: https://www.example.com] --> make_strat[generate strategies]
-
-    make_strat --> implement1[implement strategy 1]
-
-    implement1 --> build1{build image}
-
-    build1 -->|error message| implement1
-
-    build1 -->|failed 10 times| implement2[implement strategy 2]
-
-    build1 -->|success| registry[push docker image to registry]
-
-    implement2 --> build2{build image}
-
-    build2 -->|error message| implement2
-
-    build2 -->|failed 10 times| all_failed[all strategies failed]
-
-    build2 -->|success| registry[push docker image to registry]
-
-    registry --> deploy[deploy microservice]
-
-    deploy --> streamlit[create streamlit playground]
-
-    streamlit --> user_run[user tests microservice]
-
-```
-
-1. GPT Deploy identifies several strategies to implement your task.
-2. It tests each strategy until it finds one that works.
-3. For each strategy, it creates the following files:
-- executor.py: This is the main implementation of the microservice.
-- test_executor.py: These are test cases to ensure the microservice works as expected.
-- requirements.txt: This file lists the packages needed by the microservice and its tests.
-- Dockerfile: This file is used to run the microservice in a container and also runs the tests when building the image.
-4. GPT Deploy attempts to build the image. If the build fails, it uses the error message to apply a fix and tries again to build the image.
-5. Once it finds a successful strategy, it:
-- Pushes the Docker image to the registry.
-- Deploys the microservice.
-- Creates a Streamlit playground where you can test the microservice.
-6. If it fails 10 times in a row, it moves on to the next approach.
 
 ## Examples
+
+<img src="res/teaser.png" alt="QR Code Generator" width="600" />
 
 ### Animal Detector
 ```bash
@@ -397,6 +349,58 @@ gptdeploy create --description "Visualize the Mandelbrot set with custom paramet
 [//]: # (gptdeploy create --description "Convert image to ASCII art" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff")
 
 [//]: # (```)
+
+## Technical Insights
+The graphic below illustrates the process of creating a microservice and deploying it to the cloud elaboration two different implementation strategies.
+
+```mermaid
+
+graph TB
+
+    description[description: generate QR code from URL] --> make_strat{think a}
+
+    test[test: https://www.example.com] --> make_strat[generate strategies]
+
+    make_strat --> implement1[implement strategy 1]
+
+    implement1 --> build1{build image}
+
+    build1 -->|error message| implement1
+
+    build1 -->|failed 10 times| implement2[implement strategy 2]
+
+    build1 -->|success| registry[push docker image to registry]
+
+    implement2 --> build2{build image}
+
+    build2 -->|error message| implement2
+
+    build2 -->|failed 10 times| all_failed[all strategies failed]
+
+    build2 -->|success| registry[push docker image to registry]
+
+    registry --> deploy[deploy microservice]
+
+    deploy --> streamlit[create streamlit playground]
+
+    streamlit --> user_run[user tests microservice]
+
+```
+
+1. GPT Deploy identifies several strategies to implement your task.
+2. It tests each strategy until it finds one that works.
+3. For each strategy, it creates the following files:
+- executor.py: This is the main implementation of the microservice.
+- test_executor.py: These are test cases to ensure the microservice works as expected.
+- requirements.txt: This file lists the packages needed by the microservice and its tests.
+- Dockerfile: This file is used to run the microservice in a container and also runs the tests when building the image.
+4. GPT Deploy attempts to build the image. If the build fails, it uses the error message to apply a fix and tries again to build the image.
+5. Once it finds a successful strategy, it:
+- Pushes the Docker image to the registry.
+- Deploys the microservice.
+- Creates a Streamlit playground where you can test the microservice.
+6. If it fails 10 times in a row, it moves on to the next approach.
+
 
 ## 🔮 vision
 Use natural language interface to create, deploy and update your microservice infrastructure.
