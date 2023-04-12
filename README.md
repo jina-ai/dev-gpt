@@ -193,19 +193,12 @@ gptdeploy create --description "Visualize the Mandelbrot set with custom paramet
 
 [//]: # (## TO BE TESTED)
 
-[//]: # (### ASCII Art Generator)
-
-[//]: # (```bash)
-
-[//]: # (gptdeploy create --description "Convert image to ASCII art" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff")
-
-[//]: # (```)
 
 [//]: # (### Password Strength Checker)
 
 [//]: # (```bash)
 
-[//]: # (gptdeploy create --description "Given a password, return a score from 1 to 10 indicating the strength of the password" --test "Pa$$w0rd")
+[//]: # (gptdeploy create --description "Given a password, return a score from 1 to 10 indicating the strength of the password" --test "Pa$$w0rd => 1/5, !Akfdh%.ytRadf => 5/5")
 
 [//]: # (```)
 
@@ -397,6 +390,15 @@ gptdeploy create --description "Visualize the Mandelbrot set with custom paramet
 
 [//]: # (```)
 
+
+[//]: # (### ASCII Art Generator)
+
+[//]: # (```bash)
+
+[//]: # (gptdeploy create --description "Convert image to ASCII art" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff")
+
+[//]: # (```)
+
 ## 🔮 vision
 Use natural language interface to create, deploy and update your microservice infrastructure.
 
@@ -404,7 +406,7 @@ Use natural language interface to create, deploy and update your microservice in
 If you want to contribute to this project, feel free to open a PR or an issue.
 In the following, you can find a list of things that need to be done.
 
-Critical:
+next steps:
 - [ ] check if windows and linux support works
 - [ ] support gpt3.5-turbo
 - [ ] add video to README.md
