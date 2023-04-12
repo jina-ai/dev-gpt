@@ -17,9 +17,13 @@ def general_guidelines():
     )
 
 
-def _task(task, tag_name, file_name):
+def _task(task, tag_name, file_name, function_name=None):
+    into_string = file_name
+    if function_name:
+        into_string += f"/{function_name}"
+
     return (
-            task + f"The code will go into {file_name}. Wrap the code into:\n"
+            task + f"The code will go into {into_string}. Make sure to wrap the code into ``` marks even if you only output code:\n"
                    f"**{file_name}**\n"
                    f"```{tag_name}\n"
                    f"...code...\n"
@@ -112,17 +116,21 @@ def chain_of_thought_creation():
     )
 
 
-def chain_of_thought_optimization(tag_name, file_name):
+def chain_of_thought_optimization(tag_name, file_name, file_name_function=None):
+    file_name_or_function = file_name
+    if file_name_function:
+        file_name_or_function += f"/{file_name_function}"
     return _task(
-        f'First, write down an extensive list of obvious and non-obvious observations about {file_name} that could need an adjustment. Explain why. '
+        f'First, write down an extensive list of obvious and non-obvious observations about {file_name_or_function} that could need an adjustment. Explain why. '
         f"Think if all the changes are required and finally decide for the changes you want to make, "
         f"but you are not allowed disregard the instructions in the previous message. "
         f"Be very hesitant to change the code. Only make a change if you are sure that it is necessary. "
 
-        f"Output only {file_name} "
-        f"Write the whole content of {file_name} - even if you decided to change only a small thing or even nothing. ",
+        f"Output only {file_name_or_function} "
+        f"Write the whole content of {file_name_or_function} - even if you decided to change only a small thing or even nothing. ",
         tag_name,
-        file_name
+        file_name,
+        file_name_function
     )
 
 def not_allowed():

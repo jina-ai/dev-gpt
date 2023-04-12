@@ -1,7 +1,6 @@
 from src.constants import FLOW_URL_PLACEHOLDER
 
-executor_example = '''
-Using the Jina framework, users can define executors. 
+executor_example = '''Using the Jina framework, users can define executors. 
 Here is an example of how an executor can be defined. It always starts with a comment:
 
 **executor.py**
@@ -20,11 +19,9 @@ class MyInfoExecutor(Executor):
         return docs
 ```
 
-An executor gets a DocumentArray as input and returns a DocumentArray as output. 
-'''
+An executor gets a DocumentArray as input and returns a DocumentArray as output.'''
 
-docarray_example = f'''
-A DocumentArray is a python class that can be seen as a list of Documents.
+docarray_example = f'''A DocumentArray is a python class that can be seen as a list of Documents.
 A Document is a python class that represents a single document.
 Here is the protobuf definition of a Document:
 
@@ -86,12 +83,10 @@ d8 = Document()
 d8.text = json.dumps([{{"id": "1", "text": ["hello", 'test']}}, {{"id": "2", "text": "world"}}])
 # the document has a helper function load_uri_to_blob:
 # For instance, d4.load_uri_to_blob() downloads the file from d4.uri and stores it in d4.blob. 
-# If d4.uri was something like 'https://website.web/img.jpg', then d4.blob would be something like  b'\\xff\\xd8\\xff\\xe0\\x00\\x10JFIF\\x00\\x01\\x01... 
-'''
+# If d4.uri was something like 'https://website.web/img.jpg', then d4.blob would be something like  b'\\xff\\xd8\\xff\\xe0\\x00\\x10JFIF\\x00\\x01\\x01... '''
 
 
-client_example = f'''
-After the executor is deployed, it can be called via Jina Client.
+client_example = f'''After the executor is deployed, it can be called via Jina Client.
 Here is an example of a client file:
 
 **client.py**
@@ -102,13 +97,7 @@ d = Document(uri='...')
 d.load_uri_to_blob()
 response = client.post('/', inputs=DocumentArray([d])) # the client must be called on '/'
 print(response[0].text)
-```
-'''
+```'''
 
 
-system_base_definition = f'''
-You are a principal engineer working at Jina - an open source company."  
-{executor_example}
-{docarray_example}
-{client_example}
-'''
+system_base_definition = f'''You are a principal engineer working at Jina - an open source company.'''

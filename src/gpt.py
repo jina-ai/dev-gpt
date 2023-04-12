@@ -7,7 +7,7 @@ from openai.error import RateLimitError, Timeout
 
 from src.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
     PRICING_GPT3_5_TURBO_GENERATION
-from src.prompt_system import system_base_definition
+from src.prompt_system import system_base_definition, executor_example, docarray_example, client_example
 from src.utils.io import timeout_generator_wrapper, GenerationTimeoutError
 from src.utils.string_tools import print_colored
 
@@ -64,18 +64,25 @@ class GPTSession:
         print('total money so far:', f'${money_prompt + money_generation}')
         print('\n')
 
-    def get_conversation(self):
-        return _GPTConversation(self.supported_model, self.cost_callback)
+    def get_conversation(self, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
+        return _GPTConversation(self.supported_model, self.cost_callback, system_definition_examples)
 
 
 class _GPTConversation:
-    def __init__(self, model: str, cost_callback, prompt_list: List[Tuple[str, str]] = None):
+    def __init__(self, model: str, cost_callback, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
         self.model = model
-        if prompt_list is None:
-            prompt_list = [('system', system_base_definition)]
+        system_message = system_base_definition
+        if 'executor' in system_definition_examples:
+            system_message += f'\n{executor_example}'
+        if 'docarray' in system_definition_examples:
+            system_message += f'{docarray_example}'
+        if 'client' in system_definition_examples:
+            system_message += f'{client_example}'
+
+        prompt_list = [('system', system_message)]
         self.prompt_list = prompt_list
         self.cost_callback = cost_callback
-        print_colored('system', system_base_definition, 'magenta')
+        print_colored('system', system_message, 'magenta')
 
     def query(self, prompt: str):
         print_colored('user', prompt, 'blue')
@@ -100,7 +107,7 @@ class _GPTConversation:
             try:
                 response_generator = openai.ChatCompletion.create(
                     temperature=0,
-                    max_tokens=2_000,
+                    max_tokens=2_000 if self.model == 'gpt-4' else None,
                     model=self.model,
                     stream=True,
                     messages=[

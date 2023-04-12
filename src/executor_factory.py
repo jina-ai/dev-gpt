@@ -166,10 +166,9 @@ response = client.post('/', inputs=DocumentArray([d])) # always use '/'
 print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
 '''
         )
-        conversation = self.gpt_session.get_conversation()
+        conversation = self.gpt_session.get_conversation([])
         conversation.query(user_query)
-        playground_content_raw = conversation.query(
-            f"General rules: " + not_allowed() + chain_of_thought_optimization('python', 'app.py'))
+        playground_content_raw = conversation.query(chain_of_thought_optimization('python', 'app.py', 'the playground'))
         playground_content = self.extract_content_from_result(playground_content_raw, 'app.py')
         persist_file(playground_content, os.path.join(executor_path, 'app.py'))
 
