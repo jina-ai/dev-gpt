@@ -196,7 +196,8 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
                             + error_before) if error_before else '')
                         + '\n\nNow, I get the following error:\n'
                         + error + '\n'
-                        + 'Think quickly about possible reasons. '
+                        + 'Think quickly about possible reasons the error might caused by. '
+                          'Decide which files need to be changed. '
                           'Then output the files that need change. '
                           "Don't output files that don't need change. "
                           "If you output a file, then write the complete file. "
