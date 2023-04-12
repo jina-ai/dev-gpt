@@ -1,3 +1,6 @@
 /executor_level2/
 
 .env
+config.yml
+executor
+data
