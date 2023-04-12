@@ -176,6 +176,7 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
         error_before = ''
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
+            print('Trying to build the microservice. Might take a while...')
             previous_executor_path = self.get_executor_path(output_path, package, i)
             next_executor_path = self.get_executor_path(output_path, package, i + 1)
             log_hubble = push_executor(previous_executor_path)

@@ -36,6 +36,9 @@ Simply describe your task using natural language, and the system will automatica
 To ensure the microservice accurately aligns with your intended task a test scenario is required.
 
 ## Quickstart
+### Requirements
+- Create an account at [cloud.jina.ai](https://cloud.jina.ai) where your microservice will be deployed
+
 ### Installation
 ```bash
 pip install gptdeploy
@@ -414,10 +417,11 @@ next steps:
 - [ ] support gpt3.5-turbo
 - [ ] add video to README.md
 - [ ] bug: it can happen that the code generation is hanging forever - in this case aboard and redo the generation
-
+- [ ] new user has free credits but should be told to verify account
 
 
 Nice to have:
+- [ ] smooth rendering animation of  the responses
 - [ ] if the user runs gptdeploy without any arguments, show the help message
 - [ ] don't show this message: 
 🔐 You are logged in to Jina AI as florian.hoenicke (username:auth0-unified-448f11965ce142b6). 
@@ -451,4 +455,3 @@ Make sure it is only printed twice in case it changed.
 Proposal:
 - [ ] just generate the non-jina related code and insert it into an executor template
 - [ ] think about strategies after the first approach failed?
-- [ ] smooth rendering animation of  the responses
