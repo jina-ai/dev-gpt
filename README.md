@@ -47,7 +47,7 @@ We are working on a way to use gpt-3.5-turbo as well.
 
 ### Create Microservice
 ```bash
-gptdeploy create --description "Given a PDF, return it's text" --test "https://www.africau.edu/images/default/sample.pdf"
+gptdeploy create --description "Given a PDF, return its text" --test "https://www.africau.edu/images/default/sample.pdf"
 ```
 To create your personal microservice two things are required:
 - A `description` of the task you want to accomplish.
@@ -445,6 +445,10 @@ Make sure it is only printed twice in case it changed.
 - [ ] section for microservices built by the community
 - [ ] test feedback for playground generation (could be part of the debugging)
 - [ ] should we send everything via json in the text attribute for simplicity?
+- [ ] fix release workflow
+- 
 
 Proposal:
 - [ ] just generate the non-jina related code and insert it into an executor template
+- [ ] think about strategies after the first approach failed?
+- [ ] smooth rendering animation of  the responses

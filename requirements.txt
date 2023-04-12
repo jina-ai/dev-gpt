@@ -1,6 +1,7 @@
-click==8.1.3
-streamlit==1.21.0
-openai==0.27.4
-psutil==5.9.4
-jcloud==0.2.6
-jina-hubble-sdk==0.35.0
+click
+streamlit
+openai
+psutil
+jina
+jcloud
+jina-hubble-sdk

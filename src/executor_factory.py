@@ -292,14 +292,15 @@ package2,package3,...
                 host = jina_cloud.deploy_flow(executor_name, executor_path)
                 self.create_playground(executor_name, executor_path, host)
             except self.MaxDebugTimeReachedException:
-                print('Could not debug the executor.')
+                print('Could not debug the Executor.')
                 continue
             print(f'''
 Executor name: {executor_name}
 Executor path: {executor_path}
 Host: {host}
 
-Playground: streamlit run {os.path.join(executor_path, "app.py")}
+Run the following command to start the playground:
+streamlit run {os.path.join(executor_path, "app.py")}
 '''
                   )
             break

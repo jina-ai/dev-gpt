@@ -9,7 +9,7 @@ def general_guidelines():
         "Every file starts with comments describing what the code is doing before the first import. "
         "Comments can only be written within code blocks. "
         "Then all imports are listed. "
-        "It is important to import all modules that could be needed in the executor code. "
+        "It is important to import all modules that could be needed in the Executor code. "
         "Always import: "
         "from jina import Executor, DocumentArray, Document, requests "
         "Start from top-level and then fully implement all methods. "

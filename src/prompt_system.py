@@ -13,7 +13,7 @@ class MyInfoExecutor(Executor):
     def __init__(self, **kwargs):
         super().__init__()
 
-    @requests() # each executor must have exactly this decorator without parameters
+    @requests() # each Executor must have exactly this decorator without parameters
     def foo(self, docs: DocumentArray, **kwargs) => DocumentArray:
         for d in docs:
             content = json.loads(d.text)
@@ -22,7 +22,7 @@ class MyInfoExecutor(Executor):
         return docs
 ```
 
-An executor gets a DocumentArray as input and returns a DocumentArray as output. 
+An Executor gets a DocumentArray as input and returns a DocumentArray as output. 
 '''
 
 docarray_example = f'''

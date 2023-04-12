@@ -89,7 +89,7 @@ class _GPTConversation:
             delta = chunk['choices'][0]['delta']
             if 'content' in delta:
                 content = delta['content']
-                print_colored('' if complete_string else 'assistent', content, 'green', end='')
+                print_colored('' if complete_string else 'assistant', content, 'green', end='')
                 complete_string += content
         return complete_string
 
