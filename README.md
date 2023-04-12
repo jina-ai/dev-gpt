@@ -104,9 +104,6 @@ graph TB
 
 ```
 
-
-
-
 1. GPT Deploy identifies several strategies to implement your task.
 2. It tests each strategy until it finds one that works.
 3. For each strategy, it creates the following files:
@@ -122,6 +119,14 @@ graph TB
 6. If it fails 10 times in a row, it moves on to the next approach.
 
 ## Examples
+
+### Animal Detector
+```bash
+
+gptdeploy create --description "Given an image, return the image with bounding boxes of all animals (https://pjreddie.com/media/files/yolov3.weights, https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg)" --test "https://images.unsplash.com/photo-1444212477490-ca407925329e contains animals"
+```
+
+<img src="res/animal_detector_example.png" alt="Animal Detector" width="600" />
 
 ### Meme Generator
 ```bash
@@ -382,13 +387,7 @@ gptdeploy create --description "Visualize the Mandelbrot set with custom paramet
 [//]: # (```)
 
 [//]: # ()
-[//]: # (### Bounding Box)
 
-[//]: # (```bash)
-
-[//]: # (gptdeploy create --description "Given an image, return the bounding boxes of all animals" --test "...")
-
-[//]: # (```)
 
 
 [//]: # (### ASCII Art Generator)
