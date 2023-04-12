@@ -61,6 +61,7 @@ During this time, GPT iteratively builds your microservice until it finds a stra
 Once the microservice is created and deployed, you can test it using the generated Streamlit playground.
 The deployment is made on the Jina`s infrastructure. 
 When creating a Jina account, you get some free credits, which you can use to deploy your microservice ($0.025/hour).
+Be aware that the costs you have to pay for openai vary between $0.50 and $3.00 per microservice.
 If you run out of credits, you can purchase more.
 
 ### Delete Microservice
