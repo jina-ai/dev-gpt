@@ -28,11 +28,8 @@ Your imagination is the limit!
     <img src="https://img.shields.io/badge/platform-mac%20%7C%20linux%20%7C%20windows-blue" alt="Supported platforms">
 </a>
 
-<div align="center">
-  <a href="https://www.youtube.com/watch?v=9IikFPLHiUg" target="_blank">
-    <img src="res/thumbnail.png" alt="Watch the video">
-  </a>
-</div>
+
+[![Watch the video](res/thumbnail.png)](https://user-images.githubusercontent.com/11627845/231530421-272a66aa-4260-4e17-ab7a-ba66adca754c.mp4)
 
 </p>
 This project streamlines the creation and deployment of microservices. 
