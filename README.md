@@ -27,6 +27,9 @@ Your imagination is the limit!
 <a href="https://github.com/tiangolo/gptdeploy/actions?query=workflow%3ATest+event%3Apush+branch%3Amaster" target="_blank">
     <img src="https://img.shields.io/badge/platform-mac%20%7C%20linux%20%7C%20windows-blue" alt="Supported platforms">
 </a>
+<a href="https://discord.gg/ESn8ED6Fyn" target="_blank">
+    <img src="https://img.shields.io/badge/chat_on-Discord-7289DA?logo=discord&logoColor=white" alt="Discord Chat">
+</a>
 
 [![Watch the video](res/thumbnail.png)]()
 
