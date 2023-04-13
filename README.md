@@ -112,7 +112,7 @@ gptdeploy create --description "Given a 3d object, return vertex count and face 
 
 ### Table extraction
 ```bash
---description "Given a URL, extract all tables as csv" --test "http://www.ins.tn/statistiques/90"
+gptdeploy create --description "Given a URL, extract all tables as csv" --test "http://www.ins.tn/statistiques/90"
 ```
 <img src="res/table_extraction_example.png" alt="Table Extraction" width="600" />
 
