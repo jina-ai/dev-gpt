@@ -6,11 +6,6 @@ from typing import Generator
 import sys
 from contextlib import contextmanager
 
-def create_folder_if_not_exist(folder_path):
-    try:
-        os.makedirs(folder_path)
-    except FileExistsError:
-        pass
 
 def persist_file(file_content, file_path):
     with open(file_path, 'w') as f:
