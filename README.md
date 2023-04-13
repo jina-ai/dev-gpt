@@ -38,6 +38,7 @@ To ensure the microservice accurately aligns with your intended task a test scen
 
 ## Quickstart
 ### Requirements
+- OpenAI key with access to GPT-4
 - Create an account at [cloud.jina.ai](https://cloud.jina.ai) where your microservice will be deployed
 
 ### Installation
