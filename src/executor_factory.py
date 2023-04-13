@@ -7,7 +7,7 @@ from src.constants import FILE_AND_TAG_PAIRS
 from src.jina_cloud import push_executor, process_error_message
 from src.prompt_tasks import general_guidelines, executor_file_task, chain_of_thought_creation, test_executor_file_task, \
     chain_of_thought_optimization, requirements_file_task, docker_file_task, not_allowed
-from src.utils.io import recreate_folder, persist_file
+from src.utils.io import create_folder_if_not_exist, persist_file
 from src.utils.string_tools import print_colored
 
 
@@ -66,10 +66,11 @@ class ExecutorFactory:
             output_path,
             executor_name,
             package,
+            num_approach,
             is_chain_of_thought=False,
     ):
-        EXECUTOR_FOLDER_v1 = self.get_executor_path(output_path, package, 1)
-        recreate_folder(EXECUTOR_FOLDER_v1)
+        EXECUTOR_FOLDER_v1 = self.get_executor_path(output_path, executor_name, package, num_approach, 1)
+        create_folder_if_not_exist(EXECUTOR_FOLDER_v1)
 
         print_colored('', '############# Executor #############', 'red')
         user_query = (
@@ -167,22 +168,22 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
         playground_content = self.extract_content_from_result(playground_content_raw, 'app.py')
         persist_file(playground_content, os.path.join(executor_path, 'app.py'))
 
-    def get_executor_path(self, output_path, package, version):
+    def get_executor_path(self, output_path, executor_name, package, num_approach, version):
         package_path = '_'.join(package)
-        return os.path.join(output_path, package_path, f'v{version}')
+        return os.path.join(output_path, executor_name, f'{num_approach}_package_path', f'v{version}')
 
-    def debug_executor(self, output_path, package, description, test):
+    def debug_executor(self, output_path, executor_name, package, description, test):
         MAX_DEBUGGING_ITERATIONS = 10
         error_before = ''
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
             print('Trying to build the microservice. Might take a while...')
-            previous_executor_path = self.get_executor_path(output_path, package, i)
-            next_executor_path = self.get_executor_path(output_path, package, i + 1)
+            previous_executor_path = self.get_executor_path(output_path, executor_name, package, num_approach, i)
+            next_executor_path = self.get_executor_path(output_path, executor_name, package, num_approach, i + 1)
             log_hubble = push_executor(previous_executor_path)
             error = process_error_message(log_hubble)
             if error:
-                recreate_folder(next_executor_path)
+                create_folder_if_not_exist(next_executor_path)
                 file_name_to_content = self.get_all_executor_files_with_content(previous_executor_path)
                 all_files_string = self.files_to_string(file_name_to_content)
                 user_query = (
@@ -223,7 +224,7 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
                 break
             if i == MAX_DEBUGGING_ITERATIONS - 1:
                 raise self.MaxDebugTimeReachedException('Could not debug the executor.')
-        return self.get_executor_path(output_path, package, i)
+        return self.get_executor_path(output_path, executor_name, package, num_approach, i)
 
     class MaxDebugTimeReachedException(BaseException):
         pass
@@ -285,11 +286,10 @@ package2,package3,...
         generated_name = self.generate_executor_name(description)
         executor_name = f'{generated_name}{random.randint(0, 1000_000)}'
         packages_list = self.get_possible_packages(description, num_approaches)
-        recreate_folder(output_path)
-        for packages in packages_list:
+        for num_approach, packages in enumerate(packages_list):
             try:
-                self.create_executor(description, test, output_path, executor_name, packages)
-                executor_path = self.debug_executor(output_path, packages, description, test)
+                self.create_executor(description, test, output_path, executor_name, packages, num_approach)
+                executor_path = self.debug_executor(output_path, executor_name, packages, description, test)
                 host = jina_cloud.deploy_flow(executor_name, executor_path)
                 self.create_playground(executor_name, executor_path, host)
             except self.MaxDebugTimeReachedException:
