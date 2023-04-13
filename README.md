@@ -39,9 +39,6 @@ This project streamlines the creation and deployment of microservices.
 Simply describe your task using natural language, and the system will automatically build and deploy your microservice. 
 To ensure the microservice accurately aligns with your intended task a test scenario is required.
 
-Join our <a href="https://discord.gg/VmXfWbpB"><img src="res/discord.png" alt="Discord logo" height="25"></a> to get in touch with the team and other users.
-
-
 ## Quickstart
 ### Requirements
 - OpenAI key with access to GPT-4
