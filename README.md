@@ -31,15 +31,20 @@ Your imagination is the limit!
     <img src="https://img.shields.io/badge/chat_on-Discord-7289DA?logo=discord&logoColor=white" alt="Discord Chat">
 </a>
 
-[![Watch the video](res/thumbnail.png)]()
+
+[![Watch the video](res/thumbnail.png)](https://user-images.githubusercontent.com/11627845/231530421-272a66aa-4260-4e17-ab7a-ba66adca754c.mp4)
 
 </p>
 This project streamlines the creation and deployment of microservices. 
 Simply describe your task using natural language, and the system will automatically build and deploy your microservice. 
 To ensure the microservice accurately aligns with your intended task a test scenario is required.
 
+Join our <a href="https://discord.gg/VmXfWbpB"><img src="res/discord.png" alt="Discord logo" height="25"></a> to get in touch with the team and other users.
+
+
 ## Quickstart
 ### Requirements
+- OpenAI key with access to GPT-4
 - Create an account at [cloud.jina.ai](https://cloud.jina.ai) where your microservice will be deployed
 
 ### Installation
@@ -114,7 +119,7 @@ gptdeploy create --description "Given a 3d object, return vertex count and face 
 
 ### Table extraction
 ```bash
---description "Given a URL, extract all tables as csv" --test "http://www.ins.tn/statistiques/90"
+gptdeploy create --description "Given a URL, extract all tables as csv" --test "http://www.ins.tn/statistiques/90"
 ```
 <img src="res/table_extraction_example.png" alt="Table Extraction" width="600" />
 
