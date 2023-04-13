@@ -6,13 +6,9 @@ from typing import Generator
 import sys
 from contextlib import contextmanager
 
-def recreate_folder(folder_path):
-    if os.path.exists(folder_path) and os.path.isdir(folder_path):
-        shutil.rmtree(folder_path)
-    os.makedirs(folder_path)
 
-def persist_file(file_content, file_name):
-    with open(f'{file_name}', 'w') as f:
+def persist_file(file_content, file_path):
+    with open(file_path, 'w') as f:
         f.write(file_content)
 
 
