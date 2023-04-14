@@ -7,13 +7,13 @@ from openai.error import RateLimitError, Timeout
 
 from src.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
     PRICING_GPT3_5_TURBO_GENERATION
-from src.prompt_system import system_base_definition
+from src.options.generate.prompt_system import system_base_definition
 from src.utils.io import timeout_generator_wrapper, GenerationTimeoutError
 from src.utils.string_tools import print_colored
 
 class GPTSession:
     def __init__(self):
-        self.get_openai_api_key()
+        self.configure_openai_api_key()
         if self.is_gpt4_available():
             self.supported_model = 'gpt-4'
             self.pricing_prompt = PRICING_GPT4_PROMPT
@@ -26,7 +26,7 @@ class GPTSession:
         self.chars_prompt_so_far = 0
         self.chars_generation_so_far = 0
 
-    def get_openai_api_key(self):
+    def configure_openai_api_key(self):
         if 'OPENAI_API_KEY' not in os.environ:
             raise Exception('''
 You need to set OPENAI_API_KEY in your environment.

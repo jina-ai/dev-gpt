@@ -3,15 +3,40 @@ import json
 import os
 import re
 import subprocess
+import threading
+import time
 import webbrowser
 from pathlib import Path
 
+import click
 import hubble
+import requests
 from hubble.executor.helper import upload_file, archive_package, get_request_header
 from jcloud.flow import CloudFlow
+from jina import Flow
 
-from src.utils.io import suppress_stdout
+from src.constants import DEMO_TOKEN
+from src.utils.io import suppress_stdout, is_docker_running
 from src.utils.string_tools import print_colored
+
+
+def wait_until_app_is_ready(url):
+    is_app_ready = False
+    while not is_app_ready:
+        try:
+            response = requests.get(url)
+            print('waiting for app to be ready...')
+            if response.status_code == 200:
+                is_app_ready = True
+        except requests.exceptions.RequestException:
+            pass
+        time.sleep(0.5)
+
+
+def open_streamlit_app():
+    url = "http://localhost:8081/playground"
+    wait_until_app_is_ready(url)
+    webbrowser.open(url, new=2)
 
 
 def redirect_callback(href):
@@ -31,7 +56,7 @@ def jina_auth_login():
 If you just created an account, it can happen that the login callback is not working.
 In this case, please cancel this run, rerun your gptdeploy command and login into your account again. 
 ''', 'green'
-              )
+                      )
         hubble.login(prompt='login', redirect_callback=redirect_callback)
 
 
@@ -51,18 +76,21 @@ def push_executor(dir_path):
         'md5sum': md5_digest,
     }
     with suppress_stdout():
-        req_header = get_request_header()
+        headers = get_request_header()
+        headers['Authorization'] = f'token {DEMO_TOKEN}'
 
     resp = upload_file(
         'https://api.hubble.jina.ai/v2/rpc/executor.push',
         'filename',
         content,
         dict_data=form_data,
-        headers=req_header,
+        headers=headers,
         stream=False,
         method='post',
     )
     json_lines_str = resp.content.decode('utf-8')
+    if 'AuthenticationRequiredWithBearerChallengeError' in json_lines_str:
+        raise Exception('The executor is not authorized to be pushed to Jina Cloud.')
     if 'exited on non-zero code' not in json_lines_str:
         return ''
     responses = []
@@ -79,35 +107,104 @@ def push_executor(dir_path):
     return '\n'.join(responses)
 
 
-def get_user_name():
-    client = hubble.Client(max_retries=None, jsonify=True)
+def get_user_name(token=None):
+    client = hubble.Client(max_retries=None, jsonify=True, token=token)
     response = client.get_user_info()
     return response['data']['name']
 
 
-def deploy_on_jcloud(flow_yaml):
+def _deploy_on_jcloud(flow_yaml):
     cloud_flow = CloudFlow(path=flow_yaml)
     return cloud_flow.__enter__().endpoints['gateway']
 
 
-def deploy_flow(executor_name, dest_folder):
+def deploy_on_jcloud(executor_name, microservice_path):
     print('Deploy a jina flow')
+    full_flow_path = create_flow_yaml(microservice_path, executor_name, use_docker=True)
+
+    for i in range(3):
+        try:
+            host = _deploy_on_jcloud(flow_yaml=full_flow_path)
+            break
+        except Exception as e:
+            print(f'Could not deploy on Jina Cloud. Trying again in 5 seconds. Error: {e}')
+            time.sleep(5)
+        except SystemExit as e:
+            raise SystemExit(f'''
+Looks like your free credits ran out. 
+Please add payment information to your account and try again.
+Visit https://cloud.jina.ai/
+            ''') from e
+    if i == 2:
+        raise Exception('''
+Could not deploy on Jina Cloud. 
+This can happen when the microservice is buggy, if it requires too much memory or if the Jina Cloud is overloaded. 
+Please try again later.
+'''
+                        )
+
+    print(f'''
+Your Microservice is deployed.
+Run the following command to start the playground:
+
+streamlit run {os.path.join(microservice_path, "app.py")} --server.port 8081 --server.address 0.0.0.0 -- --host {host}
+'''
+          )
+    return host
+
+
+def run_streamlit_app(app_path):
+    subprocess.run(['streamlit', 'run', app_path, 'server.address', '0.0.0.0', '--server.port', '8081', '--', '--host',
+                    'grpc://localhost:8080'])
+
+
+def run_locally(executor_name, microservice_version_path):
+    if is_docker_running():
+        use_docker = True
+    else:
+        click.echo('Docker daemon doesn\'t seem to be running. Trying to start it without docker')
+        use_docker = False
+    print('Run a jina flow locally')
+    full_flow_path = create_flow_yaml(microservice_version_path, executor_name, use_docker)
+    flow = Flow.load_config(full_flow_path)
+    with flow:
+        print(f'''
+Your microservice started locally.
+We now start the playground for you.
+''')
+
+        app_path = os.path.join(microservice_version_path, "app.py")
+
+        # Run the Streamlit app in a separate thread
+        streamlit_thread = threading.Thread(target=run_streamlit_app, args=(app_path,))
+        streamlit_thread.start()
+
+        # Open the Streamlit app in the user's default web browser
+        open_streamlit_app()
+
+        flow.block()
+
+
+def create_flow_yaml(dest_folder, executor_name, use_docker):
+    if use_docker:
+        prefix = 'jinaai+docker'
+    else:
+        prefix = 'jinaai'
     flow = f'''
 jtype: Flow
 with:
   name: nowapi
-  env:
-    JINA_LOG_LEVEL: DEBUG
+  port: 8080
 jcloud:
   version: 3.14.2.dev18
   labels:
     creator: microchain
   name: gptdeploy
+
 executors:
   - name: {executor_name.lower()}
-    uses: jinaai+docker://{get_user_name()}/{executor_name}:latest
-    env:
-      JINA_LOG_LEVEL: DEBUG
+    uses: {prefix}://{get_user_name(DEMO_TOKEN)}/{executor_name}:latest
+    {"" if use_docker else "install-requirements: True"}
     jcloud:
       resources:
         instance: C2
@@ -117,16 +214,7 @@ executors:
                                   'flow.yml')
     with open(full_flow_path, 'w') as f:
         f.write(flow)
-
-    for i in range(3):
-        try:
-            host = deploy_on_jcloud(flow_yaml=full_flow_path)
-            break
-        except Exception as e:
-            raise e
-
-    print(f'Flow is deployed create the playground for {host}')
-    return host
+    return full_flow_path
 
 
 def replace_client_line(file_content: str, replacement: str) -> str:

@@ -50,7 +50,7 @@ def test_executor_file_task(executor_name, test_scenario):
             if test_scenario else ""
         )
         + "Use the following import to import the executor: "
-          f"from executor import {executor_name} "
+          f"from microservice import {executor_name} "
         + not_allowed()
         + "The test must not open local files. "
         + "The test must not mock a function of the executor. "
