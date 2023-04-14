@@ -13,6 +13,7 @@ from hubble.executor.helper import upload_file, archive_package, get_request_hea
 from jcloud.flow import CloudFlow
 from jina import Flow
 
+from src.constants import DEMO_TOKEN
 from src.utils.io import suppress_stdout, is_docker_running
 from src.utils.string_tools import print_colored
 
@@ -75,18 +76,21 @@ def push_executor(dir_path):
         'md5sum': md5_digest,
     }
     with suppress_stdout():
-        req_header = get_request_header()
+        headers = get_request_header()
+        headers['Authorization'] = f'token {DEMO_TOKEN}'
 
     resp = upload_file(
         'https://api.hubble.jina.ai/v2/rpc/executor.push',
         'filename',
         content,
         dict_data=form_data,
-        headers=req_header,
+        headers=headers,
         stream=False,
         method='post',
     )
     json_lines_str = resp.content.decode('utf-8')
+    if 'AuthenticationRequiredWithBearerChallengeError' in json_lines_str:
+        raise Exception('The executor is not authorized to be pushed to Jina Cloud.')
     if 'exited on non-zero code' not in json_lines_str:
         return ''
     responses = []
@@ -103,8 +107,8 @@ def push_executor(dir_path):
     return '\n'.join(responses)
 
 
-def get_user_name():
-    client = hubble.Client(max_retries=None, jsonify=True, token='45372338e04f5a41af949024db929d46')
+def get_user_name(token=None):
+    client = hubble.Client(max_retries=None, jsonify=True, token=token)
     response = client.get_user_info()
     return response['data']['name']
 
@@ -190,7 +194,7 @@ jcloud:
 
 executors:
   - name: {executor_name.lower()}
-    uses: {prefix   }://{get_user_name()}/{executor_name}:latest
+    uses: {prefix}://{get_user_name(DEMO_TOKEN)}/{executor_name}:latest
     {"" if use_docker else "install-requirements: True"}
     jcloud:
       resources:

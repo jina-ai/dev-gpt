@@ -206,6 +206,7 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
                 error_before = error
 
             else:
+                print('Successfully build microservice.')
                 break
             if i == MAX_DEBUGGING_ITERATIONS - 1:
                 raise self.MaxDebugTimeReachedException('Could not debug the microservice.')
