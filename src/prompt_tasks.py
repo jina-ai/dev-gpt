@@ -34,7 +34,7 @@ def _task(task, tag_name, file_name, function_name=None):
 
 def executor_file_task(executor_name, executor_description, test_scenario, package):
     return _task(f'''
-Write the executor called '{executor_name}'.
+Write the executor called '{executor_name}'. The name is very important to keep.
 It matches the following description: '{executor_description}'.
 It will be tested with the following scenario: '{test_scenario}'.
 For the implementation use the following package: '{package}'.
@@ -55,7 +55,7 @@ def test_executor_file_task(executor_name, test_scenario):
             if test_scenario else ""
         )
         + "Use the following import to import the executor: "
-          f"from executor import {executor_name} "
+          f"```\nfrom executor import {executor_name}\n```"
         + not_allowed()
         + "The test must not open local files. "
         + "The test must not mock a function of the executor. "
@@ -82,7 +82,8 @@ def docker_file_task():
         "It is important to make sure that all libs are installed that are required by the python packages. "
         "Usually libraries are installed with apt-get. "
         "Be aware that the machine the docker container is running on does not have a GPU - only CPU. "
-        "Add the config.yml file to the Dockerfile. "
+        "Add the config.yml file to the Dockerfile. Note that the Dockerfile only has access to the files: "
+        "executor.py, requirements.txt, config.yml, test_executor.py. "
         "The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard. "
         'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]. '
         'Make sure the all files are in the /workdir. '
@@ -144,4 +145,5 @@ The executor must not load data from the local file system unless it was created
 The executor must not use a pre-trained model unless it is explicitly mentioned in the description.
 The executor must not train a model.
 The executor must not use any attribute of Document accept Document.text.
+Note that the Dockerfile only has access to the files: executor.py, requirements.txt, config.yml, test_executor.py.
 '''

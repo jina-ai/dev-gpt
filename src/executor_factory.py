@@ -90,7 +90,11 @@ class ExecutorFactory:
             executor_content_raw = conversation.query(
                 f"General rules: " + not_allowed() + chain_of_thought_optimization('python', 'executor.py'))
         executor_content = self.extract_content_from_result(executor_content_raw, 'executor.py', match_single_block=True)
-
+        if executor_content == '':
+            executor_content_raw = conversation.query('Please add the executor code.')
+            executor_content = self.extract_content_from_result(
+                executor_content_raw, 'executor.py', match_single_block=True
+            )
         persist_file(executor_content, os.path.join(EXECUTOR_FOLDER_v1, 'executor.py'))
 
         print_colored('', '############# Test Executor #############', 'red')
@@ -222,6 +226,7 @@ Please provide the complete file with the exact same syntax to wrap the code.
                             + f'\n\nHere is the test scenario the executor must pass:\n{test}'
                             + f'Here are all the files I use:\n{all_files_string}'
                             + f'\n\nThis error happens during the docker build process:\n{error}\n\n'
+                            + ((f'This is an error that is already fixed before:\n{error_before}\n\n') if error_before else '')
                             + 'Look at exactly at the stack trace. First, think about what kind of error is this? '
                               'Then think about possible reasons which might have caused it. Then suggest how to '
                               'solve it. Output the files that need change. '
@@ -242,7 +247,7 @@ Please provide the complete file with the exact same syntax to wrap the code.
 
                 for file_name, content in file_name_to_content.items():
                     persist_file(content, os.path.join(next_executor_path, file_name))
-                error_before = error_before
+                error_before = error
 
             else:
                 break
