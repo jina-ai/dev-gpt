@@ -4,9 +4,8 @@ executor_example = '''
 Using the Jina framework, users can define executors. 
 Here is an example of how an executor can be defined. It always starts with a comment:
 
-**executor.py**
+**microservice.py**
 ```python
-# this executor binary files as input and returns the length of each binary file as output
 from jina import Executor, requests, DocumentArray, Document
 import json
 class MyInfoExecutor(Executor):
