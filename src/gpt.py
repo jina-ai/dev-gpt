@@ -19,7 +19,7 @@ class GPTSession:
             self.supported_model = 'gpt-4'
             self.pricing_prompt = PRICING_GPT4_PROMPT
             self.pricing_generation = PRICING_GPT4_GENERATION
-        elif (model == 'gpt-4' and not self.is_gpt4_available()) or model == 'gpt-3.5-turbo':
+        else:
             if model == 'gpt-4':
                 print_colored('GPT-4 is not available. Using GPT-3.5-turbo instead.', 'yellow')
                 model = 'gpt-3.5-turbo'
@@ -31,7 +31,11 @@ class GPTSession:
 
     def get_openai_api_key(self):
         if 'OPENAI_API_KEY' not in os.environ:
-            raise Exception('You need to set OPENAI_API_KEY in your environment')
+            raise Exception('''
+You need to set OPENAI_API_KEY in your environment.
+If you have updated it already, please restart your terminal.
+'''
+)
         openai.api_key = os.environ['OPENAI_API_KEY']
 
     def is_gpt4_available(self):
@@ -42,9 +46,10 @@ class GPTSession:
                         model="gpt-4",
                         messages=[{
                             "role": 'system',
-                            "content": 'test'
+                            "content": 'you respond nothing'
                         }]
                     )
+                    break
                 except RateLimitError:
                     sleep(1)
                     continue
@@ -61,7 +66,7 @@ class GPTSession:
         print('Estimated costs on openai.com:')
         # print('money prompt:', f'${money_prompt}')
         # print('money generation:', f'${money_generation}')
-        print('total money so far:', f'${money_prompt + money_generation}')
+        print('total money spent so far:', f'${money_prompt + money_generation}')
         print('\n')
 
     def get_conversation(self, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
@@ -100,7 +105,7 @@ class _GPTConversation:
             delta = chunk['choices'][0]['delta']
             if 'content' in delta:
                 content = delta['content']
-                print_colored('' if complete_string else 'assistent', content, 'green', end='')
+                print_colored('' if complete_string else 'assistant', content, 'green', end='')
                 complete_string += content
         return complete_string
 

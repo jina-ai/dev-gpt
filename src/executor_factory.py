@@ -7,7 +7,7 @@ from src.constants import FILE_AND_TAG_PAIRS
 from src.jina_cloud import push_executor, process_error_message
 from src.prompt_tasks import general_guidelines, executor_file_task, chain_of_thought_creation, test_executor_file_task, \
     chain_of_thought_optimization, requirements_file_task, docker_file_task, not_allowed
-from src.utils.io import recreate_folder, persist_file
+from src.utils.io import persist_file
 from src.utils.string_tools import print_colored
 
 
@@ -72,10 +72,11 @@ class ExecutorFactory:
             output_path,
             executor_name,
             package,
+            num_approach,
             is_chain_of_thought=False,
     ):
-        EXECUTOR_FOLDER_v1 = self.get_executor_path(output_path, package, 1)
-        recreate_folder(EXECUTOR_FOLDER_v1)
+        EXECUTOR_FOLDER_v1 = self.get_executor_path(output_path, executor_name, package, num_approach, 1)
+        os.makedirs(EXECUTOR_FOLDER_v1)
 
         print_colored('', '############# Executor #############', 'red')
         user_query = (
@@ -175,42 +176,32 @@ Please provide the complete file with the exact same syntax to wrap the code.
         playground_content = self.extract_content_from_result(playground_content_raw, 'app.py', match_single_block=True)
         persist_file(playground_content, os.path.join(executor_path, 'app.py'))
 
-    def get_executor_path(self, output_path, package, version):
+    def get_executor_path(self, output_path, executor_name, package, num_approach, version):
         package_path = '_'.join(package)
-        return os.path.join(output_path, package_path, f'v{version}')
+        return os.path.join(output_path, executor_name, f'{num_approach}_{package_path}', f'v{version}')
 
-    def debug_executor(self, output_path, package, description, test):
+    def debug_executor(self, output_path, executor_name, num_approach, packages, description, test):
         MAX_DEBUGGING_ITERATIONS = 10
         error_before = ''
         # conversation = self.gpt_session.get_conversation()
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
-            previous_executor_path = self.get_executor_path(output_path, package, i)
-            next_executor_path = self.get_executor_path(output_path, package, i + 1)
+            print('Trying to build the microservice. Might take a while...')
+            previous_executor_path = self.get_executor_path(output_path, executor_name, packages, num_approach, i)
+            next_executor_path = self.get_executor_path(output_path, executor_name, packages, num_approach, i + 1)
             log_hubble = push_executor(previous_executor_path)
             error = process_error_message(log_hubble)
             if error:
-                recreate_folder(next_executor_path)
+                os.makedirs(next_executor_path)
                 file_name_to_content = self.get_all_executor_files_with_content(previous_executor_path)
 
                 is_dependency_issue = self.is_dependency_issue(error, file_name_to_content['Dockerfile'])
                 print(f'Current error is a dependency issue: {is_dependency_issue}')
+
                 if is_dependency_issue:
                     all_files_string = self.files_to_string({
                         key: val for key, val in file_name_to_content.items() if key in ['requirements.txt', 'Dockerfile']
                     })
-                    # user_query = (
-                    #     f'I have the following files:\n{all_files_string}\n\n'
-                    #     + f'This error happens during the docker build process:\n{error}\n\n'
-                    #     + 'First, think about what kind of error is this? Look at exactly at the stack trace and then '
-                    #       "suggest how to solve it. Output the files that need change. "
-                    #       "Don't output files that don't need change. If you output a file, then write the "
-                    #       "complete file. Use the exact same syntax to wrap the code:\n"
-                    #       f"**...**\n"
-                    #       f"```...\n"
-                    #       f"...code...\n"
-                    #       f"```"
-                    # )
                     user_query = (
                         f"Your task is to provide guidance on how to solve an error that occurred during the Docker "
                         f"build process. The error message is:\n{error}\nTo solve this error, you should first "
@@ -221,7 +212,6 @@ Please provide the complete file with the exact same syntax to wrap the code.
                         f"You are given the following files:\n\n{all_files_string}"
                     )
                 else:
-                # if i == 1:
                     all_files_string = self.files_to_string(file_name_to_content)
                     user_query = (
                              f"General rules: " + not_allowed()
@@ -229,8 +219,9 @@ Please provide the complete file with the exact same syntax to wrap the code.
                             + f'\n\nHere is the test scenario the executor must pass:\n{test}'
                             + f'Here are all the files I use:\n{all_files_string}'
                             + f'\n\nThis error happens during the docker build process:\n{error}\n\n'
-                            + 'First, think about what kind of error is this? Look at exactly at the stack trace and then '
-                              "suggest how to solve it. Output the files that need change. "
+                            + 'Look at exactly at the stack trace. First, think about what kind of error is this? '
+                              'Then think about possible reasons which might have caused it. Then suggest how to '
+                              'solve it. Output the files that need change. '
                               "Don't output files that don't need change. If you output a file, then write the "
                               "complete file. Use the exact same syntax to wrap the code:\n"
                               f"**...**\n"
@@ -238,9 +229,6 @@ Please provide the complete file with the exact same syntax to wrap the code.
                               f"...code...\n"
                               f"```"
                     )
-                # else:
-                #     conversation.set_system_definition()
-                #     user_query = f'Now this error happens during the docker build process:\n{error}'
 
                 conversation = self.gpt_session.get_conversation()
                 returned_files_raw = conversation.query(user_query)
@@ -251,13 +239,13 @@ Please provide the complete file with the exact same syntax to wrap the code.
 
                 for file_name, content in file_name_to_content.items():
                     persist_file(content, os.path.join(next_executor_path, file_name))
-                error_before = error_before + '\n' + error
+                error_before = error_before
 
             else:
                 break
             if i == MAX_DEBUGGING_ITERATIONS - 1:
                 raise self.MaxDebugTimeReachedException('Could not debug the executor.')
-        return self.get_executor_path(output_path, package, i)
+        return self.get_executor_path(output_path, executor_name, packages, num_approach, i)
 
     class MaxDebugTimeReachedException(BaseException):
         pass
@@ -329,22 +317,22 @@ package2,package3,...
         generated_name = self.generate_executor_name(description)
         executor_name = f'{generated_name}{random.randint(0, 1000_000)}'
         packages_list = self.get_possible_packages(description, num_approaches)
-        recreate_folder(output_path)
-        for packages in packages_list:
+        for num_approach, packages in enumerate(packages_list):
             try:
-                self.create_executor(description, test, output_path, executor_name, packages)
-                executor_path = self.debug_executor(output_path, packages, description, test)
+                self.create_executor(description, test, output_path, executor_name, packages, num_approach)
+                executor_path = self.debug_executor(output_path, executor_name, num_approach, packages, description, test)
                 host = jina_cloud.deploy_flow(executor_name, executor_path)
                 self.create_playground(executor_name, executor_path, host)
             except self.MaxDebugTimeReachedException:
-                print('Could not debug the executor.')
+                print('Could not debug the Executor.')
                 continue
             print(f'''
 Executor name: {executor_name}
 Executor path: {executor_path}
 Host: {host}
 
-Playground: streamlit run {os.path.join(executor_path, "app.py")}
+Run the following command to start the playground:
+streamlit run {os.path.join(executor_path, "app.py")}
 '''
                   )
             break

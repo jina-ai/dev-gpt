@@ -9,7 +9,7 @@ def general_guidelines():
         "Every file starts with comments describing what the code is doing before the first import. "
         "Comments can only be written within code blocks. "
         "Then all imports are listed. "
-        "It is important to import all modules that could be needed in the executor code. "
+        "It is important to import all modules that could be needed in the Executor code. "
         "Always import: "
         "from jina import Executor, DocumentArray, Document, requests "
         "Start from top-level and then fully implement all methods. "
@@ -143,5 +143,5 @@ The executor must not access external apis except unless it is explicitly mentio
 The executor must not load data from the local file system unless it was created by the executor itself.
 The executor must not use a pre-trained model unless it is explicitly mentioned in the description.
 The executor must not train a model.
-The executor must not use Document.tags.
+The executor must not use any attribute of Document accept Document.text.
 '''

@@ -3,14 +3,12 @@ import shutil
 import concurrent.futures
 import concurrent.futures
 from typing import Generator
+import sys
+from contextlib import contextmanager
 
-def recreate_folder(folder_path):
-    if os.path.exists(folder_path) and os.path.isdir(folder_path):
-        shutil.rmtree(folder_path)
-    os.makedirs(folder_path)
 
-def persist_file(file_content, file_name):
-    with open(f'{file_name}', 'w') as f:
+def persist_file(file_content, file_path):
+    with open(file_path, 'w') as f:
         f.write(file_content)
 
 
@@ -35,3 +33,13 @@ def timeout_generator_wrapper(generator, timeout):
                 raise GenerationTimeoutError(f"Generation took longer than {timeout} seconds")
 
     return wrapper()
+
+@contextmanager
+def suppress_stdout():
+    original_stdout = sys.stdout
+    sys.stdout = open(os.devnull, 'w')
+    try:
+        yield
+    finally:
+        sys.stdout.close()
+        sys.stdout = original_stdout

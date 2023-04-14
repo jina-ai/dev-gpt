@@ -80,8 +80,12 @@ def set_env_variable(shell, key):
             with open(config_file, "a") as file:
                 file.write(f"\n{export_line}\n")
 
-        click.echo(
-            f"✅ Success, OPENAI_API_KEY has been set in {config_file}\nPlease restart your shell to apply the changes.")
+        click.echo(f'''
+✅ Success, OPENAI_API_KEY has been set in {config_file}.
+Please restart your shell to apply the changes or run:
+source {config_file}
+'''
+                   )
 
     except FileNotFoundError:
         click.echo(f"Error: {config_file} not found. Please set the environment variable manually.")
@@ -93,7 +97,12 @@ def set_api_key(key):
     if system_platform == "windows":
         set_env_variable_command = f'setx OPENAI_API_KEY "{key}"'
         subprocess.call(set_env_variable_command, shell=True)
-        click.echo("✅ Success, OPENAI_API_KEY has been set.\nPlease restart your Command Prompt to apply the changes.")
+        click.echo('''
+✅ Success, OPENAI_API_KEY has been set.
+Please restart your Command Prompt to apply the changes.
+'''
+                   )
+
     elif system_platform in ["linux", "darwin"]:
         if "OPENAI_API_KEY" in os.environ or is_key_set_in_config_file(key):
             if not click.confirm("OPENAI_API_KEY is already set. Do you want to overwrite it?"):

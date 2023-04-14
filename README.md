@@ -27,8 +27,12 @@ Your imagination is the limit!
 <a href="https://github.com/tiangolo/gptdeploy/actions?query=workflow%3ATest+event%3Apush+branch%3Amaster" target="_blank">
     <img src="https://img.shields.io/badge/platform-mac%20%7C%20linux%20%7C%20windows-blue" alt="Supported platforms">
 </a>
+<a href="https://discord.gg/ESn8ED6Fyn" target="_blank">
+    <img src="https://img.shields.io/badge/chat_on-Discord-7289DA?logo=discord&logoColor=white" alt="Discord Chat">
+</a>
 
-[//]: # ([![Watch the video]&#40;https://i.imgur.com/vKb2F1B.png&#41;]&#40;https://user-images.githubusercontent.com/11627845/226220484-17810f7c-b184-4a03-9af2-3a977fbb014b.mov&#41;)
+
+[![Watch the video](res/thumbnail.png)](https://user-images.githubusercontent.com/11627845/231530421-272a66aa-4260-4e17-ab7a-ba66adca754c.mp4)
 
 </p>
 This project streamlines the creation and deployment of microservices. 
@@ -36,6 +40,10 @@ Simply describe your task using natural language, and the system will automatica
 To ensure the microservice accurately aligns with your intended task a test scenario is required.
 
 ## Quickstart
+### Requirements
+- OpenAI key with access to GPT-4
+- Create an account at [cloud.jina.ai](https://cloud.jina.ai) where your microservice will be deployed
+
 ### Installation
 ```bash
 pip install gptdeploy
@@ -47,7 +55,7 @@ We are working on a way to use gpt-3.5-turbo as well.
 
 ### Create Microservice
 ```bash
-gptdeploy create --description "Given a PDF, return it's text" --test "https://www.africau.edu/images/default/sample.pdf"
+gptdeploy create --description "Given a PDF, return its text" --test "https://www.africau.edu/images/default/sample.pdf"
 ```
 To create your personal microservice two things are required:
 - A `description` of the task you want to accomplish.
@@ -58,6 +66,7 @@ During this time, GPT iteratively builds your microservice until it finds a stra
 Once the microservice is created and deployed, you can test it using the generated Streamlit playground.
 The deployment is made on the Jina`s infrastructure. 
 When creating a Jina account, you get some free credits, which you can use to deploy your microservice ($0.025/hour).
+Be aware that the costs you have to pay for openai vary between $0.50 and $3.00 per microservice.
 If you run out of credits, you can purchase more.
 
 ### Delete Microservice
@@ -67,61 +76,18 @@ jc list # get the microservice id
 jc delete <microservice id>
 ```
 
-## Overview
-The graphic below illustrates the process of creating a microservice and deploying it to the cloud elaboration two different implementation strategies.
-
-```mermaid
-
-graph TB
-
-    description[description: generate QR code from URL] --> make_strat{think a}
-
-    test[test: https://www.example.com] --> make_strat[generate strategies]
-
-    make_strat --> implement1[implement strategy 1]
-
-    implement1 --> build1{build image}
-
-    build1 -->|error message| implement1
-
-    build1 -->|failed 10 times| implement2[implement strategy 2]
-
-    build1 -->|success| registry[push docker image to registry]
-
-    implement2 --> build2{build image}
-
-    build2 -->|error message| implement2
-
-    build2 -->|failed 10 times| all_failed[all strategies failed]
-
-    build2 -->|success| registry[push docker image to registry]
-
-    registry --> deploy[deploy microservice]
-
-    deploy --> streamlit[create streamlit playground]
-
-    streamlit --> user_run[user tests microservice]
-
-```
-
-
-
-
-1. GPT Deploy identifies several strategies to implement your task.
-2. It tests each strategy until it finds one that works.
-3. For each strategy, it creates the following files:
-- executor.py: This is the main implementation of the microservice.
-- test_executor.py: These are test cases to ensure the microservice works as expected.
-- requirements.txt: This file lists the packages needed by the microservice and its tests.
-- Dockerfile: This file is used to run the microservice in a container and also runs the tests when building the image.
-4. GPT Deploy attempts to build the image. If the build fails, it uses the error message to apply a fix and tries again to build the image.
-5. Once it finds a successful strategy, it:
-- Pushes the Docker image to the registry.
-- Deploys the microservice.
-- Creates a Streamlit playground where you can test the microservice.
-6. If it fails 10 times in a row, it moves on to the next approach.
 
 ## Examples
+
+<img src="res/teaser.png" alt="QR Code Generator" width="600" />
+
+### Animal Detector
+```bash
+
+gptdeploy create --description "Given an image, return the image with bounding boxes of all animals (https://pjreddie.com/media/files/yolov3.weights, https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg)" --test "https://images.unsplash.com/photo-1444212477490-ca407925329e contains animals"
+```
+
+<img src="res/animal_detector_example.png" alt="Animal Detector" width="600" />
 
 ### Meme Generator
 ```bash
@@ -150,7 +116,7 @@ gptdeploy create --description "Given a 3d object, return vertex count and face 
 
 ### Table extraction
 ```bash
---description "Given a URL, extract all tables as csv" --test "http://www.ins.tn/statistiques/90"
+gptdeploy create --description "Given a URL, extract all tables as csv" --test "http://www.ins.tn/statistiques/90"
 ```
 <img src="res/table_extraction_example.png" alt="Table Extraction" width="600" />
 
@@ -183,22 +149,22 @@ gptdeploy create --description "Generate QR code from URL" --test "https://www.e
 ```
 <img src="res/qr_example.png" alt="QR Code Generator" width="600" />
 
+### Mandelbrot Set Visualizer
+
+```bash
+gptdeploy create --description "Visualize the Mandelbrot set with custom parameters" --test "center=-0+1i, zoom=1.0, size=800x800, iterations=1000"
+```
+<img src="res/mandelbrot_example.png" alt="Mandelbrot Set Visualizer" width="600" />
+
 
 [//]: # (## TO BE TESTED)
 
-[//]: # (### ASCII Art Generator)
-
-[//]: # (```bash)
-
-[//]: # (gptdeploy create --description "Convert image to ASCII art" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff")
-
-[//]: # (```)
 
 [//]: # (### Password Strength Checker)
 
 [//]: # (```bash)
 
-[//]: # (gptdeploy create --description "Given a password, return a score from 1 to 10 indicating the strength of the password" --test "Pa$$w0rd")
+[//]: # (gptdeploy create --description "Given a password, return a score from 1 to 10 indicating the strength of the password" --test "Pa$$w0rd => 1/5, !Akfdh%.ytRadf => 5/5")
 
 [//]: # (```)
 
@@ -344,14 +310,15 @@ gptdeploy create --description "Generate QR code from URL" --test "https://www.e
 [//]: # ()
 
 [//]: # ()
-[//]: # (### Mandelbrot Set Visualizer)
 
+[//]: # (### Sound Visualizer)
+
+[//]: # ()
 [//]: # (```bash)
 
-[//]: # (gptdeploy create --description "Visualize the Mandelbrot set with custom parameters" --test "center=-0.5+0i, zoom=1.0, size=800x800, iterations=1000")
+[//]: # (gptdeploy create --description "Visualize a sound file and output the visualization as video combined with the sound" --test "some/mp3/file.mp3")
 
 [//]: # (```)
-
 
 [//]: # (## Upcoming Challenges)
 
@@ -381,13 +348,68 @@ gptdeploy create --description "Generate QR code from URL" --test "https://www.e
 [//]: # (```)
 
 [//]: # ()
-[//]: # (### Bounding Box)
+
+
+
+[//]: # (### ASCII Art Generator)
 
 [//]: # (```bash)
 
-[//]: # (gptdeploy create --description "Given an image, return the bounding boxes of all animals" --test "...")
+[//]: # (gptdeploy create --description "Convert image to ASCII art" --test "https://images.unsplash.com/photo-1602738328654-51ab2ae6c4ff")
 
 [//]: # (```)
+
+## Technical Insights
+The graphic below illustrates the process of creating a microservice and deploying it to the cloud elaboration two different implementation strategies.
+
+```mermaid
+
+graph TB
+
+    description[description: generate QR code from URL] --> make_strat{think a}
+
+    test[test: https://www.example.com] --> make_strat[generate strategies]
+
+    make_strat --> implement1[implement strategy 1]
+
+    implement1 --> build1{build image}
+
+    build1 -->|error message| implement1
+
+    build1 -->|failed 10 times| implement2[implement strategy 2]
+
+    build1 -->|success| registry[push docker image to registry]
+
+    implement2 --> build2{build image}
+
+    build2 -->|error message| implement2
+
+    build2 -->|failed 10 times| all_failed[all strategies failed]
+
+    build2 -->|success| registry[push docker image to registry]
+
+    registry --> deploy[deploy microservice]
+
+    deploy --> streamlit[create streamlit playground]
+
+    streamlit --> user_run[user tests microservice]
+
+```
+
+1. GPT Deploy identifies several strategies to implement your task.
+2. It tests each strategy until it finds one that works.
+3. For each strategy, it creates the following files:
+- executor.py: This is the main implementation of the microservice.
+- test_executor.py: These are test cases to ensure the microservice works as expected.
+- requirements.txt: This file lists the packages needed by the microservice and its tests.
+- Dockerfile: This file is used to run the microservice in a container and also runs the tests when building the image.
+4. GPT Deploy attempts to build the image. If the build fails, it uses the error message to apply a fix and tries again to build the image.
+5. Once it finds a successful strategy, it:
+- Pushes the Docker image to the registry.
+- Deploys the microservice.
+- Creates a Streamlit playground where you can test the microservice.
+6. If it fails 10 times in a row, it moves on to the next approach.
+
 
 ## 🔮 vision
 Use natural language interface to create, deploy and update your microservice infrastructure.
@@ -396,34 +418,46 @@ Use natural language interface to create, deploy and update your microservice in
 If you want to contribute to this project, feel free to open a PR or an issue.
 In the following, you can find a list of things that need to be done.
 
-Critical:
+next steps:
 - [ ] check if windows and linux support works
 - [ ] support gpt3.5-turbo
-
+- [ ] add video to README.md
+- [ ] bug: it can happen that the code generation is hanging forever - in this case aboard and redo the generation
+- [ ] new user has free credits but should be told to verify account
 
 
 Nice to have:
+- [ ] smooth rendering animation of  the responses
+- [ ] if the user runs gptdeploy without any arguments, show the help message
+- [ ] don't show this message: 
+🔐 You are logged in to Jina AI as florian.hoenicke (username:auth0-unified-448f11965ce142b6). 
+To log out, use jina auth logout.
+- [ ] rest endpoint instead of grpc since it is more popular
+- [ ] put the playground into the custom gateway (without rebuilding the custom gateway)
 - [ ] hide prompts in normal mode and show them in verbose mode
 - [ ] tests
 - [ ] clean up duplicate code
 - [ ] support popular cloud providers - lambda, cloud run, cloud functions, ...
 - [ ] support local docker builds
 - [ ] autoscaling enabled for cost saving
-- [ ] don't show this message: 
-🔐 You are logged in to Jina AI as florian.hoenicke (username:auth0-unified-448f11965ce142b6). 
-To log out, use jina auth logout.
 - [ ] add more examples to README.md
 - [ ] support multiple endpoints - example: todolist microservice with endpoints for adding, deleting, and listing todos
 - [ ] support stateful microservices
 - [ ] The playground is currently printed twice even if it did not change. 
 Make sure it is only printed twice in case it changed.
 - [ ] allow to update your microservice by providing feedback
-- [ ] bug: it can happen that the code generation is hanging forever - in this case aboard and redo the generation
-- [ ] feat: make playground more stylish by adding attributes like: clean design, beautiful, like it was made by a professional designer, ...
-- [ ] support for other large language models like ChatGLM
+- [ ] support for other large language models like Open Assistent
 - [ ] for cost savings, it should be possible to insert less context during the code generation of the main functionality - no jina knowledge is required
 - [ ] use gptdeploy list to show all deployments
 - [ ] gptdeploy delete to delete a deployment
 - [ ] gptdeploy update to update a deployment
-- [ ] if the user runs gptdeploy without any arguments, show the help message
-- [ ] start streamlit playground automatically after the deployment
+- [ ] test param optional - but how would you test the pdf extractor without a pdf?
+- [ ] section for microservices built by the community
+- [ ] test feedback for playground generation (could be part of the debugging)
+- [ ] should we send everything via json in the text attribute for simplicity?
+- [ ] fix release workflow
+- 
+
+Proposal:
+- [ ] just generate the non-jina related code and insert it into an executor template
+- [ ] think about strategies after the first approach failed?
