@@ -234,7 +234,7 @@ Please provide the complete file with the exact same syntax to wrap the code.
                 returned_files_raw = conversation.query(user_query)
                 for file_name, tag in FILE_AND_TAG_PAIRS:
                     updated_file = self.extract_content_from_result(returned_files_raw, file_name)
-                    if updated_file:
+                    if updated_file and (not is_dependency_issue or file_name in ['requirements.txt', 'Dockerfile']):
                         file_name_to_content[file_name] = updated_file
 
                 for file_name, content in file_name_to_content.items():
