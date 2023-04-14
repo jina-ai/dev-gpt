@@ -254,6 +254,10 @@ Please provide the complete file with the exact same syntax to wrap the code.
         pass
 
     def is_dependency_issue(self, error, docker_file: str):
+        # a few heuristics to quickly jump ahead
+        if any([error_message in error for error_message in ['AttributeError', 'NameError', 'AssertionError']]):
+            return False
+
         conversation = self.gpt_session.get_conversation([])
         answer = conversation.query(
             f'Your task is to assist in identifying the root cause of a Docker build error for a python application. '

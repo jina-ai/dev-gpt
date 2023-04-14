@@ -86,7 +86,7 @@ def docker_file_task():
         "The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard. "
         'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]. '
         'Make sure the all files are in the /workdir. '
-        "The Dockerfile runs the test during the build process. " + not_allowed(),
+        "The Dockerfile runs the test during the build process. ",
         DOCKER_FILE_TAG,
         DOCKER_FILE_NAME
     )
