@@ -163,10 +163,13 @@ The playground must look like it was made by a professional designer.
 All the ui elements are well thought out to make them visually appealing and easy to use.
 The executor is hosted on {host}. 
 This is an example how you can connect to the executor assuming the document (d) is already defined:
+```
 from jina import Client, Document, DocumentArray
 client = Client(host='{host}')
 response = client.post('/', inputs=DocumentArray([d])) # always use '/'
 print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
+```
+Note that the response will always be in response[0].text
 Please provide the complete file with the exact same syntax to wrap the code.
 '''
         )
