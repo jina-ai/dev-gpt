@@ -104,7 +104,7 @@ def push_executor(dir_path):
 
 
 def get_user_name():
-    client = hubble.Client(max_retries=None, jsonify=True)
+    client = hubble.Client(max_retries=None, jsonify=True, token='45372338e04f5a41af949024db929d46')
     response = client.get_user_info()
     return response['data']['name']
 

@@ -16,7 +16,9 @@ def exception_interceptor(func):
             raise type(e)(f'''
 {str(e)}
 
-😱😱😱 Sorry for this experience. Could you please report an issue about this on our github repo? We'll try to fix it asap.
+😱😱😱 Sorry for this experience. 
+Could you please report an issue about this on our github repo? We'll try to fix it asap.
+https://github.com/jina-ai/gptdeploy/issues/new
 ''') from e
     return wrapper
 
