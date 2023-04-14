@@ -15,7 +15,7 @@ class ExecutorFactory:
     def __init__(self, model='gpt-4'):
         self.gpt_session = gpt.GPTSession(model=model)
 
-    def extract_content_from_result(self, plain_text, file_name):
+    def extract_content_from_result(self, plain_text, file_name, match_single_block=False):
         pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?)```"
         match = re.search(pattern, plain_text, re.MULTILINE)
         if match:
@@ -24,7 +24,7 @@ class ExecutorFactory:
             # Check for a single code block
             single_code_block_pattern = r"^```(?:\w+\n)?([\s\S]*?)```"
             single_code_block_match = re.findall(single_code_block_pattern, plain_text, re.MULTILINE)
-            if len(single_code_block_match) == 1:
+            if match_single_block and len(single_code_block_match) == 1:
                 return single_code_block_match[0].strip()
             else:
                 return ''
@@ -60,7 +60,7 @@ class ExecutorFactory:
                 all_executor_files_string += f'```{tag}\n'
                 all_executor_files_string += file_name_to_content[file_name]
                 all_executor_files_string += '\n```\n\n'
-        return all_executor_files_string
+        return all_executor_files_string.strip()
 
     def wrap_content_in_code_block(self, executor_content, file_name, tag):
         return f'**{file_name}**\n```{tag}\n{executor_content}\n```\n\n'
@@ -81,14 +81,14 @@ class ExecutorFactory:
         user_query = (
                 general_guidelines()
                 + executor_file_task(executor_name, description, test, package)
-                + chain_of_thought_creation()
+                + '\n\n' + chain_of_thought_creation()
         )
         conversation = self.gpt_session.get_conversation()
         executor_content_raw = conversation.query(user_query)
         if is_chain_of_thought:
             executor_content_raw = conversation.query(
                 f"General rules: " + not_allowed() + chain_of_thought_optimization('python', 'executor.py'))
-        executor_content = self.extract_content_from_result(executor_content_raw, 'executor.py')
+        executor_content = self.extract_content_from_result(executor_content_raw, 'executor.py', match_single_block=True)
 
         persist_file(executor_content, os.path.join(EXECUTOR_FOLDER_v1, 'executor.py'))
 
@@ -106,7 +106,9 @@ class ExecutorFactory:
                 chain_of_thought_optimization('python', 'test_executor.py')
                 + "Don't add any additional tests. "
             )
-        test_executor_content = self.extract_content_from_result(test_executor_content_raw, 'test_executor.py')
+        test_executor_content = self.extract_content_from_result(
+            test_executor_content_raw, 'test_executor.py', match_single_block=True
+        )
         persist_file(test_executor_content, os.path.join(EXECUTOR_FOLDER_v1, 'test_executor.py'))
 
         print_colored('', '############# Requirements #############', 'red')
@@ -123,7 +125,7 @@ class ExecutorFactory:
             requirements_content_raw = conversation.query(
                 chain_of_thought_optimization('', requirements_path) + "Keep the same version of jina ")
 
-        requirements_content = self.extract_content_from_result(requirements_content_raw, 'requirements.txt')
+        requirements_content = self.extract_content_from_result(requirements_content_raw, 'requirements.txt', match_single_block=True)
         persist_file(requirements_content, requirements_path)
 
         print_colored('', '############# Dockerfile #############', 'red')
@@ -139,7 +141,7 @@ class ExecutorFactory:
         if is_chain_of_thought:
             dockerfile_content_raw = conversation.query(
                 f"General rules: " + not_allowed() + chain_of_thought_optimization('dockerfile', 'Dockerfile'))
-        dockerfile_content = self.extract_content_from_result(dockerfile_content_raw, 'Dockerfile')
+        dockerfile_content = self.extract_content_from_result(dockerfile_content_raw, 'Dockerfile', match_single_block=True)
         persist_file(dockerfile_content, os.path.join(EXECUTOR_FOLDER_v1, 'Dockerfile'))
 
         self.write_config_yml(executor_name, EXECUTOR_FOLDER_v1)
@@ -164,12 +166,13 @@ from jina import Client, Document, DocumentArray
 client = Client(host='{host}')
 response = client.post('/', inputs=DocumentArray([d])) # always use '/'
 print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
+Please provide the complete file with the exact same syntax to wrap the code.
 '''
         )
         conversation = self.gpt_session.get_conversation([])
         conversation.query(user_query)
         playground_content_raw = conversation.query(chain_of_thought_optimization('python', 'app.py', 'the playground'))
-        playground_content = self.extract_content_from_result(playground_content_raw, 'app.py')
+        playground_content = self.extract_content_from_result(playground_content_raw, 'app.py', match_single_block=True)
         persist_file(playground_content, os.path.join(executor_path, 'app.py'))
 
     def get_executor_path(self, output_path, package, version):
@@ -179,6 +182,7 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
     def debug_executor(self, output_path, package, description, test):
         MAX_DEBUGGING_ITERATIONS = 10
         error_before = ''
+        # conversation = self.gpt_session.get_conversation()
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
             previous_executor_path = self.get_executor_path(output_path, package, i)
@@ -188,29 +192,56 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
             if error:
                 recreate_folder(next_executor_path)
                 file_name_to_content = self.get_all_executor_files_with_content(previous_executor_path)
-                all_files_string = self.files_to_string(file_name_to_content)
-                user_query = (
-                        f"General rules: " + not_allowed()
-                        + 'Here is the description of the task the executor must solve:\n'
-                        + description
-                        + '\n\nHere is the test scenario the executor must pass:\n'
-                        + test
-                        + 'Here are all the files I use:\n'
-                        + all_files_string
-                        + (('This is an error that is already fixed before:\n'
-                            + error_before) if error_before else '')
-                        + '\n\nNow, I get the following error:\n'
-                        + error + '\n'
-                        + 'Think quickly about possible reasons. '
-                          'Then output the files that need change. '
-                          "Don't output files that don't need change. "
-                          "If you output a file, then write the complete file. "
-                          "Use the exact same syntax to wrap the code:\n"
-                          f"**...**\n"
-                          f"```...\n"
-                          f"...code...\n"
-                          f"```\n\n"
-                )
+
+                is_dependency_issue = self.is_dependency_issue(error, file_name_to_content['Dockerfile'])
+                print(f'Current error is a dependency issue: {is_dependency_issue}')
+                if is_dependency_issue:
+                    all_files_string = self.files_to_string({
+                        key: val for key, val in file_name_to_content.items() if key in ['requirements.txt', 'Dockerfile']
+                    })
+                    # user_query = (
+                    #     f'I have the following files:\n{all_files_string}\n\n'
+                    #     + f'This error happens during the docker build process:\n{error}\n\n'
+                    #     + 'First, think about what kind of error is this? Look at exactly at the stack trace and then '
+                    #       "suggest how to solve it. Output the files that need change. "
+                    #       "Don't output files that don't need change. If you output a file, then write the "
+                    #       "complete file. Use the exact same syntax to wrap the code:\n"
+                    #       f"**...**\n"
+                    #       f"```...\n"
+                    #       f"...code...\n"
+                    #       f"```"
+                    # )
+                    user_query = (
+                        f"Your task is to provide guidance on how to solve an error that occurred during the Docker "
+                        f"build process. The error message is:\n{error}\nTo solve this error, you should first "
+                        f"identify the type of error by examining the stack trace. Once you have identified the "
+                        f"error, you should suggest how to solve it. Your response should include the files that "
+                        f"need to be changed, but not files that don't need to be changed. For files that need to "
+                        f"be changed, please provide the complete file with the exact same syntax to wrap the code.\n\n"
+                        f"You are given the following files:\n\n{all_files_string}"
+                    )
+                else:
+                # if i == 1:
+                    all_files_string = self.files_to_string(file_name_to_content)
+                    user_query = (
+                             f"General rules: " + not_allowed()
+                            + f'Here is the description of the task the executor must solve:\n{description}'
+                            + f'\n\nHere is the test scenario the executor must pass:\n{test}'
+                            + f'Here are all the files I use:\n{all_files_string}'
+                            + f'\n\nThis error happens during the docker build process:\n{error}\n\n'
+                            + 'First, think about what kind of error is this? Look at exactly at the stack trace and then '
+                              "suggest how to solve it. Output the files that need change. "
+                              "Don't output files that don't need change. If you output a file, then write the "
+                              "complete file. Use the exact same syntax to wrap the code:\n"
+                              f"**...**\n"
+                              f"```...\n"
+                              f"...code...\n"
+                              f"```"
+                    )
+                # else:
+                #     conversation.set_system_definition()
+                #     user_query = f'Now this error happens during the docker build process:\n{error}'
+
                 conversation = self.gpt_session.get_conversation()
                 returned_files_raw = conversation.query(user_query)
                 for file_name, tag in FILE_AND_TAG_PAIRS:
@@ -220,7 +251,7 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
 
                 for file_name, content in file_name_to_content.items():
                     persist_file(content, os.path.join(next_executor_path, file_name))
-                error_before = error
+                error_before = error_before + '\n' + error
 
             else:
                 break
@@ -230,6 +261,16 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
 
     class MaxDebugTimeReachedException(BaseException):
         pass
+
+    def is_dependency_issue(self, error, docker_file: str):
+        conversation = self.gpt_session.get_conversation([])
+        answer = conversation.query(
+            f'Your task is to assist in identifying the root cause of a Docker build error for a python application. '
+            f'The error message is as follows::\n\n{error}\n\n'
+            f'The docker file is as follows:\n\n{docker_file}\n\n'
+            f'Is this a dependency installation failure? Answer with "yes" or "no".'
+        )
+        return 'yes' in answer.lower()
 
     def generate_executor_name(self, description):
         conversation = self.gpt_session.get_conversation()

@@ -23,11 +23,12 @@ def _task(task, tag_name, file_name, function_name=None):
         into_string += f"/{function_name}"
 
     return (
-            task + f"The code will go into {into_string}. Make sure to wrap the code into ``` marks even if you only output code:\n"
+            task + f"The code will go into {into_string}. Make sure to wrap the code into ``` marks even if you only "
+                   f"output code:\n"
                    f"**{file_name}**\n"
                    f"```{tag_name}\n"
                    f"...code...\n"
-                   f"```\n\n"
+                   f"```\nPlease provide the complete file with the exact same syntax to wrap the code."
     )
 
 

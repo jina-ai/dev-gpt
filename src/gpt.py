@@ -71,18 +71,10 @@ class GPTSession:
 class _GPTConversation:
     def __init__(self, model: str, cost_callback, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
         self.model = model
-        system_message = system_base_definition
-        if 'executor' in system_definition_examples:
-            system_message += f'\n{executor_example}'
-        if 'docarray' in system_definition_examples:
-            system_message += f'{docarray_example}'
-        if 'client' in system_definition_examples:
-            system_message += f'{client_example}'
-
-        prompt_list = [('system', system_message)]
-        self.prompt_list = prompt_list
         self.cost_callback = cost_callback
-        print_colored('system', system_message, 'magenta')
+        self.prompt_list = [None]
+        self.set_system_definition(system_definition_examples)
+        print_colored('system', self.prompt_list[0][1], 'magenta')
 
     def query(self, prompt: str):
         print_colored('user', prompt, 'blue')
@@ -90,6 +82,16 @@ class _GPTConversation:
         response = self.get_response(self.prompt_list)
         self.prompt_list.append(('assistant', response))
         return response
+
+    def set_system_definition(self, system_definition_examples: List[str] = []):
+        system_message = system_base_definition
+        if 'executor' in system_definition_examples:
+            system_message += f'\n{executor_example}'
+        if 'docarray' in system_definition_examples:
+            system_message += f'{docarray_example}'
+        if 'client' in system_definition_examples:
+            system_message += f'{client_example}'
+        self.prompt_list[0] = ('system', system_message)
 
     def get_response_from_stream(self, response_generator):
         response_generator_with_timeout = timeout_generator_wrapper(response_generator, 10)

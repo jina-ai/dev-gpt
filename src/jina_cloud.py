@@ -151,7 +151,7 @@ def process_error_message(error_message):
     if last_matching_line_index is not None:
         relevant_lines = lines[last_matching_line_index:]
 
-    return '\n'.join(relevant_lines[-25:])
+    return '\n'.join(relevant_lines[-25:]).strip()
 
 
 def build_docker(path):
