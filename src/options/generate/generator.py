@@ -141,13 +141,16 @@ class Generator:
 Create a playground for the executor {microservice_name} using streamlit.
 The playground must look like it was made by a professional designer.
 All the ui elements are well thought out to make them visually appealing and easy to use.
-The playground must be started with a custom host: streamlit run app.py -- --host grpc://...
-The playground must not let the user configure the --host grpc://... on the ui.
+
 This is an example how you can connect to the executor assuming the document (d) is already defined:
+```
 from jina import Client, Document, DocumentArray
 client = Client(host=host)
 response = client.post('/', inputs=DocumentArray([d])) # always use '/'
-print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
+print(response[0].text)
+```
+The playground (app.py) must read the host from sys.argv because it will be started with a custom host: streamlit run app.py -- --host grpc://...
+The playground (app.py) must not let the user configure the host on the ui.
 '''
         )
         conversation = self.gpt_session.get_conversation()
