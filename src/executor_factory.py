@@ -203,7 +203,6 @@ Please provide the complete file with the exact same syntax to wrap the code.
                 file_name_to_content = self.get_all_executor_files_with_content(previous_executor_path)
 
                 is_dependency_issue = self.is_dependency_issue(error, file_name_to_content['Dockerfile'])
-                print(f'Current error is a dependency issue: {is_dependency_issue}')
 
                 if is_dependency_issue:
                     all_files_string = self.files_to_string({
