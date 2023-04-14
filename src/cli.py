@@ -37,7 +37,6 @@ def path_param(func):
 def main(ctx):
     if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
-    jina_auth_login()
 
 
 @main.command()
@@ -71,6 +70,7 @@ def run(path):
 @main.command()
 @path_param
 def deploy(path):
+    jina_auth_login()
     from src.options.deploy.deployer import Deployer
     path = os.path.expanduser(path)
     path = os.path.abspath(path)
