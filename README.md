@@ -41,7 +41,6 @@ To ensure the microservice accurately aligns with your intended task a test scen
 ## Quickstart
 ### Requirements
 - OpenAI key with access to GPT-4
-- Create an account at [cloud.jina.ai](https://cloud.jina.ai) where your microservice will be deployed
 
 ### Installation
 ```bash
@@ -64,23 +63,22 @@ To generate your personal microservice two things are required:
 The creation process should take between 5 and 15 minutes.
 During this time, GPT iteratively builds your microservice until it finds a strategy that make your test scenario pass.
 
+Be aware that the costs you have to pay for openai vary between $0.50 and $3.00 per microservice (using GPT-4).
 
 ### Run Microservice
+Run the microservice locally. With this command a playground opens in your browser where you can test the microservice.
 ```bash
 gptdeploy run --path <path to microservice>
 ```
 
 ### Deploy Microservice
-It is required to have a [Jina account](https://cloud.jina.ai/) to deploy your microservice.
-
+If you want to deploy your microservice to the cloud a [Jina account](https://cloud.jina.ai/) is required.
+When creating a Jina account, you get some free credits, which you can use to deploy your microservice ($0.025/hour).
+If you run out of credits, you can purchase more.
 ```bash
 gptdeploy deploy --microservice_path <path to microservice>
 ```
-[//]: # (Once the microservice is generated and deployed, you can test it using the generated Streamlit playground.)
-[//]: # (The deployment is made on the Jina`s infrastructure. )
-[//]: # (When creating a Jina account, you get some free credits, which you can use to deploy your microservice &#40;$0.025/hour&#41;.)
-[//]: # (Be aware that the costs you have to pay for openai vary between $0.50 and $3.00 per microservice.)
-[//]: # (If you run out of credits, you can purchase more.)
+
 
 ### Delete Microservice
 To save credits you can delete your microservice via the following commands:

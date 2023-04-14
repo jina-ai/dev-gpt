@@ -4,11 +4,13 @@ import os
 import re
 import subprocess
 import threading
+import time
 import webbrowser
 from pathlib import Path
 
 import click
 import hubble
+import requests
 from hubble.executor.helper import upload_file, archive_package, get_request_header
 from jcloud.flow import CloudFlow
 from jina import Flow
@@ -17,9 +19,6 @@ from src.constants import DEMO_TOKEN
 from src.utils.io import suppress_stdout, is_docker_running
 from src.utils.string_tools import print_colored
 
-
-import requests
-import time
 
 def wait_until_app_is_ready(url):
     is_app_ready = False
@@ -32,6 +31,7 @@ def wait_until_app_is_ready(url):
         except requests.exceptions.RequestException:
             pass
         time.sleep(0.5)
+
 
 def open_streamlit_app():
     url = "http://localhost:8081/playground"
@@ -56,7 +56,7 @@ def jina_auth_login():
 If you just created an account, it can happen that the login callback is not working.
 In this case, please cancel this run, rerun your gptdeploy command and login into your account again. 
 ''', 'green'
-              )
+                      )
         hubble.login(prompt='login', redirect_callback=redirect_callback)
 
 
@@ -129,25 +129,33 @@ def deploy_on_jcloud(executor_name, microservice_path):
         except Exception as e:
             print(f'Could not deploy on Jina Cloud. Trying again in 5 seconds. Error: {e}')
             time.sleep(5)
+        except SystemExit as e:
+            raise SystemExit(f'''
+Looks like your free credits ran out. 
+Please add payment information to your account and try again.
+Visit https://cloud.jina.ai/
+            ''') from e
     if i == 2:
         raise Exception('''
-            Could not deploy on Jina Cloud. 
-            This can happen when the microservice is buggy, if it requires too much memory or if the Jina Cloud is overloaded. 
-            Please try again later.
+Could not deploy on Jina Cloud. 
+This can happen when the microservice is buggy, if it requires too much memory or if the Jina Cloud is overloaded. 
+Please try again later.
 '''
-        )
+                        )
 
     print(f'''
 Your Microservice is deployed.
 Run the following command to start the playground:
 
-streamlit run {os.path.join(microservice_path, "app.py")} --server.port 8081 --server.address 0.0.0.0 -- --host http://{host}
+streamlit run {os.path.join(microservice_path, "app.py")} --server.port 8081 --server.address 0.0.0.0 -- --host {host}
 '''
           )
     return host
 
+
 def run_streamlit_app(app_path):
-    subprocess.run(['streamlit', 'run', app_path, 'server.address', '0.0.0.0', '--server.port', '8081', '--', '--host', 'grpc://localhost:8080'])
+    subprocess.run(['streamlit', 'run', app_path, 'server.address', '0.0.0.0', '--server.port', '8081', '--', '--host',
+                    'grpc://localhost:8080'])
 
 
 def run_locally(executor_name, microservice_version_path):
@@ -175,6 +183,7 @@ We now start the playground for you.
         open_streamlit_app()
 
         flow.block()
+
 
 def create_flow_yaml(dest_folder, executor_name, use_docker):
     if use_docker:
