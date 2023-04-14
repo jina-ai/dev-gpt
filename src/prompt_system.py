@@ -27,14 +27,16 @@ An Executor gets a DocumentArray as input and returns a DocumentArray as output.
 docarray_example = f'''A DocumentArray is a python class that can be seen as a list of Documents.
 A Document is a python class that represents a single document.
 Here is the protobuf definition of a Document:
-
+```
 message DocumentProto {{
   // used to store json data the executor gets and returns
   string text = 1;
 }}
+```
 
 Here are examples of how a DocumentArray can be defined:
 
+```
 from jina import DocumentArray, Document
 import json
 
@@ -52,6 +54,7 @@ array_list = array.tolist()
 d3 = Document(text=json.dumps(array_list))
 d4 = Document()
 d4.text = '{{"uri": "https://.../logo.png"}}'
+```
 '''
 
 

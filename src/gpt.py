@@ -93,9 +93,9 @@ class _GPTConversation:
         if 'executor' in system_definition_examples:
             system_message += f'\n{executor_example}'
         if 'docarray' in system_definition_examples:
-            system_message += f'{docarray_example}'
+            system_message += f'\n{docarray_example}'
         if 'client' in system_definition_examples:
-            system_message += f'{client_example}'
+            system_message += f'\n{client_example}'
         self.prompt_list[0] = ('system', system_message)
 
     def get_response_from_stream(self, response_generator):
