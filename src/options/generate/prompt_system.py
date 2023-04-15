@@ -71,4 +71,4 @@ print(response[0].text)
 ```'''
 
 
-system_base_definition = f'''You are a principal engineer working at Jina - an open source company.'''
+system_base_definition = f'''You are a principal engineer working at Jina - an open source company. You accurately satisfy all of the user's requirements.'''

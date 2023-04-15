@@ -6,7 +6,7 @@ from src.apis import gpt
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS
 from src.apis.jina_cloud import process_error_message, push_executor
 from src.options.generate.prompt_tasks import general_guidelines, chain_of_thought_creation, executor_file_task, \
-    not_allowed, chain_of_thought_optimization, test_executor_file_task, requirements_file_task, docker_file_task
+    not_allowed_executor, chain_of_thought_optimization, test_executor_file_task, requirements_file_task, docker_file_task
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
 
@@ -76,10 +76,10 @@ class Generator:
         microservice_content_raw = conversation.query(user_query)
         if is_chain_of_thought:
             microservice_content_raw = conversation.query(
-                f"General rules: " + not_allowed() + chain_of_thought_optimization('python', 'microservice.py'))
-        microservicer_content = self.extract_content_from_result(executor_content_raw, 'microservice.py', match_single_block=True)
+                f"General rules: " + not_allowed_executor() + chain_of_thought_optimization('python', 'microservice.py'))
+        microservice_content = self.extract_content_from_result(microservice_content_raw, 'microservice.py', match_single_block=True)
         if microservice_content == '':
-            microservice_content_raw = conversation.query('Please add the executor code.')
+            microservice_content_raw = conversation.query('You must add the executor code.')
             microservice_content = self.extract_content_from_result(
                 microservice_content_raw, 'microservice.py', match_single_block=True
             )
@@ -95,7 +95,7 @@ class Generator:
         test_microservice_content_raw = conversation.query(user_query)
         if is_chain_of_thought:
             test_microservice_content_raw = conversation.query(
-                f"General rules: " + not_allowed() +
+                f"General rules: " + not_allowed_executor() +
                 chain_of_thought_optimization('python', 'test_microservice.py')
                 + "Don't add any additional tests. "
             )
@@ -133,7 +133,7 @@ class Generator:
         dockerfile_content_raw = conversation.query(user_query)
         if is_chain_of_thought:
             dockerfile_content_raw = conversation.query(
-                f"General rules: " + not_allowed() + chain_of_thought_optimization('dockerfile', 'Dockerfile'))
+                f"General rules: " + not_allowed_executor() + chain_of_thought_optimization('dockerfile', 'Dockerfile'))
         dockerfile_content = self.extract_content_from_result(dockerfile_content_raw, 'Dockerfile', match_single_block=True)
         persist_file(dockerfile_content, os.path.join(MICROSERVICE_FOLDER_v1, 'Dockerfile'))
 
@@ -161,7 +161,7 @@ response = client.post('/', inputs=DocumentArray([d])) # always use '/'
 print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
 ```
 Note that the response will always be in response[0].text
-Please provide the complete file with the exact same syntax to wrap the code.
+You must provide the complete file with the exact same syntax to wrap the code.
 The playground (app.py) must read the host from sys.argv because it will be started with a custom host: streamlit run app.py -- --host grpc://...
 The playground (app.py) must not let the user configure the host on the ui.
 '''
@@ -198,19 +198,19 @@ The playground (app.py) must not let the user configure the host on the ui.
                         f"identify the type of error by examining the stack trace. Once you have identified the "
                         f"error, you should suggest how to solve it. Your response should include the files that "
                         f"need to be changed, but not files that don't need to be changed. For files that need to "
-                        f"be changed, please provide the complete file with the exact same syntax to wrap the code.\n\n"
+                        f"be changed, you must provide the complete file with the exact same syntax to wrap the code.\n\n"
                         f"You are given the following files:\n\n{all_files_string}"
                     )
                 else:
                     all_files_string = self.files_to_string(file_name_to_content)
                     user_query = (
-                             f"General rules: " + not_allowed()
-                            + f'Here is the description of the task the executor must solve:\n{description}'
-                            + f'\n\nHere is the test scenario the executor must pass:\n{test}'
-                            + f'Here are all the files I use:\n{all_files_string}'
-                            + f'\n\nThis error happens during the docker build process:\n{error}\n\n'
-                            + ((f'This is an error that is already fixed before:\n{error_before}\n\n') if error_before else '')
-                            + 'Look at exactly at the stack trace. First, think about what kind of error is this? '
+                             f"General rules: " + not_allowed_executor()
+                             + f'Here is the description of the task the executor must solve:\n{description}'
+                             + f'\n\nHere is the test scenario the executor must pass:\n{test}'
+                             + f'Here are all the files I use:\n{all_files_string}'
+                             + ((f'This is an error that I already fixed before:\n{error_before}\n\n') if error_before else '')
+                             + f'\n\nThis is the error I encounter currently during the docker build process:\n{error}\n\n'
+                             + 'Look at the stack trace of the current error. First, think about what kind of error is this? '
                               'Then think about possible reasons which might have caused it. Then suggest how to '
                               'solve it. Output the files that need change. '
                               "Don't output files that don't need change. If you output a file, then write the "
@@ -288,7 +288,7 @@ For each subtask:
     For each package:
         Write down some non-obvious thoughts about the challenges you might face for the task and give multiple approaches on how you handle them.
         For example, there might be some packages you must not use because they do not obay the rules:
-        {not_allowed()}
+        {not_allowed_executor()}
         Discuss the pros and cons for all of these packages.
 Create a list of package subsets that you could use to solve the task.
 The list is sorted in a way that the most promising subset of packages is at the top.

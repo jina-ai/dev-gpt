@@ -17,10 +17,10 @@ def general_guidelines():
     )
 
 
-def _task(task, tag_name, file_name, function_name=None):
+def _task(task, tag_name, file_name, purpose=None):
     into_string = file_name
-    if function_name:
-        into_string += f"/{function_name}"
+    if purpose:
+        into_string += f"/{purpose}"
 
     return (
             task + f"The code will go into {into_string}. Make sure to wrap the code into ``` marks even if you only "
@@ -28,7 +28,7 @@ def _task(task, tag_name, file_name, function_name=None):
                    f"**{file_name}**\n"
                    f"```{tag_name}\n"
                    f"...code...\n"
-                   f"```\nPlease provide the complete file with the exact same syntax to wrap the code."
+                   f"```\nYou must provide the complete file with the exact same syntax to wrap the code."
     )
 
 
@@ -39,7 +39,7 @@ It matches the following description: '{executor_description}'.
 It will be tested with the following scenario: '{test_scenario}'.
 For the implementation use the following package: '{package}'.
 Have in mind that d.uri is never a path to a local file. It is always a url.
-''' + not_allowed(),
+''' + not_allowed_executor(),
                  EXECUTOR_FILE_TAG,
                  EXECUTOR_FILE_NAME
                  )
@@ -56,7 +56,7 @@ def test_executor_file_task(executor_name, test_scenario):
         )
         + "Use the following import to import the executor: "
           f"```\nfrom microservice import {executor_name}\n```"
-        + not_allowed()
+        + not_allowed_executor()
         + "The test must not open local files. "
         + "The test must not mock a function of the executor. "
         + "The test must not use other data than the one provided in the test scenario. ",
@@ -78,7 +78,6 @@ def requirements_file_task():
 def docker_file_task():
     return _task(
         "Write the Dockerfile that defines the environment with all necessary dependencies that the executor uses. "
-        "The Dockerfile runs the test during the build process. "
         "It is important to make sure that all libs are installed that are required by the python packages. "
         "Usually libraries are installed with apt-get. "
         "Be aware that the machine the docker container is running on does not have a GPU - only CPU. "
@@ -87,7 +86,7 @@ def docker_file_task():
         "The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard. "
         'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]. '
         'Make sure the all files are in the /workdir. '
-        "The Dockerfile runs the test during the build process. ",
+        "The Dockerfile runs the test during the build process. " + not_allowed_docker(),
         DOCKER_FILE_TAG,
         DOCKER_FILE_NAME
     )
@@ -110,11 +109,12 @@ def streamlit_file_task():
 
 
 def chain_of_thought_creation():
-    return (
-        "First, write down some non-obvious thoughts about the challenges of the task and give multiple approaches on how you handle them. "
-        "For example, the given package you could used in different ways and not all of them obay the rules: "
-        + "Discuss the pros and cons for all of these approaches and then decide for one of the approaches. "
-        "Then write as I told you. "
+    return (f'''
+First, write down some non-obvious thoughts about the challenges of the task and give multiple approaches on how you handle them. 
+For example, the given package you could used in different ways and not all of them obey the instructions.
+Discuss the pros and cons for all of these approaches and then decide for one of the approaches. 
+Then write the code. 
+'''
     )
 
 
@@ -135,7 +135,7 @@ def chain_of_thought_optimization(tag_name, file_name, file_name_function=None):
         file_name_function
     )
 
-def not_allowed():
+def not_allowed_executor():
     return '''
 The executor must not use the GPU.
 The executor must not access a database.
@@ -145,5 +145,10 @@ The executor must not load data from the local file system unless it was created
 The executor must not use a pre-trained model unless it is explicitly mentioned in the description.
 The executor must not train a model.
 The executor must not use any attribute of Document accept Document.text.
+'''
+
+def not_allowed_docker():
+    return '''
 Note that the Dockerfile only has access to the files: executor.py, requirements.txt, config.yml, test_executor.py.
+Note that the Dockerfile runs the test_microservice.py during the build process.
 '''
