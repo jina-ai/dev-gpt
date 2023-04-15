@@ -7,20 +7,23 @@ from openai.error import RateLimitError, Timeout
 
 from src.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
     PRICING_GPT3_5_TURBO_GENERATION
-from src.options.generate.prompt_system import system_base_definition
+from src.options.generate.prompt_system import system_base_definition, executor_example, docarray_example, client_example
 from src.utils.io import timeout_generator_wrapper, GenerationTimeoutError
 from src.utils.string_tools import print_colored
 
+
 class GPTSession:
-    def __init__(self):
+    def __init__(self, model: str = 'gpt-4'):
         self.configure_openai_api_key()
-        if self.is_gpt4_available():
+        if model == 'gpt-4' and self.is_gpt4_available():
             self.supported_model = 'gpt-4'
             self.pricing_prompt = PRICING_GPT4_PROMPT
             self.pricing_generation = PRICING_GPT4_GENERATION
         else:
-            raise Exception('The OPENAI_API_KEY does not have access to GPT-4. We are working on 3.5-turbo - support')
-            self.supported_model = 'gpt-3.5-turbo'
+            if model == 'gpt-4':
+                print_colored('GPT-4 is not available. Using GPT-3.5-turbo instead.', 'yellow')
+                model = 'gpt-3.5-turbo'
+            self.supported_model = model
             self.pricing_prompt = PRICING_GPT3_5_TURBO_PROMPT
             self.pricing_generation = PRICING_GPT3_5_TURBO_GENERATION
         self.chars_prompt_so_far = 0
@@ -58,26 +61,25 @@ If you have updated it already, please restart your terminal.
         self.chars_prompt_so_far += chars_prompt
         self.chars_generation_so_far += chars_generation
         print('\n')
-        money_prompt = round(self.chars_prompt_so_far / 3.4 * self.pricing_prompt / 1000, 2)
-        money_generation = round(self.chars_generation_so_far / 3.4 * self.pricing_generation / 1000, 2)
+        money_prompt = round(self.chars_prompt_so_far / 3.4 * self.pricing_prompt / 1000, 3)
+        money_generation = round(self.chars_generation_so_far / 3.4 * self.pricing_generation / 1000, 3)
         print('Estimated costs on openai.com:')
         # print('money prompt:', f'${money_prompt}')
         # print('money generation:', f'${money_generation}')
         print('total money spent so far:', f'${money_prompt + money_generation}')
         print('\n')
 
-    def get_conversation(self):
-        return _GPTConversation(self.supported_model, self.cost_callback)
+    def get_conversation(self, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
+        return _GPTConversation(self.supported_model, self.cost_callback, system_definition_examples)
 
 
 class _GPTConversation:
-    def __init__(self, model: str, cost_callback, prompt_list: List[Tuple[str, str]] = None):
+    def __init__(self, model: str, cost_callback, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
         self.model = model
-        if prompt_list is None:
-            prompt_list = [('system', system_base_definition)]
-        self.prompt_list = prompt_list
         self.cost_callback = cost_callback
-        print_colored('system', system_base_definition, 'magenta')
+        self.prompt_list = [None]
+        self.set_system_definition(system_definition_examples)
+        print_colored('system', self.prompt_list[0][1], 'magenta')
 
     def query(self, prompt: str):
         print_colored('user', prompt, 'blue')
@@ -85,6 +87,16 @@ class _GPTConversation:
         response = self.get_response(self.prompt_list)
         self.prompt_list.append(('assistant', response))
         return response
+
+    def set_system_definition(self, system_definition_examples: List[str] = []):
+        system_message = system_base_definition
+        if 'executor' in system_definition_examples:
+            system_message += f'\n{executor_example}'
+        if 'docarray' in system_definition_examples:
+            system_message += f'\n{docarray_example}'
+        if 'client' in system_definition_examples:
+            system_message += f'\n{client_example}'
+        self.prompt_list[0] = ('system', system_message)
 
     def get_response_from_stream(self, response_generator):
         response_generator_with_timeout = timeout_generator_wrapper(response_generator, 10)
@@ -102,7 +114,7 @@ class _GPTConversation:
             try:
                 response_generator = openai.ChatCompletion.create(
                     temperature=0,
-                    max_tokens=2_000,
+                    max_tokens=2_000 if self.model == 'gpt-4' else None,
                     model=self.model,
                     stream=True,
                     messages=[

@@ -17,24 +17,29 @@ def general_guidelines():
     )
 
 
-def _task(task, tag_name, file_name):
+def _task(task, tag_name, file_name, purpose=None):
+    into_string = file_name
+    if purpose:
+        into_string += f"/{purpose}"
+
     return (
-            task + f"The code will go into {file_name}. Wrap the code into:\n"
+            task + f"The code will go into {into_string}. Make sure to wrap the code into ``` marks even if you only "
+                   f"output code:\n"
                    f"**{file_name}**\n"
                    f"```{tag_name}\n"
                    f"...code...\n"
-                   f"```\n\n"
+                   f"```\nYou must provide the complete file with the exact same syntax to wrap the code."
     )
 
 
 def executor_file_task(executor_name, executor_description, test_scenario, package):
     return _task(f'''
-Write the executor called '{executor_name}'.
+Write the executor called '{executor_name}'. The name is very important to keep.
 It matches the following description: '{executor_description}'.
 It will be tested with the following scenario: '{test_scenario}'.
 For the implementation use the following package: '{package}'.
 Have in mind that d.uri is never a path to a local file. It is always a url.
-''' + not_allowed(),
+''' + not_allowed_executor(),
                  EXECUTOR_FILE_TAG,
                  EXECUTOR_FILE_NAME
                  )
@@ -50,8 +55,8 @@ def test_executor_file_task(executor_name, test_scenario):
             if test_scenario else ""
         )
         + "Use the following import to import the executor: "
-          f"from microservice import {executor_name} "
-        + not_allowed()
+          f"```\nfrom microservice import {executor_name}\n```"
+        + not_allowed_executor()
         + "The test must not open local files. "
         + "The test must not mock a function of the executor. "
         + "The test must not use other data than the one provided in the test scenario. ",
@@ -73,15 +78,15 @@ def requirements_file_task():
 def docker_file_task():
     return _task(
         "Write the Dockerfile that defines the environment with all necessary dependencies that the executor uses. "
-        "The Dockerfile runs the test during the build process. "
         "It is important to make sure that all libs are installed that are required by the python packages. "
         "Usually libraries are installed with apt-get. "
         "Be aware that the machine the docker container is running on does not have a GPU - only CPU. "
-        "Add the config.yml file to the Dockerfile. "
+        "Add the config.yml file to the Dockerfile. Note that the Dockerfile only has access to the files: "
+        "executor.py, requirements.txt, config.yml, test_executor.py. "
         "The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard. "
         'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]. '
         'Make sure the all files are in the /workdir. '
-        "The Dockerfile runs the test during the build process. " + not_allowed(),
+        "The Dockerfile runs the test during the build process. " + not_allowed_docker(),
         DOCKER_FILE_TAG,
         DOCKER_FILE_NAME
     )
@@ -104,28 +109,33 @@ def streamlit_file_task():
 
 
 def chain_of_thought_creation():
-    return (
-        "First, write down some non-obvious thoughts about the challenges of the task and give multiple approaches on how you handle them. "
-        "For example, the given package you could used in different ways and not all of them obay the rules: "
-        + "Discuss the pros and cons for all of these approaches and then decide for one of the approaches. "
-        "Then write as I told you. "
+    return (f'''
+First, write down some non-obvious thoughts about the challenges of the task and give multiple approaches on how you handle them. 
+For example, the given package you could used in different ways and not all of them obey the instructions.
+Discuss the pros and cons for all of these approaches and then decide for one of the approaches. 
+Then write the code. 
+'''
     )
 
 
-def chain_of_thought_optimization(tag_name, file_name):
+def chain_of_thought_optimization(tag_name, file_name, file_name_function=None):
+    file_name_or_function = file_name
+    if file_name_function:
+        file_name_or_function += f"/{file_name_function}"
     return _task(
-        f'First, write down an extensive list of obvious and non-obvious observations about {file_name} that could need an adjustment. Explain why. '
+        f'First, write down an extensive list of obvious and non-obvious observations about {file_name_or_function} that could need an adjustment. Explain why. '
         f"Think if all the changes are required and finally decide for the changes you want to make, "
         f"but you are not allowed disregard the instructions in the previous message. "
         f"Be very hesitant to change the code. Only make a change if you are sure that it is necessary. "
 
-        f"Output only {file_name} "
-        f"Write the whole content of {file_name} - even if you decided to change only a small thing or even nothing. ",
+        f"Output only {file_name_or_function} "
+        f"Write the whole content of {file_name_or_function} - even if you decided to change only a small thing or even nothing. ",
         tag_name,
-        file_name
+        file_name,
+        file_name_function
     )
 
-def not_allowed():
+def not_allowed_executor():
     return '''
 The executor must not use the GPU.
 The executor must not access a database.
@@ -135,4 +145,10 @@ The executor must not load data from the local file system unless it was created
 The executor must not use a pre-trained model unless it is explicitly mentioned in the description.
 The executor must not train a model.
 The executor must not use any attribute of Document accept Document.text.
+'''
+
+def not_allowed_docker():
+    return '''
+Note that the Dockerfile only has access to the files: executor.py, requirements.txt, config.yml, test_executor.py.
+Note that the Dockerfile runs the test_microservice.py during the build process.
 '''
