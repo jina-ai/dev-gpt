@@ -40,7 +40,7 @@ To ensure the microservice accurately aligns with your intended task a test scen
 
 ## Quickstart
 ### Requirements
-- OpenAI key with access to GPT-4
+- OpenAI key with access to GPT-3.5 or GPT-4 
 
 ### Installation
 ```bash
@@ -53,11 +53,17 @@ We are working on a way to use gpt-3.5-turbo as well.
 
 ### Generate Microservice
 ```bash
-gptdeploy generate --description "<description of the microservice>" --test "<specification of a test scenario>" --path .
+gptdeploy generate \
+--description "<description of the microservice>" \
+--test "<specification of a test scenario>" \
+--model <gpt-3.5 or gpt-4> \
+--path </path/to/local/folder>
 ```
 To generate your personal microservice two things are required:
 - A `description` of the task you want to accomplish.
 - A `test` scenario that ensures the microservice works as expected.
+- The `model` you want to use - either `gpt-3.5` or `gpt-4`. `gpt-3.5` is ~10x cheaper, 
+but will not be able to generate as complex microservices.
 - A `path` on the local drive where the microservice will be generated.
 
 The creation process should take between 5 and 15 minutes.
@@ -66,10 +72,12 @@ During this time, GPT iteratively builds your microservice until it finds a stra
 Be aware that the costs you have to pay for openai vary between $0.50 and $3.00 per microservice (using GPT-4).
 
 ### Run Microservice
-Run the microservice locally. With this command a playground opens in your browser where you can test the microservice.
+Run the microservice locally in docker. In case docker is not running on your machine, it will try to run it withouth docker.
+With this command a playground opens in your browser where you can test the microservice.
 ```bash
 gptdeploy run --path <path to microservice>
 ```
+
 
 ### Deploy Microservice
 If you want to deploy your microservice to the cloud a [Jina account](https://cloud.jina.ai/) is required.
@@ -95,51 +103,51 @@ jc delete <microservice id>
 ### Animal Detector
 ```bash
 
-gptdeploy generate --description "Given an image, return the image with bounding boxes of all animals (https://pjreddie.com/media/files/yolov3.weights, https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg)" --test "https://images.unsplash.com/photo-1444212477490-ca407925329e contains animals"
+gptdeploy generate --description "Given an image, return the image with bounding boxes of all animals (https://pjreddie.com/media/files/yolov3.weights, https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg)" --test "https://images.unsplash.com/photo-1444212477490-ca407925329e contains animals" --model gpt-4
 ```
 
 <img src="res/animal_detector_example.png" alt="Animal Detector" width="600" />
 
 ### Meme Generator
 ```bash
-gptdeploy generate --description "Generate a meme from an image and a caption" --test "Surprised Pikachu: https://media.wired.com/photos/5f87340d114b38fa1f8339f9/master/w_1600%2Cc_limit/Ideas_Surprised_Pikachu_HD.jpg, TOP:When you discovered GPTDeploy"
+gptdeploy generate --description "Generate a meme from an image and a caption" --test "Surprised Pikachu: https://media.wired.com/photos/5f87340d114b38fa1f8339f9/master/w_1600%2Cc_limit/Ideas_Surprised_Pikachu_HD.jpg, TOP:When you discovered GPTDeploy" --model gpt-4
 ```
 
 <img src="res/meme_example.png" alt="Meme Generator" width="600" />
 
 ### Rhyme Generator
 ```bash
-gptdeploy generate --description "Given a word, return a list of rhyming words using the datamuse api" --test "hello"
+gptdeploy generate --description "Given a word, return a list of rhyming words using the datamuse api" --test "hello" --model gpt-4
 ```
 <img src="res/rhyme_generator_example.png" alt="Rhyme Generator" width="600" />
 
 ### Word Cloud Generator
 ```bash
-gptdeploy generate --description "Generate a word cloud from a given text" --test "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+gptdeploy generate --description "Generate a word cloud from a given text" --test "Lorem ipsum dolor sit amet, consectetur adipiscing elit." --model gpt-4
 ```
 <img src="res/word_cloud_example.png" alt="Word Cloud Generator" width="600" />
 
 ### 3d model info
 ```bash
-gptdeploy generate --description "Given a 3d object, return vertex count and face count" --test "https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj"
+gptdeploy generate --description "Given a 3d object, return vertex count and face count" --test "https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj" --model gpt-4
 ```
 <img src="res/obj_info_example.png" alt="3D Model Info" width="600" />
 
 ### Table extraction
 ```bash
-gptdeploy generate --description "Given a URL, extract all tables as csv" --test "http://www.ins.tn/statistiques/90"
+gptdeploy generate --description "Given a URL, extract all tables as csv" --test "http://www.ins.tn/statistiques/90" --model gpt-4
 ```
 <img src="res/table_extraction_example.png" alt="Table Extraction" width="600" />
 
 ### Audio to mel spectrogram
 ```bash
-gptdeploy generate --description "Create mel spectrograms from audio file" --test "https://cdn.pixabay.com/download/audio/2023/02/28/audio_550d815fa5.mp3"
+gptdeploy generate --description "Create mel spectrograms from audio file" --test "https://cdn.pixabay.com/download/audio/2023/02/28/audio_550d815fa5.mp3" --model gpt-4
 ```
 <img src="res/audio_to_mel_example.png" alt="Audio to Mel Spectrogram" width="600" />
 
 ### Text to speech
 ```bash
-gptdeploy generate --description "Convert text to speech" --test "Hello, welcome to GPT Deploy!"
+gptdeploy generate --description "Convert text to speech" --test "Hello, welcome to GPT Deploy!" --model gpt-4
 ```
 <a href=res/text_to_speech_example.wav><img src="res/text_to_speech_example.png" alt="Text to Speech" width="600" /></a>
 
@@ -150,20 +158,20 @@ gptdeploy generate --description "Convert text to speech" --test "Hello, welcome
 
 ### Heatmap Generator
 ```bash
-gptdeploy generate --description "Create a heatmap from an image and a list of relative coordinates" --test "https://images.unsplash.com/photo-1574786198875-49f5d09fe2d2, [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.2, 0.1], [0.7, 0.2], [0.4, 0.2]]"
+gptdeploy generate --description "Create a heatmap from an image and a list of relative coordinates" --test "https://images.unsplash.com/photo-1574786198875-49f5d09fe2d2, [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.2, 0.1], [0.7, 0.2], [0.4, 0.2]]" --model gpt-4
 ```
 <img src="res/heatmap_example.png" alt="Heatmap Generator" width="600" />
 
 ### QR Code Generator
 ```bash
-gptdeploy generate --description "Generate QR code from URL" --test "https://www.example.com"
+gptdeploy generate --description "Generate QR code from URL" --test "https://www.example.com" --model gpt-4
 ```
 <img src="res/qr_example.png" alt="QR Code Generator" width="600" />
 
 ### Mandelbrot Set Visualizer
 
 ```bash
-gptdeploy generate --description "Visualize the Mandelbrot set with custom parameters" --test "center=-0+1i, zoom=1.0, size=800x800, iterations=1000"
+gptdeploy generate --description "Visualize the Mandelbrot set with custom parameters" --test "center=-0+1i, zoom=1.0, size=800x800, iterations=1000" --model gpt-4
 ```
 <img src="res/mandelbrot_example.png" alt="Mandelbrot Set Visualizer" width="600" />
 
