@@ -475,7 +475,7 @@ Make sure it is only printed twice in case it changed.
 - [ ] test feedback for playground generation (could be part of the debugging)
 - [ ] should we send everything via json in the text attribute for simplicity?
 - [ ] fix release workflow
-- 
+- [ ] after the user specified the task, ask them questions back if the task is not clear enough or something is missing
 
 Proposal:
 - [ ] just generate the non-jina related code and insert it into an executor template

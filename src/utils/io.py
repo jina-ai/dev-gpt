@@ -1,7 +1,6 @@
 import os
 
 import concurrent.futures
-import concurrent.futures
 from typing import Generator
 import sys
 from contextlib import contextmanager

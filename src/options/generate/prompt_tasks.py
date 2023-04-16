@@ -51,7 +51,7 @@ def test_executor_file_task(executor_name, test_scenario):
         "Start the test with an extensive comment about the test case. "
         + (
             f"Write a single test case that tests the following scenario: '{test_scenario}'. "
-            f"In case the test scenario is not precise enough, test the most general case without any assumptions."
+            f"In case the test scenario is not precise enough, test a general case without any assumptions."
             if test_scenario else ""
         )
         + "Use the following import to import the executor: "
@@ -82,7 +82,7 @@ def docker_file_task():
         "Usually libraries are installed with apt-get. "
         "Be aware that the machine the docker container is running on does not have a GPU - only CPU. "
         "Add the config.yml file to the Dockerfile. Note that the Dockerfile only has access to the files: "
-        "executor.py, requirements.txt, config.yml, test_executor.py. "
+        "microservice.py, requirements.txt, config.yml, test_microservice.py. "
         "The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard. "
         'The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]. '
         'Make sure the all files are in the /workdir. '
@@ -149,6 +149,7 @@ The executor must not use any attribute of Document accept Document.text.
 
 def not_allowed_docker():
     return '''
-Note that the Dockerfile only has access to the files: executor.py, requirements.txt, config.yml, test_executor.py.
+Note that the Dockerfile only has access to the files: microservice.py, requirements.txt, config.yml, test_microservice.py.
 Note that the Dockerfile runs the test_microservice.py during the build process.
+Note that it is not allowed to attach a virtual display when running test_microservice.py.
 '''

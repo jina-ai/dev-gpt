@@ -44,21 +44,25 @@ def main(ctx):
 @main.command()
 @click.option('--description', required=True, help='Description of the microservice.')
 @click.option('--test', required=True, help='Test scenario for the microservice.')
-@path_param
 @click.option('--model', default='gpt-4', help='GPT model to use (default: gpt-4).')
+@click.option('--verbose', default=False, is_flag=True, help='Verbose mode.')
+@path_param
 def generate(
         description,
         test,
+        model,
+        verbose,
         path,
-        model='gpt-4'
 ):
-    from src.options.generate.generator import Generator
+    os.environ['VERBOSE'] = str(verbose)
     path = os.path.expanduser(path)
     path = os.path.abspath(path)
     if os.path.exists(path):
         if os.listdir(path):
             click.echo(f"Error: The path {path} you provided via --path is not empty. Please choose a directory that does not exist or is empty.")
             return
+
+    from src.options.generate.generator import Generator
     generator = Generator(model=model)
     generator.generate(description, test, path)
 

@@ -66,7 +66,7 @@ class Generator:
         MICROSERVICE_FOLDER_v1 = get_microservice_path(path, microservice_name, package, num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
-        print_colored('', '############# Microservice #############', 'red')
+        print_colored('', '############# Microservice #############', 'blue')
         user_query = (
                 general_guidelines()
                 + executor_file_task(microservice_name, description, test, package)
@@ -85,7 +85,7 @@ class Generator:
             )
         persist_file(microservice_content, os.path.join(MICROSERVICE_FOLDER_v1, 'microservice.py'))
 
-        print_colored('', '############# Test Microservice #############', 'red')
+        print_colored('', '############# Test Microservice #############', 'blue')
         user_query = (
                 general_guidelines()
                 + self.wrap_content_in_code_block(microservice_content, 'microservice.py', 'python')
@@ -99,12 +99,12 @@ class Generator:
                 chain_of_thought_optimization('python', 'test_microservice.py')
                 + "Don't add any additional tests. "
             )
-        microservice_content = self.extract_content_from_result(
-            microservice_content_raw, 'microservice.py', match_single_block=True
+        test_microservice_content = self.extract_content_from_result(
+            test_microservice_content_raw, 'microservice.py', match_single_block=True
         )
-        persist_file(microservice_content, os.path.join(MICROSERVICE_FOLDER_v1, 'test_microservice.py'))
+        persist_file(test_microservice_content, os.path.join(MICROSERVICE_FOLDER_v1, 'test_microservice.py'))
 
-        print_colored('', '############# Requirements #############', 'red')
+        print_colored('', '############# Requirements #############', 'blue')
         requirements_path = os.path.join(MICROSERVICE_FOLDER_v1, 'requirements.txt')
         user_query = (
                 general_guidelines()
@@ -121,7 +121,7 @@ class Generator:
         requirements_content = self.extract_content_from_result(requirements_content_raw, 'requirements.txt', match_single_block=True)
         persist_file(requirements_content, requirements_path)
 
-        print_colored('', '############# Dockerfile #############', 'red')
+        print_colored('', '############# Dockerfile #############', 'blue')
         user_query = (
                 general_guidelines()
                 + self.wrap_content_in_code_block(microservice_content, 'microservice.py', 'python')
@@ -141,7 +141,7 @@ class Generator:
         print('First version of the microservice generated. Start iterating on it to make the tests pass...')
 
     def generate_playground(self, microservice_name, microservice_path):
-        print_colored('', '############# Playground #############', 'red')
+        print_colored('', '############# Playground #############', 'blue')
 
         file_name_to_content = get_all_microservice_files_with_content(microservice_path)
         user_query = (
@@ -170,7 +170,7 @@ The playground (app.py) must not let the user configure the host on the ui.
         conversation.query(user_query)
         playground_content_raw = conversation.query(chain_of_thought_optimization('python', 'app.py', 'the playground'))
         playground_content = self.extract_content_from_result(playground_content_raw, 'app.py', match_single_block=True)
-        persist_file(playground_content, os.path.join(miicroservice_path, 'app.py'))
+        persist_file(playground_content, os.path.join(microservice_path, 'app.py'))
 
 
     def debug_microservice(self, path, microservice_name, num_approach, packages, description, test):
@@ -183,8 +183,9 @@ The playground (app.py) must not let the user configure the host on the ui.
             log_hubble = push_executor(previous_microservice_path)
             error = process_error_message(log_hubble)
             if error:
+                print('An error occurred during the build process. Feeding the error back to the assistent...')
                 os.makedirs(next_microservice_path)
-                file_name_to_content = self.get_all_microservice_files_with_content(previous_executor_path)
+                file_name_to_content = get_all_microservice_files_with_content(previous_microservice_path)
 
                 is_dependency_issue = self.is_dependency_issue(error, file_name_to_content['Dockerfile'])
 
@@ -247,6 +248,7 @@ The playground (app.py) must not let the user configure the host on the ui.
         if any([error_message in error for error_message in ['AttributeError', 'NameError', 'AssertionError']]):
             return False
 
+        print_colored('', 'Is it a dependency issue?', 'blue')
         conversation = self.gpt_session.get_conversation([])
         answer = conversation.query(
             f'Your task is to assist in identifying the root cause of a Docker build error for a python application. '
@@ -278,27 +280,34 @@ PDFParserExecutor
         return name
 
     def get_possible_packages(self, description):
-        print_colored('', '############# What package to use? #############', 'red')
+        print_colored('', '############# What packages to use? #############', 'blue')
         user_query = f'''
-Here is the task description of the problme you need to solve:
+Here is the task description of the problem you need to solve:
 "{description}"
-First, write down all the subtasks you need to solve which require python packages.
-For each subtask:
-    Provide a list of 1 to 3 python packages you could use to solve the subtask. Prefer modern packages.
-    For each package:
-        Write down some non-obvious thoughts about the challenges you might face for the task and give multiple approaches on how you handle them.
-        For example, there might be some packages you must not use because they do not obay the rules:
-        {not_allowed_executor()}
-        Discuss the pros and cons for all of these packages.
-Create a list of package subsets that you could use to solve the task.
-The list is sorted in a way that the most promising subset of packages is at the top.
-The maximum length of the list is 5.
+1. Write down all the non-trivial subtasks you need to solve.
+2. Find out what is the core problem to solve.
+3. Provide a list of all python packages you can think of that could directly be used to solve the core problem.
+3. Provide a list of the 7 most promising python packages that fulfill the following requirements:
+- can directly be used to solve the core problem
+- has a stable api among different versions
+- does not have system requirements
+
+For each package:
+    a) Write down some non-obvious challenges you might face with the package when implementing your task and give multiple approaches on how you handle them.
+    For example, you might find out that you must not use the package because it does not obey the rules:
+    {not_allowed_executor()}
+    b) Discuss the pros and cons for the package.
+
+4. Output the best 5 python packages starting with the best one.
 
 The output must be a list of lists wrapped into ``` and starting with **packages.csv** like this:
 **packages.csv**
 ```
-package1,package2
-package2,package3,...
+package1
+package2
+package3
+package4
+package5
 ...
 ```
 '''
@@ -319,7 +328,9 @@ package2,package3,...
                 final_version_path = self.debug_microservice(microservice_path, microservice_name, num_approach, packages, description, test)
                 self.generate_playground(microservice_name, final_version_path)
             except self.MaxDebugTimeReachedException:
-                print('Could not debug the Microservice.')
+                print('Could not debug the Microservice with the approach:', packages)
+                if num_approach == len(packages_list) - 1:
+                    print_colored('', f'Could not debug the Microservice with any of the approaches: {packages} giving up.', 'red')
                 continue
             print(f'''
 You can now run or deploy your microservice:

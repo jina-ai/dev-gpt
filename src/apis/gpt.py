@@ -1,12 +1,13 @@
 import os
 from time import sleep
-from typing import List, Tuple
+
+from typing import List, Tuple, Optional
 
 import openai
 from openai.error import RateLimitError, Timeout
 
 from src.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
-    PRICING_GPT3_5_TURBO_GENERATION
+    PRICING_GPT3_5_TURBO_GENERATION, CHARS_PER_TOKEN
 from src.options.generate.prompt_system import system_base_definition, executor_example, docarray_example, client_example
 from src.utils.io import timeout_generator_wrapper, GenerationTimeoutError
 from src.utils.string_tools import print_colored
@@ -61,28 +62,30 @@ If you have updated it already, please restart your terminal.
         self.chars_prompt_so_far += chars_prompt
         self.chars_generation_so_far += chars_generation
         print('\n')
-        money_prompt = round(self.chars_prompt_so_far / 3.4 * self.pricing_prompt / 1000, 3)
-        money_generation = round(self.chars_generation_so_far / 3.4 * self.pricing_generation / 1000, 3)
-        print('Estimated costs on openai.com:')
-        # print('money prompt:', f'${money_prompt}')
-        # print('money generation:', f'${money_generation}')
-        print('total money spent so far:', f'${money_prompt + money_generation}')
+        money_prompt = self.calculate_money_spent(self.chars_prompt_so_far, self.pricing_prompt)
+        money_generation = self.calculate_money_spent(self.chars_generation_so_far, self.pricing_generation)
+        print('Total money spent so far on openai.com:', f'${money_prompt + money_generation}')
         print('\n')
 
     def get_conversation(self, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
         return _GPTConversation(self.supported_model, self.cost_callback, system_definition_examples)
+
+    def calculate_money_spent(self, num_chars, price):
+        return round(num_chars / CHARS_PER_TOKEN * price / 1000, 3)
 
 
 class _GPTConversation:
     def __init__(self, model: str, cost_callback, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
         self.model = model
         self.cost_callback = cost_callback
-        self.prompt_list = [None]
+        self.prompt_list: List[Optional[Tuple]] = [None]
         self.set_system_definition(system_definition_examples)
-        print_colored('system', self.prompt_list[0][1], 'magenta')
+        if 'verbose' in os.environ:
+            print_colored('system', self.prompt_list[0][1], 'magenta')
 
     def query(self, prompt: str):
-        print_colored('user', prompt, 'blue')
+        if 'verbose' in os.environ:
+            print_colored('user', prompt, 'blue')
         self.prompt_list.append(('user', prompt))
         response = self.get_response(self.prompt_list)
         self.prompt_list.append(('assistant', response))
@@ -129,8 +132,8 @@ class _GPTConversation:
                 complete_string = self.get_response_from_stream(response_generator)
 
             except (RateLimitError, Timeout, ConnectionError, GenerationTimeoutError) as e:
-                print(e)
-                print('retrying, be aware that this might affect the cost calculation')
+                print('/n', e)
+                print('retrying...')
                 sleep(3)
                 continue
             chars_prompt = sum(len(prompt[1]) for prompt in prompt_list)

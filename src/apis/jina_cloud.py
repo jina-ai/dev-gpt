@@ -162,7 +162,19 @@ def run_locally(executor_name, microservice_version_path):
     if is_docker_running():
         use_docker = True
     else:
-        click.echo('Docker daemon doesn\'t seem to be running. Trying to start it without docker')
+        click.echo('''
+Docker daemon doesn\'t seem to be running.
+It might be important to run your microservice within a docker container.
+Your machine might not have all the dependencies installed.
+You have 3 options:
+a) start the docker daemon
+b) run gptdeploy deploy... to deploy your microservice on Jina Cloud. All dependencies will be installed there.
+c) try to run your microservice locally without docker. It is worth a try but might fail.
+'''
+                   )
+        user_input = click.prompt('Do you want to run your microservice locally without docker? (Y/n)', type=str, default='y')
+        if user_input.lower() != 'y':
+            exit(1)
         use_docker = False
     print('Run a jina flow locally')
     full_flow_path = create_flow_yaml(microservice_version_path, executor_name, use_docker)
@@ -238,6 +250,7 @@ def update_client_line_in_file(file_path, host):
 
 def process_error_message(error_message):
     lines = error_message.split('\n')
+
     relevant_lines = []
 
     pattern = re.compile(r"^#\d+ \[[ \d]+/[ \d]+\]")  # Pattern to match lines like "#11 [7/8]"
@@ -250,7 +263,16 @@ def process_error_message(error_message):
     if last_matching_line_index is not None:
         relevant_lines = lines[last_matching_line_index:]
 
-    return '\n'.join(relevant_lines[-25:]).strip()
+    response = '\n'.join(relevant_lines[-25:]).strip()
+
+    # the following code tests the case that the docker file is corrupted and can not be parsed
+    # the method above will not return a relevant error message in this case
+    # but the last line of the error message will start with "error"
+
+    last_line = lines[-1]
+    if not response and last_line.startswith('error: '):
+        return last_line
+    return response
 
 
 def build_docker(path):
