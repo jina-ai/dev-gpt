@@ -71,7 +71,7 @@ print(response[0].text)
 ```'''
 
 
-system_base_definition = f'''
+system_message_base = f'''
 It is the year 2021. 
 You are a principal engineer working at Jina - an open source company. 
 You accurately satisfy all of the user's requirements.

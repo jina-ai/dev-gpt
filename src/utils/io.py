@@ -31,28 +31,6 @@ def get_all_microservice_files_with_content(folder_path):
     return file_name_to_content
 
 
-class GenerationTimeoutError(Exception):
-    pass
-
-def timeout_generator_wrapper(generator, timeout):
-    def generator_func():
-        for item in generator:
-            yield item
-
-    def wrapper() -> Generator:
-        gen = generator_func()
-        while True:
-            try:
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    future = executor.submit(next, gen)
-                    yield future.result(timeout=timeout)
-            except StopIteration:
-                break
-            except concurrent.futures.TimeoutError:
-                raise GenerationTimeoutError(f"Generation took too long")
-
-    return wrapper()
-
 @contextmanager
 def suppress_stdout():
     original_stdout = sys.stdout

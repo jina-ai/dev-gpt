@@ -74,15 +74,15 @@ class Generator:
                 + executor_file_task(microservice_name, description, test, package)
         )
         conversation = self.gpt_session.get_conversation()
-        microservice_content_raw = conversation.query(user_query)
+        microservice_content_raw = conversation.chat(user_query)
         if is_chain_of_thought:
-            microservice_content_raw = conversation.query(
+            microservice_content_raw = conversation.chat(
                 f"General rules: " + not_allowed_executor() + chain_of_thought_optimization('python',
                                                                                             'microservice.py'))
         microservice_content = self.extract_content_from_result(microservice_content_raw, 'microservice.py',
                                                                 match_single_block=True)
         if microservice_content == '':
-            microservice_content_raw = conversation.query('You must add the executor code.')
+            microservice_content_raw = conversation.chat('You must add the executor code.')
             microservice_content = self.extract_content_from_result(
                 microservice_content_raw, 'microservice.py', match_single_block=True
             )
@@ -95,9 +95,9 @@ class Generator:
                 + test_executor_file_task(microservice_name, test)
         )
         conversation = self.gpt_session.get_conversation()
-        test_microservice_content_raw = conversation.query(user_query)
+        test_microservice_content_raw = conversation.chat(user_query)
         if is_chain_of_thought:
-            test_microservice_content_raw = conversation.query(
+            test_microservice_content_raw = conversation.chat(
                 f"General rules: " + not_allowed_executor() +
                 chain_of_thought_optimization('python', 'test_microservice.py')
                 + "Don't add any additional tests. "
@@ -116,9 +116,9 @@ class Generator:
                 + requirements_file_task()
         )
         conversation = self.gpt_session.get_conversation()
-        requirements_content_raw = conversation.query(user_query)
+        requirements_content_raw = conversation.chat(user_query)
         if is_chain_of_thought:
-            requirements_content_raw = conversation.query(
+            requirements_content_raw = conversation.chat(
                 chain_of_thought_optimization('', requirements_path) + "Keep the same version of jina ")
 
         requirements_content = self.extract_content_from_result(requirements_content_raw, 'requirements.txt',
@@ -134,9 +134,9 @@ class Generator:
                 + docker_file_task()
         )
         conversation = self.gpt_session.get_conversation()
-        dockerfile_content_raw = conversation.query(user_query)
+        dockerfile_content_raw = conversation.chat(user_query)
         if is_chain_of_thought:
-            dockerfile_content_raw = conversation.query(
+            dockerfile_content_raw = conversation.chat(
                 f"General rules: " + not_allowed_executor() + chain_of_thought_optimization('dockerfile', 'Dockerfile'))
         dockerfile_content = self.extract_content_from_result(dockerfile_content_raw, 'Dockerfile',
                                                               match_single_block=True)
@@ -172,8 +172,8 @@ The playground (app.py) must not let the user configure the host on the ui.
 '''
         )
         conversation = self.gpt_session.get_conversation([])
-        conversation.query(user_query)
-        playground_content_raw = conversation.query(chain_of_thought_optimization('python', 'app.py', 'the playground'))
+        conversation.chat(user_query)
+        playground_content_raw = conversation.chat(chain_of_thought_optimization('python', 'app.py', 'the playground'))
         playground_content = self.extract_content_from_result(playground_content_raw, 'app.py', match_single_block=True)
         persist_file(playground_content, os.path.join(microservice_path, 'app.py'))
 
@@ -213,7 +213,7 @@ The playground (app.py) must not let the user configure the host on the ui.
             user_query = self.get_user_query_code_issue(description, error, file_name_to_content,
                                                         test)
         conversation = self.gpt_session.get_conversation()
-        returned_files_raw = conversation.query(user_query)
+        returned_files_raw = conversation.chat(user_query)
         for file_name, tag in FILE_AND_TAG_PAIRS:
             updated_file = self.extract_content_from_result(returned_files_raw, file_name)
             if updated_file and (not is_dependency_issue or file_name in ['requirements.txt', 'Dockerfile']):
@@ -280,7 +280,7 @@ complete file. Use the exact same syntax to wrap the code:
 
         print_colored('', 'Is it a dependency issue?', 'blue')
         conversation = self.gpt_session.get_conversation([])
-        answer = conversation.query(
+        answer = conversation.chat(
             f'Your task is to assist in identifying the root cause of a Docker build error for a python application. '
             f'The error message is as follows::\n\n{error}\n\n'
             f'The docker file is as follows:\n\n{docker_file}\n\n'
@@ -305,7 +305,7 @@ The output is a the raw string wrapped into ``` and starting with **name.txt** l
 PDFParserExecutor
 ```
 '''
-        name_raw = conversation.query(user_query)
+        name_raw = conversation.chat(user_query)
         name = self.extract_content_from_result(name_raw, 'name.txt')
         return name
 
@@ -341,7 +341,7 @@ package5
 ```
 '''
         conversation = self.gpt_session.get_conversation()
-        packages_raw = conversation.query(user_query)
+        packages_raw = conversation.chat(user_query)
         packages_csv_string = self.extract_content_from_result(packages_raw, 'packages.csv')
         packages = [package.split(',') for package in packages_csv_string.split('\n')]
         packages = packages[:NUM_IMPLEMENTATION_STRATEGIES]
@@ -351,13 +351,17 @@ package5
         generated_name = self.generate_microservice_name(description)
         microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
         packages_list = self.get_possible_packages(description)
-        packages_list = [packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0]
+        packages_list = [
+            packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0
+        ]
         for num_approach, packages in enumerate(packages_list):
             try:
-                self.generate_microservice(description, test, microservice_path, microservice_name, packages,
-                                           num_approach)
-                final_version_path = self.debug_microservice(microservice_path, microservice_name, num_approach,
-                                                             packages, description, test)
+                self.generate_microservice(
+                    description, test, microservice_path, microservice_name, packages, num_approach
+                )
+                final_version_path = self.debug_microservice(
+                    microservice_path, microservice_name, num_approach, packages, description, test
+                )
                 self.generate_playground(microservice_name, final_version_path)
             except self.MaxDebugTimeReachedException:
                 print('Could not debug the Microservice with the approach:', packages)
