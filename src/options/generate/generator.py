@@ -3,10 +3,12 @@ import random
 import re
 
 from src.apis import gpt
-from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS
 from src.apis.jina_cloud import process_error_message, push_executor
-from src.options.generate.prompt_tasks import general_guidelines, chain_of_thought_creation, executor_file_task, \
-    not_allowed_executor, chain_of_thought_optimization, test_executor_file_task, requirements_file_task, docker_file_task
+from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
+    PROBLEMATIC_PACKAGES
+from src.options.generate.prompt_tasks import general_guidelines, executor_file_task, \
+    not_allowed_executor, chain_of_thought_optimization, test_executor_file_task, requirements_file_task, \
+    docker_file_task, not_allowed_docker
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
 
@@ -70,14 +72,15 @@ class Generator:
         user_query = (
                 general_guidelines()
                 + executor_file_task(microservice_name, description, test, package)
-                + '\n\n' + chain_of_thought_creation()
         )
         conversation = self.gpt_session.get_conversation()
         microservice_content_raw = conversation.query(user_query)
         if is_chain_of_thought:
             microservice_content_raw = conversation.query(
-                f"General rules: " + not_allowed_executor() + chain_of_thought_optimization('python', 'microservice.py'))
-        microservice_content = self.extract_content_from_result(microservice_content_raw, 'microservice.py', match_single_block=True)
+                f"General rules: " + not_allowed_executor() + chain_of_thought_optimization('python',
+                                                                                            'microservice.py'))
+        microservice_content = self.extract_content_from_result(microservice_content_raw, 'microservice.py',
+                                                                match_single_block=True)
         if microservice_content == '':
             microservice_content_raw = conversation.query('You must add the executor code.')
             microservice_content = self.extract_content_from_result(
@@ -118,7 +121,8 @@ class Generator:
             requirements_content_raw = conversation.query(
                 chain_of_thought_optimization('', requirements_path) + "Keep the same version of jina ")
 
-        requirements_content = self.extract_content_from_result(requirements_content_raw, 'requirements.txt', match_single_block=True)
+        requirements_content = self.extract_content_from_result(requirements_content_raw, 'requirements.txt',
+                                                                match_single_block=True)
         persist_file(requirements_content, requirements_path)
 
         print_colored('', '############# Dockerfile #############', 'blue')
@@ -134,7 +138,8 @@ class Generator:
         if is_chain_of_thought:
             dockerfile_content_raw = conversation.query(
                 f"General rules: " + not_allowed_executor() + chain_of_thought_optimization('dockerfile', 'Dockerfile'))
-        dockerfile_content = self.extract_content_from_result(dockerfile_content_raw, 'Dockerfile', match_single_block=True)
+        dockerfile_content = self.extract_content_from_result(dockerfile_content_raw, 'Dockerfile',
+                                                              match_single_block=True)
         persist_file(dockerfile_content, os.path.join(MICROSERVICE_FOLDER_v1, 'Dockerfile'))
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
@@ -172,7 +177,6 @@ The playground (app.py) must not let the user configure the host on the ui.
         playground_content = self.extract_content_from_result(playground_content_raw, 'app.py', match_single_block=True)
         persist_file(playground_content, os.path.join(microservice_path, 'app.py'))
 
-
     def debug_microservice(self, path, microservice_name, num_approach, packages, description, test):
         error_before = ''
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
@@ -184,61 +188,87 @@ The playground (app.py) must not let the user configure the host on the ui.
             error = process_error_message(log_hubble)
             if error:
                 print('An error occurred during the build process. Feeding the error back to the assistent...')
-                os.makedirs(next_microservice_path)
-                file_name_to_content = get_all_microservice_files_with_content(previous_microservice_path)
-
-                is_dependency_issue = self.is_dependency_issue(error, file_name_to_content['Dockerfile'])
-
-                if is_dependency_issue:
-                    all_files_string = self.files_to_string({
-                        key: val for key, val in file_name_to_content.items() if key in ['requirements.txt', 'Dockerfile']
-                    })
-                    user_query = (
-                        f"Your task is to provide guidance on how to solve an error that occurred during the Docker "
-                        f"build process. The error message is:\n{error}\nTo solve this error, you should first "
-                        f"identify the type of error by examining the stack trace. Once you have identified the "
-                        f"error, you should suggest how to solve it. Your response should include the files that "
-                        f"need to be changed, but not files that don't need to be changed. For files that need to "
-                        f"be changed, you must provide the complete file with the exact same syntax to wrap the code.\n\n"
-                        f"You are given the following files:\n\n{all_files_string}"
-                    )
-                else:
-                    all_files_string = self.files_to_string(file_name_to_content)
-                    user_query = (
-                             f"General rules: " + not_allowed_executor()
-                             + f'Here is the description of the task the executor must solve:\n{description}'
-                             + f'\n\nHere is the test scenario the executor must pass:\n{test}'
-                             + f'Here are all the files I use:\n{all_files_string}'
-                             + ((f'This is an error that I already fixed before:\n{error_before}\n\n') if error_before else '')
-                             + f'\n\nThis is the error I encounter currently during the docker build process:\n{error}\n\n'
-                             + 'Look at the stack trace of the current error. First, think about what kind of error is this? '
-                              'Then think about possible reasons which might have caused it. Then suggest how to '
-                              'solve it. Output the files that need change. '
-                              "Don't output files that don't need change. If you output a file, then write the "
-                              "complete file. Use the exact same syntax to wrap the code:\n"
-                              f"**...**\n"
-                              f"```...\n"
-                              f"...code...\n"
-                              f"```"
-                    )
-
-                conversation = self.gpt_session.get_conversation()
-                returned_files_raw = conversation.query(user_query)
-                for file_name, tag in FILE_AND_TAG_PAIRS:
-                    updated_file = self.extract_content_from_result(returned_files_raw, file_name)
-                    if updated_file and (not is_dependency_issue or file_name in ['requirements.txt', 'Dockerfile']):
-                        file_name_to_content[file_name] = updated_file
-
-                for file_name, content in file_name_to_content.items():
-                    persist_file(content, os.path.join(next_microservice_path, file_name))
+                self.do_debug_iteration(description, error, error_before, next_microservice_path,
+                                        previous_microservice_path, test)
                 error_before = error
-
             else:
                 print('Successfully build microservice.')
                 break
             if i == MAX_DEBUGGING_ITERATIONS - 1:
                 raise self.MaxDebugTimeReachedException('Could not debug the microservice.')
         return get_microservice_path(path, microservice_name, packages, num_approach, i)
+
+    def do_debug_iteration(self, description, error, error_before, next_microservice_path, previous_microservice_path,
+                           test):
+        os.makedirs(next_microservice_path)
+        file_name_to_content = get_all_microservice_files_with_content(previous_microservice_path)
+        is_dependency_issue = self.is_dependency_issue(error, file_name_to_content['Dockerfile'])
+        if is_dependency_issue:
+            all_files_string = self.files_to_string({
+                key: val for key, val in file_name_to_content.items() if
+                key in ['requirements.txt', 'Dockerfile']
+            })
+            user_query = self.get_user_query_dependency_issue(all_files_string, error)
+        else:
+            user_query = self.get_user_query_code_issue(description, error, file_name_to_content,
+                                                        test)
+        conversation = self.gpt_session.get_conversation()
+        returned_files_raw = conversation.query(user_query)
+        for file_name, tag in FILE_AND_TAG_PAIRS:
+            updated_file = self.extract_content_from_result(returned_files_raw, file_name)
+            if updated_file and (not is_dependency_issue or file_name in ['requirements.txt', 'Dockerfile']):
+                file_name_to_content[file_name] = updated_file
+        for file_name, content in file_name_to_content.items():
+            persist_file(content, os.path.join(next_microservice_path, file_name))
+
+    def get_user_query_dependency_issue(self, all_files_string, error):
+        user_query = (
+            f'''
+Your task is to provide guidance on how to solve an error that occurred during the Docker build process. 
+The error message is:
+**microservice.log**
+```
+{error}
+```
+To solve this error, you should:
+1. Identify the type of error by examining the stack trace. 
+2. Suggest how to solve it. 
+3. Your suggestion must include the files that need to be changed, but not files that don't need to be changed. 
+For files that need to be changed, you must provide the complete file with the exact same syntax to wrap the code.
+Obey the following rules: {not_allowed_docker()}
+
+You are given the following files:
+
+{all_files_string}"
+'''
+        )
+        return user_query
+
+    def get_user_query_code_issue(self, description, error, file_name_to_content, test):
+        all_files_string = self.files_to_string(file_name_to_content)
+        return f'''
+General rules: {not_allowed_executor()}
+Here is the description of the task the executor must solve:
+{description}
+
+Here is the test scenario the executor must pass:\n{test}
+Here are all the files I use:
+{all_files_string}
+
+
+This is the error I encounter currently during the docker build process:
+{error}
+
+Look at the stack trace of the current error. First, think about what kind of error is this? 
+Then think about possible reasons which might have caused it. Then suggest how to 
+solve it. Output all the files that need change. 
+Don't output files that don't need change. If you output a file, then write the 
+complete file. Use the exact same syntax to wrap the code:
+**...**
+```...
+...code...
+```
+'''
 
     class MaxDebugTimeReachedException(BaseException):
         pass
@@ -286,19 +316,18 @@ Here is the task description of the problem you need to solve:
 "{description}"
 1. Write down all the non-trivial subtasks you need to solve.
 2. Find out what is the core problem to solve.
-3. Provide a list of all python packages you can think of that could directly be used to solve the core problem.
-3. Provide a list of the 7 most promising python packages that fulfill the following requirements:
-- can directly be used to solve the core problem
-- has a stable api among different versions
-- does not have system requirements
+3. List up to 15 Python packages that are specifically designed or have functionalities to solve the complete core problem.
+4. For each of the 15 package think if it fulfills the following requirements:
+a) specifically designed or have functionalities to solve the complete core problem.
+b) has a stable api among different versions
+c) does not have system requirements
+d) can solve the task when running in a docker container
+e) the implementation of the core problem using the package would obey the following rules:
+{not_allowed_executor()}
+When answering, just write "yes" or "no".
 
-For each package:
-    a) Write down some non-obvious challenges you might face with the package when implementing your task and give multiple approaches on how you handle them.
-    For example, you might find out that you must not use the package because it does not obey the rules:
-    {not_allowed_executor()}
-    b) Discuss the pros and cons for the package.
-
-4. Output the best 5 python packages starting with the best one.
+5. Output the most suitable 5 python packages starting with the best one. 
+If the package is mentioned in the description, then it is automatically the best one.
 
 The output must be a list of lists wrapped into ``` and starting with **packages.csv** like this:
 **packages.csv**
@@ -322,15 +351,20 @@ package5
         generated_name = self.generate_microservice_name(description)
         microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
         packages_list = self.get_possible_packages(description)
+        packages_list = [packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0]
         for num_approach, packages in enumerate(packages_list):
             try:
-                self.generate_microservice(description, test, microservice_path, microservice_name, packages, num_approach)
-                final_version_path = self.debug_microservice(microservice_path, microservice_name, num_approach, packages, description, test)
+                self.generate_microservice(description, test, microservice_path, microservice_name, packages,
+                                           num_approach)
+                final_version_path = self.debug_microservice(microservice_path, microservice_name, num_approach,
+                                                             packages, description, test)
                 self.generate_playground(microservice_name, final_version_path)
             except self.MaxDebugTimeReachedException:
                 print('Could not debug the Microservice with the approach:', packages)
                 if num_approach == len(packages_list) - 1:
-                    print_colored('', f'Could not debug the Microservice with any of the approaches: {packages} giving up.', 'red')
+                    print_colored('',
+                                  f'Could not debug the Microservice with any of the approaches: {packages} giving up.',
+                                  'red')
                 continue
             print(f'''
 You can now run or deploy your microservice:
@@ -339,4 +373,3 @@ gptdeploy deploy --path {microservice_path}
 '''
                   )
             break
-

@@ -38,11 +38,16 @@ Write the executor called '{executor_name}'. The name is very important to keep.
 It matches the following description: '{executor_description}'.
 It will be tested with the following scenario: '{test_scenario}'.
 For the implementation use the following package: '{package}'.
+
+Obey the following rules:
 Have in mind that d.uri is never a path to a local file. It is always a url.
-''' + not_allowed_executor(),
-                 EXECUTOR_FILE_TAG,
-                 EXECUTOR_FILE_NAME
-                 )
+{not_allowed_executor()}
+Your approach:
+1. Identify the core challenge when implementing the executor.
+2. Think about solutions for these challenges.
+3. Decide for one of the solutions.
+4. Write the code.
+''', EXECUTOR_FILE_TAG, EXECUTOR_FILE_NAME)
 
 
 def test_executor_file_task(executor_name, test_scenario):
@@ -107,17 +112,6 @@ def streamlit_file_task():
         STREAMLIT_FILE_NAME
     )
 
-
-def chain_of_thought_creation():
-    return (f'''
-First, write down some non-obvious thoughts about the challenges of the task and give multiple approaches on how you handle them. 
-For example, the given package you could used in different ways and not all of them obey the instructions.
-Discuss the pros and cons for all of these approaches and then decide for one of the approaches. 
-Then write the code. 
-'''
-    )
-
-
 def chain_of_thought_optimization(tag_name, file_name, file_name_function=None):
     file_name_or_function = file_name
     if file_name_function:
@@ -137,19 +131,21 @@ def chain_of_thought_optimization(tag_name, file_name, file_name_function=None):
 
 def not_allowed_executor():
     return '''
-The executor must not use the GPU.
-The executor must not access a database.
-The executor must not access a display.
-The executor must not access external apis except unless it is explicitly mentioned in the description or test case (e.g. by mentioning the api that should be used or by providing a URL to access the data). 
-The executor must not load data from the local file system unless it was created by the executor itself.
-The executor must not use a pre-trained model unless it is explicitly mentioned in the description.
-The executor must not train a model.
-The executor must not use any attribute of Document accept Document.text.
+The executor and the test must not use the GPU.
+The executor and the test must not access a database.
+The executor and the test must not access a display.
+The executor and the test must not access external apis except unless it is explicitly mentioned in the description or test case (e.g. by mentioning the api that should be used or by providing a URL to access the data). 
+The executor and the test must not load data from the local file system unless it was created by the executor itself.
+The executor and the test must not use a pre-trained model unless it is explicitly mentioned in the description.
+The executor and the test must not train a model.
+The executor and the test must not use any attribute of Document accept Document.text.
+The executor and the test must not contain prototype or placeholder implementations.
+The executor and the test must run in a docker container based on debian.
 '''
 
 def not_allowed_docker():
     return '''
 Note that the Dockerfile only has access to the files: microservice.py, requirements.txt, config.yml, test_microservice.py.
 Note that the Dockerfile runs the test_microservice.py during the build process.
-Note that it is not allowed to attach a virtual display when running test_microservice.py.
+The Dockerfile must not attach a virtual display when running test_microservice.py.
 '''

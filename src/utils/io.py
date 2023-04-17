@@ -49,7 +49,7 @@ def timeout_generator_wrapper(generator, timeout):
             except StopIteration:
                 break
             except concurrent.futures.TimeoutError:
-                raise GenerationTimeoutError(f"Generation took longer than {timeout} seconds")
+                raise GenerationTimeoutError(f"Generation took too long")
 
     return wrapper()
 

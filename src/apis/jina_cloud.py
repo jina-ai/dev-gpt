@@ -248,6 +248,13 @@ def update_client_line_in_file(file_path, host):
         file.write(replaced_content)
 
 
+def remove_after_stderr(relevant_lines):
+    for index, line in enumerate(relevant_lines):
+        if '--- Captured stderr call ----' in line:
+            return relevant_lines[:index]
+    return relevant_lines
+
+
 def process_error_message(error_message):
     lines = error_message.split('\n')
 
@@ -262,6 +269,8 @@ def process_error_message(error_message):
 
     if last_matching_line_index is not None:
         relevant_lines = lines[last_matching_line_index:]
+
+    relevant_lines = remove_after_stderr(relevant_lines)
 
     response = '\n'.join(relevant_lines[-25:]).strip()
 

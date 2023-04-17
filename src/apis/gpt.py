@@ -4,7 +4,7 @@ from time import sleep
 from typing import List, Tuple, Optional
 
 import openai
-from openai.error import RateLimitError, Timeout
+from openai.error import RateLimitError, Timeout, APIConnectionError
 
 from src.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
     PRICING_GPT3_5_TURBO_GENERATION, CHARS_PER_TOKEN
@@ -80,11 +80,11 @@ class _GPTConversation:
         self.cost_callback = cost_callback
         self.prompt_list: List[Optional[Tuple]] = [None]
         self.set_system_definition(system_definition_examples)
-        if 'verbose' in os.environ:
+        if os.environ['VERBOSE'].lower() == 'true':
             print_colored('system', self.prompt_list[0][1], 'magenta')
 
     def query(self, prompt: str):
-        if 'verbose' in os.environ:
+        if os.environ['VERBOSE'].lower() == 'true':
             print_colored('user', prompt, 'blue')
         self.prompt_list.append(('user', prompt))
         response = self.get_response(self.prompt_list)
@@ -117,7 +117,7 @@ class _GPTConversation:
             try:
                 response_generator = openai.ChatCompletion.create(
                     temperature=0,
-                    max_tokens=2_000 if self.model == 'gpt-4' else None,
+                    max_tokens=None,
                     model=self.model,
                     stream=True,
                     messages=[
@@ -131,7 +131,7 @@ class _GPTConversation:
 
                 complete_string = self.get_response_from_stream(response_generator)
 
-            except (RateLimitError, Timeout, ConnectionError, GenerationTimeoutError) as e:
+            except (RateLimitError, Timeout, ConnectionError, APIConnectionError, GenerationTimeoutError) as e:
                 print('/n', e)
                 print('retrying...')
                 sleep(3)
