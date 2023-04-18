@@ -150,7 +150,7 @@ response = client.post('/', inputs=DocumentArray([d])) # always use '/'
 print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
 ```
 Note that the response will always be in response[0].text
-You must provide the complete file with the exact same syntax to wrap the code.
+You must provide the complete app.py file with the exact same syntax to wrap the code.
 The playground (app.py) must read the host from sys.argv[-1] because it will be started with a custom host: streamlit run app.py -- --host grpc://...
 The playground (app.py) must not let the user configure the host on the ui.
 '''
