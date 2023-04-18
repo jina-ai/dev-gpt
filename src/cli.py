@@ -63,8 +63,8 @@ def generate(
             return
 
     from src.options.generate.generator import Generator
-    generator = Generator(model=model)
-    generator.generate(description, test, path)
+    generator = Generator(description, test, model=model)
+    generator.generate(path)
 
 @main.command()
 @path_param

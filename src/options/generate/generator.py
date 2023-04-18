@@ -14,22 +14,23 @@ from src.utils.string_tools import print_colored
 
 
 class Generator:
-    def __init__(self, model='gpt-4'):
-        self.gpt_session = gpt.GPTSession(model=model)
+    def __init__(self, task_description, test_description, model='gpt-4'):
+        self.gpt_session = gpt.GPTSession(task_description, test_description, model=model)
+        self.task_description = task_description
+        self.test_description = test_description
 
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False):
         pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?)```"
         match = re.search(pattern, plain_text, re.MULTILINE)
         if match:
             return match.group(1).strip()
-        else:
+        elif match_single_block:
             # Check for a single code block
             single_code_block_pattern = r"^```(?:\w+\n)?([\s\S]*?)```"
             single_code_block_match = re.findall(single_code_block_pattern, plain_text, re.MULTILINE)
-            if match_single_block and len(single_code_block_match) == 1:
+            if len(single_code_block_match) == 1:
                 return single_code_block_match[0].strip()
-            else:
-                return ''
+        return ''
 
     def write_config_yml(self, microservice_name, dest_folder):
         config_content = f'''
@@ -61,24 +62,19 @@ class Generator:
             test,
             path,
             microservice_name,
-            package,
+            packages,
             num_approach,
-            is_chain_of_thought=False,
     ):
-        MICROSERVICE_FOLDER_v1 = get_microservice_path(path, microservice_name, package, num_approach, 1)
+        MICROSERVICE_FOLDER_v1 = get_microservice_path(path, microservice_name, packages, num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
         print_colored('', '############# Microservice #############', 'blue')
         user_query = (
                 general_guidelines()
-                + executor_file_task(microservice_name, description, test, package)
+                + executor_file_task(microservice_name, description, test, packages)
         )
         conversation = self.gpt_session.get_conversation()
         microservice_content_raw = conversation.query(user_query)
-        if is_chain_of_thought:
-            microservice_content_raw = conversation.query(
-                f"General rules: " + not_allowed_executor() + chain_of_thought_optimization('python',
-                                                                                            'microservice.py'))
         microservice_content = self.extract_content_from_result(microservice_content_raw, 'microservice.py',
                                                                 match_single_block=True)
         if microservice_content == '':
@@ -96,12 +92,6 @@ class Generator:
         )
         conversation = self.gpt_session.get_conversation()
         test_microservice_content_raw = conversation.query(user_query)
-        if is_chain_of_thought:
-            test_microservice_content_raw = conversation.query(
-                f"General rules: " + not_allowed_executor() +
-                chain_of_thought_optimization('python', 'test_microservice.py')
-                + "Don't add any additional tests. "
-            )
         test_microservice_content = self.extract_content_from_result(
             test_microservice_content_raw, 'microservice.py', match_single_block=True
         )
@@ -117,9 +107,6 @@ class Generator:
         )
         conversation = self.gpt_session.get_conversation()
         requirements_content_raw = conversation.query(user_query)
-        if is_chain_of_thought:
-            requirements_content_raw = conversation.query(
-                chain_of_thought_optimization('', requirements_path) + "Keep the same version of jina ")
 
         requirements_content = self.extract_content_from_result(requirements_content_raw, 'requirements.txt',
                                                                 match_single_block=True)
@@ -135,9 +122,6 @@ class Generator:
         )
         conversation = self.gpt_session.get_conversation()
         dockerfile_content_raw = conversation.query(user_query)
-        if is_chain_of_thought:
-            dockerfile_content_raw = conversation.query(
-                f"General rules: " + not_allowed_executor() + chain_of_thought_optimization('dockerfile', 'Dockerfile'))
         dockerfile_content = self.extract_content_from_result(dockerfile_content_raw, 'Dockerfile',
                                                               match_single_block=True)
         persist_file(dockerfile_content, os.path.join(MICROSERVICE_FOLDER_v1, 'Dockerfile'))
@@ -167,7 +151,7 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
 ```
 Note that the response will always be in response[0].text
 You must provide the complete file with the exact same syntax to wrap the code.
-The playground (app.py) must read the host from sys.argv because it will be started with a custom host: streamlit run app.py -- --host grpc://...
+The playground (app.py) must read the host from sys.argv[-1] because it will be started with a custom host: streamlit run app.py -- --host grpc://...
 The playground (app.py) must not let the user configure the host on the ui.
 '''
         )
@@ -178,7 +162,6 @@ The playground (app.py) must not let the user configure the host on the ui.
         persist_file(playground_content, os.path.join(microservice_path, 'app.py'))
 
     def debug_microservice(self, path, microservice_name, num_approach, packages, description, test):
-        error_before = ''
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
             print('Trying to build the microservice. Might take a while...')
@@ -188,29 +171,31 @@ The playground (app.py) must not let the user configure the host on the ui.
             error = process_error_message(log_hubble)
             if error:
                 print('An error occurred during the build process. Feeding the error back to the assistent...')
-                self.do_debug_iteration(description, error, error_before, next_microservice_path,
+                self.do_debug_iteration(description, error, next_microservice_path,
                                         previous_microservice_path, test)
-                error_before = error
+                if i == MAX_DEBUGGING_ITERATIONS - 1:
+                    raise self.MaxDebugTimeReachedException('Could not debug the microservice.')
             else:
                 print('Successfully build microservice.')
                 break
-            if i == MAX_DEBUGGING_ITERATIONS - 1:
-                raise self.MaxDebugTimeReachedException('Could not debug the microservice.')
+
         return get_microservice_path(path, microservice_name, packages, num_approach, i)
 
-    def do_debug_iteration(self, description, error, error_before, next_microservice_path, previous_microservice_path,
+    def do_debug_iteration(self, description, error, next_microservice_path, previous_microservice_path,
                            test):
         os.makedirs(next_microservice_path)
         file_name_to_content = get_all_microservice_files_with_content(previous_microservice_path)
+
+        summarized_error = self.summarize_error(error)
         is_dependency_issue = self.is_dependency_issue(error, file_name_to_content['Dockerfile'])
         if is_dependency_issue:
             all_files_string = self.files_to_string({
                 key: val for key, val in file_name_to_content.items() if
                 key in ['requirements.txt', 'Dockerfile']
             })
-            user_query = self.get_user_query_dependency_issue(all_files_string, error)
+            user_query = self.get_user_query_dependency_issue(all_files_string, summarized_error)
         else:
-            user_query = self.get_user_query_code_issue(description, error, file_name_to_content,
+            user_query = self.get_user_query_code_issue(description, summarized_error, file_name_to_content,
                                                         test)
         conversation = self.gpt_session.get_conversation()
         returned_files_raw = conversation.query(user_query)
@@ -218,33 +203,50 @@ The playground (app.py) must not let the user configure the host on the ui.
             updated_file = self.extract_content_from_result(returned_files_raw, file_name)
             if updated_file and (not is_dependency_issue or file_name in ['requirements.txt', 'Dockerfile']):
                 file_name_to_content[file_name] = updated_file
+                print(f'Updated {file_name}')
         for file_name, content in file_name_to_content.items():
             persist_file(content, os.path.join(next_microservice_path, file_name))
 
-    def get_user_query_dependency_issue(self, all_files_string, error):
+
+    def get_user_query_dependency_issue(self, all_files_string, summarized_error):
         user_query = (
             f'''
 Your task is to provide guidance on how to solve an error that occurred during the Docker build process. 
-The error message is:
-**microservice.log**
-```
-{error}
-```
+Here is the summary of the error that occurred:
+{summarized_error}
+
 To solve this error, you should:
-1. Identify the type of error by examining the stack trace. 
-2. Suggest how to solve it. 
-3. Your suggestion must include the files that need to be changed, but not files that don't need to be changed. 
+1. Suggest 3 to 5 possible solutions on how to solve it. You have no access to the documentation of the package.
+2. Decide for the best solution and explain it in detail.
+3. Write down the files that need to be changed, but not files that don't need to be changed. 
 For files that need to be changed, you must provide the complete file with the exact same syntax to wrap the code.
 Obey the following rules: {not_allowed_docker()}
 
 You are given the following files:
 
 {all_files_string}"
+
+Output all the files that need change. 
+Don't output files that don't need change. If you output a file, then write the 
+complete file. Use the exact following syntax to wrap the code:
+
+**...**
+```
+...code...
+```
+
+Example:
+
+**requirements.txt**
+```
+jina==2.0.0
+```
+
 '''
         )
         return user_query
 
-    def get_user_query_code_issue(self, description, error, file_name_to_content, test):
+    def get_user_query_code_issue(self, description, summarized_error, file_name_to_content, test):
         all_files_string = self.files_to_string(file_name_to_content)
         return f'''
 General rules: {not_allowed_executor()}
@@ -256,18 +258,34 @@ Here are all the files I use:
 {all_files_string}
 
 
-This is the error I encounter currently during the docker build process:
-{error}
+Here is the summary of the error that occurred:
+{summarized_error}
 
-Look at the stack trace of the current error. First, think about what kind of error is this? 
-Then think about possible reasons which might have caused it. Then suggest how to 
-solve it. Output all the files that need change. 
+To solve this error, you should:
+1. Suggest 3 to 5 possible solutions on how to solve it. You have no access to the documentation of the package.
+2. Decide for the best solution and explain it in detail.
+3. Write down the files that need to be changed, but not files that don't need to be changed. 
+Obey the following rules: 
+{not_allowed_executor()}
+{not_allowed_docker()}
+
+
+Output all the files that need change. 
 Don't output files that don't need change. If you output a file, then write the 
-complete file. Use the exact same syntax to wrap the code:
+complete file. Use the exact following syntax to wrap the code:
+
 **...**
 ```...
 ...code...
 ```
+
+Example:
+
+**microservice.py**
+```python
+print('hello world')
+```
+
 '''
 
     class MaxDebugTimeReachedException(BaseException):
@@ -332,32 +350,32 @@ If the package is mentioned in the description, then it is automatically the bes
 The output must be a list of lists wrapped into ``` and starting with **packages.csv** like this:
 **packages.csv**
 ```
-package1
-package2
-package3
-package4
-package5
+package1a, package1b ...
+package2a, package2b, package2c
+package3a ...
+package4a ...
+package5a ...
 ...
 ```
 '''
         conversation = self.gpt_session.get_conversation()
         packages_raw = conversation.query(user_query)
         packages_csv_string = self.extract_content_from_result(packages_raw, 'packages.csv')
-        packages = [package.split(',') for package in packages_csv_string.split('\n')]
-        packages = packages[:NUM_IMPLEMENTATION_STRATEGIES]
-        return packages
+        packages_list = [[pkg.strip() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]
+        packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
+        return packages_list
 
-    def generate(self, description, test, microservice_path):
-        generated_name = self.generate_microservice_name(description)
+    def generate(self, microservice_path):
+        generated_name = self.generate_microservice_name(self.task_description)
         microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
-        packages_list = self.get_possible_packages(description)
+        packages_list = self.get_possible_packages(self.task_description)
         packages_list = [packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0]
         for num_approach, packages in enumerate(packages_list):
             try:
-                self.generate_microservice(description, test, microservice_path, microservice_name, packages,
+                self.generate_microservice(self.task_description, self.test_description, microservice_path, microservice_name, packages,
                                            num_approach)
                 final_version_path = self.debug_microservice(microservice_path, microservice_name, num_approach,
-                                                             packages, description, test)
+                                                             packages, self.task_description, self.test_description)
                 self.generate_playground(microservice_name, final_version_path)
             except self.MaxDebugTimeReachedException:
                 print('Could not debug the Microservice with the approach:', packages)
@@ -373,3 +391,14 @@ gptdeploy deploy --path {microservice_path}
 '''
                   )
             break
+
+    def summarize_error(self, error):
+        conversation = self.gpt_session.get_conversation([])
+        user_query = f'''
+Here is an error message I encountered during the docker build process:
+"{error}"
+Your task is to summarize the error message as compact and informative as possible while maintaining all information necessary to debug the core issue.
+Warnings are not worth mentioning.
+'''
+        error_summary = conversation.query(user_query)
+        return error_summary

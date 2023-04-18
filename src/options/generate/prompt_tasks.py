@@ -4,17 +4,22 @@ from src.constants import EXECUTOR_FILE_NAME, REQUIREMENTS_FILE_NAME, TEST_EXECU
 
 
 def general_guidelines():
-    return (
-        "The code you write is production ready. "
-        "Every file starts with comments describing what the code is doing before the first import. "
-        "Comments can only be written within code blocks. "
-        "Then all imports are listed. "
-        "It is important to import all modules that could be needed in the Executor code. "
-        "Always import: "
-        "from jina import Executor, DocumentArray, Document, requests "
-        "Start from top-level and then fully implement all methods. "
-        "\n"
-    )
+    return '''
+The code you write is production ready.
+Every file starts with comments describing what the code is doing before the first import.
+Comments can only be written within code blocks.
+Then all imports are listed.
+It is important to import all modules that could be needed in the Executor code.
+Always import:
+from jina import Executor, DocumentArray, Document, requests
+import json
+from io import BytesIO
+import requests as req
+
+
+Start from top-level and then fully implement all methods.
+
+'''
 
 
 def _task(task, tag_name, file_name, purpose=None):
@@ -44,7 +49,7 @@ Have in mind that d.uri is never a path to a local file. It is always a url.
 {not_allowed_executor()}
 Your approach:
 1. Identify the core challenge when implementing the executor.
-2. Think about solutions for these challenges.
+2. Think about possible solutions for these challenges.
 3. Decide for one of the solutions.
 4. Write the code.
 ''', EXECUTOR_FILE_TAG, EXECUTOR_FILE_NAME)

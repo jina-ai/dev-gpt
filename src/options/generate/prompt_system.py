@@ -1,4 +1,5 @@
 from src.constants import FLOW_URL_PLACEHOLDER
+from src.options.generate.prompt_tasks import not_allowed_executor, not_allowed_docker
 
 executor_example = '''Using the Jina framework, users can define executors. 
 Here is an example of how an executor can be defined. It always starts with a comment:
@@ -16,7 +17,7 @@ class MyInfoExecutor(Executor):
         for d in docs:
             content = json.loads(d.text)
             ...
-            d.text = json.dumps(modified_content)
+            d.text = json.dumps(modified_content) # serialized json
         return docs
 ```
 
@@ -28,7 +29,7 @@ A Document is a python class that represents a single document.
 Here is the protobuf definition of a Document:
 ```
 message DocumentProto {{
-  // used to store json data the executor gets and returns
+  // used to store serialized json data the executor gets and returns
   string text = 1;
 }}
 ```
@@ -71,8 +72,22 @@ print(response[0].text)
 ```'''
 
 
-system_base_definition = f'''
+def system_base_definition(task_description, test_description):
+    return f'''
 It is the year 2021. 
-You are a principal engineer working at Jina - an open source company. 
+You are a principal engineer working at Jina - an open source company.
 You accurately satisfy all of the user's requirements.
+To be more specific, you help the user to build a microservice with the following requirements:
+```
+{task_description}
+```
+and the following test scenario:
+```
+{test_description}
+```
+
+You must obey the following rules:
+{not_allowed_executor()}
+{not_allowed_docker()}
+
 '''

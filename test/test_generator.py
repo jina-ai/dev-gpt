@@ -25,5 +25,5 @@ def test_generator(tmpdir):
     # Use mock.patch as a context manager to replace the original methods with the mocks
     with mock.patch("openai.ChatCompletion.create", side_effect=mock_create), \
             mock.patch.object(GPTSession, "configure_openai_api_key", side_effect=mock_get_openai_api_key):
-        generator = Generator()
-        generator.generate("my description", "my test", str(tmpdir))
+        generator = Generator("my description", "my test")
+        generator.generate(str(tmpdir))

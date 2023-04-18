@@ -248,10 +248,11 @@ def update_client_line_in_file(file_path, host):
         file.write(replaced_content)
 
 
-def remove_after_stderr(relevant_lines):
+def shorten_logs(relevant_lines):
     for index, line in enumerate(relevant_lines):
         if '--- Captured stderr call ----' in line:
-            return relevant_lines[:index]
+            relevant_lines = relevant_lines[:index]
+    relevant_lines = [line for line in relevant_lines if ' Requirement already satisfied: ' not in line]
     return relevant_lines
 
 
@@ -270,9 +271,9 @@ def process_error_message(error_message):
     if last_matching_line_index is not None:
         relevant_lines = lines[last_matching_line_index:]
 
-    relevant_lines = remove_after_stderr(relevant_lines)
+    relevant_lines = shorten_logs(relevant_lines)
 
-    response = '\n'.join(relevant_lines[-25:]).strip()
+    response = '\n'.join(relevant_lines[-100:]).strip()
 
     # the following code tests the case that the docker file is corrupted and can not be parsed
     # the method above will not return a relevant error message in this case
@@ -282,21 +283,3 @@ def process_error_message(error_message):
     if not response and last_line.startswith('error: '):
         return last_line
     return response
-
-
-def build_docker(path):
-    # The command to build the Docker image
-    cmd = f"docker build -t micromagic {path}"
-
-    # Run the command and capture the output
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    stdout, stderr = process.communicate()
-
-    # Check if there was an error
-    if process.returncode != 0:
-        error_message = stderr.decode("utf-8")
-        relevant_error_message = process_error_message(error_message)
-        return relevant_error_message
-    else:
-        print("Docker build completed successfully.")
-        return ''

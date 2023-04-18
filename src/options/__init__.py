@@ -1,13 +1,19 @@
 import os
 
 
-def get_latest_folder(path):
-    return max([os.path.join(path, f) for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))])
+def get_latest_folder(path, max_fn=max):
+    return max_fn([os.path.join(path, f) for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))])
+
+def version_max_fn(path_list):
+    version_list = [int(path.split('/')[-1].replace('v', '')) for path in path_list]
+    max_version = max(version_list)
+    max_index = version_list.index(max_version)
+    return path_list[max_index]
 
 def get_latest_version_path(microservice_path):
     executor_name_path = get_latest_folder(microservice_path)
     latest_approach_path = get_latest_folder(executor_name_path)
-    latest_version_path = get_latest_folder(latest_approach_path)
+    latest_version_path = get_latest_folder(latest_approach_path, max_fn=version_max_fn)
     return latest_version_path
 
 def get_executor_name(microservice_path):
