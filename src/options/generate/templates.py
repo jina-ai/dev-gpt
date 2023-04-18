@@ -2,7 +2,12 @@ from langchain import PromptTemplate
 
 
 general_guidelines_string = '''The code you write is production ready. Every file starts with comments describing what the code is doing before the first import. Comments can only be written within code blocks.
-Then all imports are listed. It is important to import all modules that could be needed in the Executor code. Always import: from jina import Executor, DocumentArray, Document, requests
+Then all imports are listed. It is important to import all modules that could be needed in the Executor code. Always import:
+from jina import Executor, DocumentArray, Document, requests
+import json
+from io import BytesIO
+import requests as req
+
 Start from top-level and then fully implement all methods.'''
 
 
@@ -126,7 +131,7 @@ template_generate_requirements = PromptTemplate.from_template(
 
 {code_files_wrapped}
     
-Write the content of the requirements.txt file. Make sure to include pytest. Make sure that jina==3.14.1.
+Write the content of the requirements.txt file. Make sure to include pytest. Make sure that jina==3.14.1. Make sure that docarray==0.21.0.
 All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts.
 ''' + '\n' + template_code_wrapping_string
 )
