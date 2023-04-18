@@ -17,22 +17,23 @@ from src.utils.string_tools import print_colored
 
 
 class Generator:
-    def __init__(self, model='gpt-4'):
-        self.gpt_session = gpt.GPTSession(model=model)
+    def __init__(self, task_description, test_description, model='gpt-4'):
+        self.gpt_session = gpt.GPTSession(task_description, test_description, model=model)
+        self.task_description = task_description
+        self.test_description = test_description
 
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False):
         pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?)```"
         match = re.search(pattern, plain_text, re.MULTILINE)
         if match:
             return match.group(1).strip()
-        else:
+        elif match_single_block:
             # Check for a single code block
             single_code_block_pattern = r"^```(?:\w+\n)?([\s\S]*?)```"
             single_code_block_match = re.findall(single_code_block_pattern, plain_text, re.MULTILINE)
-            if match_single_block and len(single_code_block_match) == 1:
+            if len(single_code_block_match) == 1:
                 return single_code_block_match[0].strip()
-            else:
-                return ''
+        return ''
 
     def write_config_yml(self, microservice_name, dest_folder):
         config_content = f'''
@@ -58,10 +59,10 @@ metas:
             test,
             path,
             microservice_name,
-            package,
+            packages,
             num_approach,
     ):
-        MICROSERVICE_FOLDER_v1 = get_microservice_path(path, microservice_name, package, num_approach, 1)
+        MICROSERVICE_FOLDER_v1 = get_microservice_path(path, microservice_name, packages, num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
         print_colored('', '############# Microservice #############', 'blue')
@@ -168,7 +169,6 @@ metas:
         persist_file(playground_content, os.path.join(microservice_path, 'app.py'))
 
     def debug_microservice(self, path, microservice_name, num_approach, packages, description, test):
-        error_before = ''
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
             print('Trying to build the microservice. Might take a while...')
@@ -178,20 +178,22 @@ metas:
             error = process_error_message(log_hubble)
             if error:
                 print('An error occurred during the build process. Feeding the error back to the assistent...')
-                self.do_debug_iteration(description, error, error_before, next_microservice_path,
+                self.do_debug_iteration(description, error, next_microservice_path,
                                         previous_microservice_path, test)
-                error_before = error
+                if i == MAX_DEBUGGING_ITERATIONS - 1:
+                    raise self.MaxDebugTimeReachedException('Could not debug the microservice.')
             else:
                 print('Successfully build microservice.')
                 break
-            if i == MAX_DEBUGGING_ITERATIONS - 1:
-                raise self.MaxDebugTimeReachedException('Could not debug the microservice.')
+
         return get_microservice_path(path, microservice_name, packages, num_approach, i)
 
-    def do_debug_iteration(self, description, error, error_before, next_microservice_path, previous_microservice_path,
+    def do_debug_iteration(self, description, error, next_microservice_path, previous_microservice_path,
                            test):
         os.makedirs(next_microservice_path)
         file_name_to_content = get_all_microservice_files_with_content(previous_microservice_path)
+
+        summarized_error = self.summarize_error(error)
         is_dependency_issue = self.is_dependency_issue(error, file_name_to_content['Dockerfile'])
         if is_dependency_issue:
             all_files_string = self.files_to_string({
@@ -199,11 +201,11 @@ metas:
                 key in ['requirements.txt', 'Dockerfile']
             })
             user_query = template_solve_dependency_issue.format(
-                description=description, error=error, all_files_string=all_files_string,
+                description=description, summarized_error=summarized_error, all_files_string=all_files_string,
             )
         else:
             user_query = template_solve_code_issue.format(
-                description=description, error=error, all_files_string=self.files_to_string(file_name_to_content),
+                description=description, summarized_error=summarized_error, all_files_string=self.files_to_string(file_name_to_content),
             )
         conversation = self.gpt_session.get_conversation()
         returned_files_raw = conversation.chat(user_query)
@@ -211,6 +213,7 @@ metas:
             updated_file = self.extract_content_from_result(returned_files_raw, file_name)
             if updated_file and (not is_dependency_issue or file_name in ['requirements.txt', 'Dockerfile']):
                 file_name_to_content[file_name] = updated_file
+                print(f'Updated {file_name}')
         for file_name, content in file_name_to_content.items():
             persist_file(content, os.path.join(next_microservice_path, file_name))
 
@@ -240,12 +243,12 @@ metas:
             template_generate_possible_packages.format(description=description)
         )
         packages_csv_string = self.extract_content_from_result(packages_raw, 'packages.csv')
-        packages = [package.split(',') for package in packages_csv_string.split('\n')]
-        packages = packages[:NUM_IMPLEMENTATION_STRATEGIES]
-        return packages
+        packages_list = [[pkg.strip() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]
+        packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
+        return packages_list
 
-    def generate(self, description, test, microservice_path):
-        generated_name = self.generate_microservice_name(description)
+    def generate(self, microservice_path):
+        generated_name = self.generate_microservice_name(self.task_description)
         microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
         packages_list = self.get_possible_packages(description)
         packages_list = [
@@ -254,7 +257,7 @@ metas:
         for num_approach, packages in enumerate(packages_list):
             try:
                 self.generate_microservice(
-                    description, test, microservice_path, microservice_name, packages, num_approach
+                    self.task_description, self.test_description, microservice_path, microservice_name, packages, num_approach
                 )
                 final_version_path = self.debug_microservice(
                     microservice_path, microservice_name, num_approach, packages, description, test
@@ -274,3 +277,14 @@ gptdeploy deploy --path {microservice_path}
 '''
                   )
             break
+
+    def summarize_error(self, error):
+        conversation = self.gpt_session.get_conversation([])
+        user_query = f'''
+Here is an error message I encountered during the docker build process:
+"{error}"
+Your task is to summarize the error message as compact and informative as possible while maintaining all information necessary to debug the core issue.
+Warnings are not worth mentioning.
+'''
+        error_summary = conversation.query(user_query)
+        return error_summary

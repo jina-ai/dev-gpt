@@ -30,5 +30,6 @@ MAX_DEBUGGING_ITERATIONS = 10
 DEMO_TOKEN = '45372338e04f5a41af949024db929d46'
 
 PROBLEMATIC_PACKAGES = [
-    'Pyrender', 'Trimesh', 'ModernGL', 'PyOpenGL', 'Pyglet', 'pythreejs', 'panda3d' # because they need a screen
+    # 'Pyrender', 'Trimesh',
+    'ModernGL', 'PyOpenGL', 'Pyglet', 'pythreejs', 'panda3d' # because they need a screen
 ]
