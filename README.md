@@ -104,22 +104,25 @@ jc delete <microservice id>
 ```bash
 generate --description "Convert a chemical formula into a 2D chemical structure diagram" --test "C=C, CN=C=O, CCC(=O)O" --path microservice
 ```
-
 <img src="res/chemical_formula_example.png" alt="Chemical Formula Visualization" width="600" />
+
+## Hacker News Search
+```bash
+generate --description "Given a search query, find articles on hacker news using the hacker news api and return a list of (title, author, website_link, first_image_on_the_website)" --test "searching for GPT gives results" --path microservice
+````
+<img src="res/hacker_news_example.png" alt="Hacker News Search" width="600" />
 
 ### Animal Detector
 ```bash
 
 gptdeploy generate --description "Given an image, return the image with bounding boxes of all animals (https://pjreddie.com/media/files/yolov3.weights, https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg)" --test "https://images.unsplash.com/photo-1444212477490-ca407925329e contains animals" --model gpt-4 --path microservice
 ```
-
 <img src="res/animal_detector_example.png" alt="Animal Detector" width="600" />
 
 ### Meme Generator
 ```bash
 gptdeploy generate --description "Generate a meme from an image and a caption" --test "Surprised Pikachu: https://media.wired.com/photos/5f87340d114b38fa1f8339f9/master/w_1600%2Cc_limit/Ideas_Surprised_Pikachu_HD.jpg, TOP:When you discovered GPTDeploy" --model gpt-4 --path microservice
 ```
-
 <img src="res/meme_example.png" alt="Meme Generator" width="600" />
 
 ### Rhyme Generator
