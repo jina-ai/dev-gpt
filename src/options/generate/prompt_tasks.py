@@ -79,6 +79,7 @@ def requirements_file_task():
         "Write the content of the requirements.txt file. "
         "Make sure to include pytest. "
         "Make sure that jina==3.14.1. "
+        "Make sure that docarray==0.21.0. "
         "All versions are fixed using ~=, ==, <, >, <=, >=. The package versions should not have conflicts. ",
         REQUIREMENTS_FILE_TAG,
         REQUIREMENTS_FILE_NAME
