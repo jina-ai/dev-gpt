@@ -51,7 +51,7 @@ metas:
         for file_name, tag in FILE_AND_TAG_PAIRS:
             if file_name in file_name_to_content and (not restrict_keys or file_name in restrict_keys):
                 all_microservice_files_string += f'**{file_name}**\n```{tag}\n{file_name_to_content[file_name]}\n```\n\n'
-        return all_microservice_files_string
+        return all_microservice_files_string.strip()
 
     def generate_microservice(
             self,
@@ -63,7 +63,7 @@ metas:
         MICROSERVICE_FOLDER_v1 = get_microservice_path(path, microservice_name, packages, num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
-        print_colored('', '############# Microservice #############', 'blue')
+        print_colored('', '\n############# Microservice #############', 'blue')
         conversation = self.gpt_session.get_conversation()
         microservice_content_raw = conversation.chat(
             template_generate_executor.format(
@@ -86,12 +86,13 @@ metas:
             )
         persist_file(microservice_content, os.path.join(MICROSERVICE_FOLDER_v1, 'microservice.py'))
 
-        print_colored('', '############# Test Microservice #############', 'blue')
+        print_colored('', '\n############# Test Microservice #############', 'blue')
         conversation = self.gpt_session.get_conversation()
         test_microservice_content_raw = conversation.chat(
             template_generate_test.format(
                 code_files_wrapped=self.files_to_string({'microservice.py': microservice_content}),
                 microservice_name=microservice_name,
+                test_description=self.test_description,
                 file_name_purpose=TEST_EXECUTOR_FILE_NAME,
                 tag_name=TEST_EXECUTOR_FILE_TAG,
                 file_name=TEST_EXECUTOR_FILE_NAME,
@@ -102,7 +103,7 @@ metas:
         )
         persist_file(test_microservice_content, os.path.join(MICROSERVICE_FOLDER_v1, 'test_microservice.py'))
 
-        print_colored('', '############# Requirements #############', 'blue')
+        print_colored('', '\n############# Requirements #############', 'blue')
         requirements_path = os.path.join(MICROSERVICE_FOLDER_v1, 'requirements.txt')
         conversation = self.gpt_session.get_conversation()
         requirements_content_raw = conversation.chat(
@@ -120,7 +121,7 @@ metas:
                                                                 match_single_block=True)
         persist_file(requirements_content, requirements_path)
 
-        print_colored('', '############# Dockerfile #############', 'blue')
+        print_colored('', '\n############# Dockerfile #############', 'blue')
         conversation = self.gpt_session.get_conversation()
         dockerfile_content_raw = conversation.chat(
             template_generate_dockerfile.format(
@@ -142,10 +143,10 @@ metas:
         persist_file(dockerfile_content, os.path.join(MICROSERVICE_FOLDER_v1, 'Dockerfile'))
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
-        print('First version of the microservice generated. Start iterating on it to make the tests pass...')
+        print('\nFirst version of the microservice generated. Start iterating on it to make the tests pass...')
 
     def generate_playground(self, microservice_name, microservice_path):
-        print_colored('', '############# Playground #############', 'blue')
+        print_colored('', '\n############# Playground #############', 'blue')
 
         file_name_to_content = get_all_microservice_files_with_content(microservice_path)
         conversation = self.gpt_session.get_conversation([])
@@ -169,7 +170,7 @@ metas:
     def debug_microservice(self, path, microservice_name, num_approach, packages):
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
-            print('Trying to build the microservice. Might take a while...')
+            print('Trying to debug the microservice. Might take a while...')
             previous_microservice_path = get_microservice_path(path, microservice_name, packages, num_approach, i)
             next_microservice_path = get_microservice_path(path, microservice_name, packages, num_approach, i + 1)
             log_hubble = push_executor(previous_microservice_path)

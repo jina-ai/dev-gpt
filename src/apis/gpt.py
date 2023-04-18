@@ -60,20 +60,20 @@ If you have updated it already, please restart your terminal.
 class AssistantStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
     def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
         """Run on new LLM token. Only available when streaming is enabled."""
-        if os.environ['VERBOSE'].lower() == 'true':
-            print_colored('', token, 'green', end='')
+        print_colored('', token, 'green', end='')
 
 
 class _GPTConversation:
     def __init__(self, model: str, task_description, test_description, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
-        self.chat = ChatOpenAI(
+        self._chat = ChatOpenAI(
             model_name=model,
             streaming=True,
             callback_manager=CallbackManager([AssistantStreamingStdOutCallbackHandler()]),
-            temperature=0
+            verbose=os.environ['VERBOSE'].lower() == 'true',
+            temperature=0,
         )
         self.messages: List[BaseMessage] = []
-        self.system_message = self._create_system_message(system_definition_examples)
+        self.system_message = self._create_system_message(task_description, test_description, system_definition_examples)
         if os.environ['VERBOSE'].lower() == 'true':
             print_colored('system', self.system_message.content, 'magenta')
 
@@ -83,9 +83,9 @@ class _GPTConversation:
         if os.environ['VERBOSE'].lower() == 'true':
             print_colored('user', prompt, 'blue')
             print_colored('assistant', '', 'green', end='')
-        response = self.chat([self.system_message] + self.messages)
-        self.messages.append(AIMessage(content=response))
-        return response
+        response = self._chat([self.system_message] + self.messages)
+        self.messages.append(response)
+        return response.content
 
     @staticmethod
     def _create_system_message(task_description, test_description, system_definition_examples: List[str] = []) -> SystemMessage:

@@ -95,7 +95,7 @@ For the implementation use the following package: '{packages}'.
 
 Obey the following rules:
 Have in mind that d.uri is never a path to a local file. It is always a url.
-''' + not_allowed_executor_string() + '''
+''' + not_allowed_executor_string + '''
 
 Your approach:
 1. Identify the core challenge when implementing the executor.
@@ -111,7 +111,7 @@ template_generate_test = PromptTemplate.from_template(
 
 {code_files_wrapped}
 
-Write a single test case that tests the following scenario: '{test}'. In case the test scenario is not precise enough, test a general case without any assumptions.
+Write a single test case that tests the following scenario: '{test_description}'. In case the test scenario is not precise enough, test a general case without any assumptions.
 Start the test with an extensive comment about the test case.
 
 Use the following import to import the executor:
@@ -119,7 +119,7 @@ Use the following import to import the executor:
 from microservice import {microservice_name}
 ```
 
-''' + not_allowed_executor_string() + '''
+''' + not_allowed_executor_string + '''
 The test must not open local files.
 The test must not mock a function of the executor.
 The test must not use other data than the one provided in the test scenario.
@@ -153,7 +153,7 @@ The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard.
 The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"].
 Make sure the all files are in the /workdir.
 The Dockerfile runs the test during the build process.
-''' + not_allowed_docker_string() + '\n' + template_code_wrapping_string
+''' + not_allowed_docker_string + '\n' + template_code_wrapping_string
 )
 
 
@@ -190,7 +190,7 @@ To solve this error, you should:
 3. Write down the files that need to be changed, but not files that don't need to be changed. 
 For files that need to be changed, you must provide the complete file with the exact same syntax to wrap the code.
 Obey the following rules:
-''' + not_allowed_docker_string() + '''
+''' + not_allowed_docker_string + '''
 
 You are given the following files:
 
@@ -217,7 +217,7 @@ jina==2.0.0
 
 template_solve_code_issue = PromptTemplate.from_template(
     '''General rules:
-''' + not_allowed_executor_string() + '''
+''' + not_allowed_executor_string + '''
 
 Here is the description of the task the executor must solve:
 {description}
