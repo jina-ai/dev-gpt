@@ -34,12 +34,12 @@ class Generator:
 
     def write_config_yml(self, microservice_name, dest_folder):
         config_content = f'''
-    jtype: {microservice_name}
-    py_modules:
-      - microservice.py
-    metas:
-      name: {microservice_name}
-        '''
+jtype: {microservice_name}
+py_modules:
+  - microservice.py
+metas:
+  name: {microservice_name}
+'''
         with open(os.path.join(dest_folder, 'config.yml'), 'w') as f:
             f.write(config_content)
 
