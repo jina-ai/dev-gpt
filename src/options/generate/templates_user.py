@@ -90,7 +90,7 @@ template_generate_executor = PromptTemplate.from_template(
 
 Write the executor called '{microservice_name}'. The name is very important to keep.
 It matches the following description: '{microservice_description}'.
-It will be tested with the following scenario: '{test}'.
+It will be tested with the following scenario: '{test_description}'.
 For the implementation use the following package: '{packages}'.
 
 Obey the following rules:
@@ -101,7 +101,7 @@ Your approach:
 1. Identify the core challenge when implementing the executor.
 2. Think about solutions for these challenges.
 3. Decide for one of the solutions.
-4. Write the code.
+4. Write the code for the executor. Don't write code for the test.
 ''' + '\n' + template_code_wrapping_string
 )
 
@@ -264,6 +264,7 @@ template_generate_playground = PromptTemplate.from_template(
 Create a playground for the executor {microservice_name} using streamlit.
 The playground must look like it was made by a professional designer.
 All the ui elements are well thought out to make them visually appealing and easy to use.
+The playground contains emojis that fit the theme of the playground.
 This is an example how you can connect to the executor assuming the document (d) is already defined:
 ```
 from jina import Client, Document, DocumentArray

@@ -82,7 +82,7 @@ class _GPTConversation:
         self.messages.append(chat_message)
         if os.environ['VERBOSE'].lower() == 'true':
             print_colored('user', prompt, 'blue')
-            print_colored('assistant', '', 'green', end='')
+        print_colored('assistant', '', 'green', end='')
         response = self._chat([self.system_message] + self.messages)
         if os.environ['VERBOSE'].lower() == 'true':
             print()
