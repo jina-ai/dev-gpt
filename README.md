@@ -108,7 +108,7 @@ generate --description "Convert a chemical formula into a 2D chemical structure 
 
 ## Hacker News Search
 ```bash
-generate --description "Given a search query, find articles on hacker news using the hacker news api" --test "searching for GPT gives results" --path microservice
+generate --description "Given a search query, find articles on hacker news using the hacker news api and return a list of (title, author, website_link, first_image_on_the_website)" --test "searching for GPT gives results" --path microservice
 ````
 <img src="res/hacker_news_example.png" alt="Hacker News Search" width="600" />
 
