@@ -140,7 +140,7 @@ def not_allowed_executor():
 The executor and the test must not use the GPU.
 The executor and the test must not access a database.
 The executor and the test must not access a display.
-The executor and the test must not access external apis except unless it is explicitly mentioned in the description or test case (e.g. by mentioning the api that should be used or by providing a URL to access the data). 
+The executor and the test must not access external apis except it is explicitly mentioned in the description or test case (e.g. by mentioning the api that should be used or by providing a URL to access the data). 
 The executor and the test must not load data from the local file system unless it was created by the executor itself.
 The executor and the test must not use a pre-trained model unless it is explicitly mentioned in the description.
 The executor and the test must not train a model.
