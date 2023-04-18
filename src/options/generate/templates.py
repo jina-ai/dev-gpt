@@ -220,10 +220,10 @@ template_solve_code_issue = PromptTemplate.from_template(
 ''' + not_allowed_executor_string + '''
 
 Here is the description of the task the executor must solve:
-{description}
+{task_description}
 
 Here is the test scenario the executor must pass:
-{test}
+{test_description}
 Here are all the files I use:
 {all_files_string}
 

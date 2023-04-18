@@ -36,8 +36,7 @@ class Generator:
         return ''
 
     def write_config_yml(self, microservice_name, dest_folder):
-        config_content = f'''
-jtype: {microservice_name}
+        config_content = f'''jtype: {microservice_name}
 py_modules:
   - microservice.py
 metas:
@@ -198,11 +197,12 @@ metas:
                 key in ['requirements.txt', 'Dockerfile']
             })
             user_query = template_solve_dependency_issue.format(
-                description=self.task_description, summarized_error=summarized_error, all_files_string=all_files_string,
+                summarized_error=summarized_error, all_files_string=all_files_string,
             )
         else:
             user_query = template_solve_code_issue.format(
-                description=self.task_description, summarized_error=summarized_error, all_files_string=self.files_to_string(file_name_to_content),
+                task_description=self.task_description, test_description=self.test_description,
+                summarized_error=summarized_error, all_files_string=self.files_to_string(file_name_to_content),
             )
         conversation = self.gpt_session.get_conversation()
         returned_files_raw = conversation.chat(user_query)
