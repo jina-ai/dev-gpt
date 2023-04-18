@@ -249,10 +249,17 @@ def update_client_line_in_file(file_path, host):
 
 
 def shorten_logs(relevant_lines):
+    # handle duplicate error messages
     for index, line in enumerate(relevant_lines):
         if '--- Captured stderr call ----' in line:
             relevant_lines = relevant_lines[:index]
+    # filter pip install logs
     relevant_lines = [line for line in relevant_lines if ' Requirement already satisfied: ' not in line]
+    # filter version not found logs
+    for index, line in enumerate(relevant_lines):
+        if 'ERROR: Could not find a version that satisfies the requirement ' in line:
+            start_and_end = line[:150] + '...' + line[-150:]
+            relevant_lines[index] = start_and_end
     return relevant_lines
 
 
