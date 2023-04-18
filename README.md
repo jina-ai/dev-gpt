@@ -354,14 +354,6 @@ gptdeploy generate --description "Visualize the Mandelbrot set with custom param
 
 [//]: # (## Upcoming Challenges)
 
-[//]: # (### Chemical Structure Drawing)
-
-[//]: # (```bash)
-
-[//]: # (gptdeploy generate --description "Convert a chemical formula into a 2D chemical structure diagram" --test "C6H6")
-
-[//]: # (```)
-
 [//]: # (### Color Palette Generator)
 
 [//]: # (```bash)
