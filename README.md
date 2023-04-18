@@ -100,6 +100,13 @@ jc delete <microservice id>
 
 <img src="res/teaser.png" alt="QR Code Generator" width="600" />
 
+### Chemical Formula Visualization
+```bash
+generate --description "Convert a chemical formula into a 2D chemical structure diagram" --test "C=C, CN=C=O, CCC(=O)O" --path microservice
+```
+
+<img src="res/chemical_formula_example.png" alt="Chemical Formula Visualization" width="600" />
+
 ### Animal Detector
 ```bash
 
