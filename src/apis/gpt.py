@@ -11,7 +11,7 @@ from openai.error import RateLimitError
 from langchain.schema import AIMessage, HumanMessage, SystemMessage, BaseMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-from src.options.generate.prompt_system import system_message_base, executor_example, docarray_example, client_example
+from src.options.generate.templates_system import template_system_message_base, executor_example, docarray_example, client_example
 from src.utils.string_tools import print_colored
 
 
@@ -84,12 +84,14 @@ class _GPTConversation:
             print_colored('user', prompt, 'blue')
             print_colored('assistant', '', 'green', end='')
         response = self._chat([self.system_message] + self.messages)
+        if os.environ['VERBOSE'].lower() == 'true':
+            print()
         self.messages.append(response)
         return response.content
 
     @staticmethod
     def _create_system_message(task_description, test_description, system_definition_examples: List[str] = []) -> SystemMessage:
-        system_message = PromptTemplate.from_template(system_message_base).format(
+        system_message = PromptTemplate.from_template(template_system_message_base).format(
             task_description=task_description,
             test_description=test_description,
         )
