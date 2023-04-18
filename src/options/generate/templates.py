@@ -1,5 +1,28 @@
 from langchain import PromptTemplate
 
+
+general_guidelines_string = '''The code you write is production ready. Every file starts with comments describing what the code is doing before the first import. Comments can only be written within code blocks.
+Then all imports are listed. It is important to import all modules that could be needed in the Executor code. Always import: from jina import Executor, DocumentArray, Document, requests
+Start from top-level and then fully implement all methods.'''
+
+
+not_allowed_docker_string = '''Note that the Dockerfile only has access to the files: microservice.py, requirements.txt, config.yml, test_microservice.py.
+Note that the Dockerfile runs the test_microservice.py during the build process.
+The Dockerfile must not attach a virtual display when running test_microservice.py.'''
+
+
+not_allowed_executor_string = '''The executor and the test must not use the GPU.
+The executor and the test must not access a database.
+The executor and the test must not access a display.
+The executor and the test must not access external apis except unless it is explicitly mentioned in the description or test case (e.g. by mentioning the api that should be used or by providing a URL to access the data). 
+The executor and the test must not load data from the local file system unless it was created by the executor itself.
+The executor and the test must not use a pre-trained model unless it is explicitly mentioned in the description.
+The executor and the test must not train a model.
+The executor and the test must not use any attribute of Document accept Document.text.
+The executor and the test must not contain prototype or placeholder implementations.
+The executor and the test must run in a docker container based on debian.'''
+
+
 template_generate_microservice_name = PromptTemplate.from_template(
     '''Generate a name for the executor matching the description:
 "{description}"
@@ -29,7 +52,7 @@ b) has a stable api among different versions
 c) does not have system requirements
 d) can solve the task when running in a docker container
 e) the implementation of the core problem using the package would obey the following rules:
-{not_allowed_executor}
+''' + not_allowed_executor_string() + '''
 When answering, just write "yes" or "no".
 
 5. Output the most suitable 5 python packages starting with the best one. 
@@ -48,12 +71,131 @@ package5
 ''')
 
 
+template_code_wrapping_string = '''The code will go into {file_name_purpose}. Make sure to wrap the code into ``` marks even if you only output code:
+**{file_name}**
+```{tag_name}
+...code...
+```
+You must provide the complete file with the exact same syntax to wrap the code.'''
+
+
+template_generate_executor = PromptTemplate.from_template(
+    general_guidelines_string + '''
+
+Write the executor called '{microservice_name}'. The name is very important to keep.
+It matches the following description: '{microservice_description}'.
+It will be tested with the following scenario: '{test}'.
+For the implementation use the following package: '{package}'.
+
+Obey the following rules:
+Have in mind that d.uri is never a path to a local file. It is always a url.
+''' + not_allowed_executor_string() + '''
+
+Your approach:
+1. Identify the core challenge when implementing the executor.
+2. Think about solutions for these challenges.
+3. Decide for one of the solutions.
+4. Write the code.
+''' + '\n' + template_code_wrapping_string
+)
+
+
+template_generate_test = PromptTemplate.from_template(
+    general_guidelines_string + '''
+
+{code_files_wrapped}
+
+Write a single test case that tests the following scenario: '{test}'. In case the test scenario is not precise enough, test a general case without any assumptions.
+Start the test with an extensive comment about the test case.
+
+Use the following import to import the executor:
+```
+from microservice import {microservice_name}
+```
+
+''' + not_allowed_executor_string() + '''
+The test must not open local files.
+The test must not mock a function of the executor.
+The test must not use other data than the one provided in the test scenario.
+''' + '\n' + template_code_wrapping_string
+)
+
+
+template_generate_requirements = PromptTemplate.from_template(
+    general_guidelines_string + '''
+
+{code_files_wrapped}
+    
+Write the content of the requirements.txt file. Make sure to include pytest. Make sure that jina==3.14.1.
+All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts.
+''' + '\n' + template_code_wrapping_string
+)
+
+
+template_generate_dockerfile = PromptTemplate.from_template(
+    general_guidelines_string + '''
+    
+{code_files_wrapped}
+    
+Write the Dockerfile that defines the environment with all necessary dependencies that the executor uses.
+It is important to make sure that all libs are installed that are required by the python packages.
+Usually libraries are installed with apt-get.
+Be aware that the machine the docker container is running on does not have a GPU - only CPU.
+Add the config.yml file to the Dockerfile.
+Note that the Dockerfile only has access to the files: microservice.py, requirements.txt, config.yml, test_microservice.py.
+The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard.
+The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"].
+Make sure the all files are in the /workdir.
+The Dockerfile runs the test during the build process.
+''' + not_allowed_docker_string() + '\n' + template_code_wrapping_string
+)
+
+
+template_is_dependency_issue = PromptTemplate.from_template(
+    '''Your task is to assist in identifying the root cause of a Docker build error for a python application.
+The error message is as follows:
+
+{error}
+
+The docker file is as follows:
+
+{docker_file}
+
+Is this a dependency installation failure? Answer with "yes" or "no".'''
+)
+
+
+template_solve_dependency_issue = PromptTemplate.from_template(
+    '''Your task is to provide guidance on how to solve an error that occurred during the Docker build process. 
+The error message is:
+**microservice.log**
+```
+{error}
+```
+To solve this error, you should:
+1. Identify the type of error by examining the stack trace. 
+2. Suggest how to solve it. 
+3. Your suggestion must include the files that need to be changed, but not files that don't need to be changed. 
+For files that need to be changed, you must provide the complete file with the exact same syntax to wrap the code.
+Obey the following rules:
+''' + not_allowed_docker_string() + '''
+
+You are given the following files:
+
+{all_files_string}
+'''
+)
+
+
 template_solve_code_issue = PromptTemplate.from_template(
-    '''General rules: {not_allowed_executor}
+    '''General rules:
+''' + not_allowed_executor_string() + '''
+
 Here is the description of the task the executor must solve:
 {description}
 
-Here is the test scenario the executor must pass:\n{test}
+Here is the test scenario the executor must pass:
+{test}
 Here are all the files I use:
 {all_files_string}
 
@@ -74,43 +216,8 @@ complete file. Use the exact same syntax to wrap the code:
 )
 
 
-template_solve_dependency_issue = PromptTemplate.from_template(
-    '''Your task is to provide guidance on how to solve an error that occurred during the Docker build process. 
-The error message is:
-**microservice.log**
-```
-{error}
-```
-To solve this error, you should:
-1. Identify the type of error by examining the stack trace. 
-2. Suggest how to solve it. 
-3. Your suggestion must include the files that need to be changed, but not files that don't need to be changed. 
-For files that need to be changed, you must provide the complete file with the exact same syntax to wrap the code.
-Obey the following rules: {not_allowed_docker}
-
-You are given the following files:
-
-{all_files_string}
-'''
-)
-
-
-template_is_dependency_issue = PromptTemplate.from_template(
-    '''Your task is to assist in identifying the root cause of a Docker build error for a python application.
-The error message is as follows:
-
-{error}
-
-The docker file is as follows:
-
-{docker_file}
-
-Is this a dependency installation failure? Answer with "yes" or "no".'''
-)
-
-
 template_generate_playground = PromptTemplate.from_template(
-    '''{general_guidelines}
+    general_guidelines_string + '''
 
 {code_files_wrapped}
 
@@ -129,4 +236,15 @@ You must provide the complete file with the exact same syntax to wrap the code.
 The playground (app.py) must read the host from sys.argv because it will be started with a custom host: streamlit run app.py -- --host grpc://...
 The playground (app.py) must not let the user configure the host on the ui.
 '''
+)
+
+
+template_chain_of_thought = PromptTemplate.from_template(
+    '''First, write down an extensive list of obvious and non-obvious observations about {file_name_purpose} that could need an adjustment. Explain why.
+Think if all the changes are required and finally decide for the changes you want to make, but you are not allowed disregard the instructions in the previous message.
+Be very hesitant to change the code. Only make a change if you are sure that it is necessary.
+
+Output only {file_name_purpose}
+Write the whole content of {file_name_purpose} - even if you decided to change only a small thing or even nothing.
+''' + '\n' + template_code_wrapping_string
 )

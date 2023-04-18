@@ -5,13 +5,13 @@ import re
 from src.apis import gpt
 from src.apis.jina_cloud import process_error_message, push_executor
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
-    PROBLEMATIC_PACKAGES
-from src.options.generate.prompt_tasks import general_guidelines, executor_file_task, \
-    not_allowed_executor, chain_of_thought_optimization, test_executor_file_task, requirements_file_task, \
-    docker_file_task, not_allowed_docker
+    PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
+    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, DOCKER_FILE_TAG
 from src.options.generate.templates import template_generate_microservice_name, template_generate_possible_packages, \
     template_solve_code_issue, \
-    template_solve_dependency_issue, template_is_dependency_issue, template_generate_playground
+    template_solve_dependency_issue, template_is_dependency_issue, template_generate_playground, \
+    template_generate_executor, template_generate_test, template_generate_requirements, template_generate_dockerfile, \
+    template_chain_of_thought
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
 
@@ -52,9 +52,6 @@ metas:
                 all_microservice_files_string += f'**{file_name}**\n```{tag}\n{file_name_to_content[file_name]}\n```\n\n'
         return all_microservice_files_string
 
-    # def wrap_content_in_code_block(self, microservice_content, file_name, tag):
-    #     return f'**{file_name}**\n```{tag}\n{microservice_content}\n```\n\n'
-
     def generate_microservice(
             self,
             description,
@@ -63,24 +60,26 @@ metas:
             microservice_name,
             package,
             num_approach,
-            is_chain_of_thought=False,
     ):
         MICROSERVICE_FOLDER_v1 = get_microservice_path(path, microservice_name, package, num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
         print_colored('', '############# Microservice #############', 'blue')
-        user_query = (
-                general_guidelines()
-                + executor_file_task(microservice_name, description, test, package)
-        )
         conversation = self.gpt_session.get_conversation()
-        microservice_content_raw = conversation.chat(user_query)
-        if is_chain_of_thought:
-            microservice_content_raw = conversation.chat(
-                f"General rules: " + not_allowed_executor() + chain_of_thought_optimization('python',
-                                                                                            'microservice.py'))
-        microservice_content = self.extract_content_from_result(microservice_content_raw, 'microservice.py',
-                                                                match_single_block=True)
+        microservice_content_raw = conversation.chat(
+            template_generate_executor.format(
+                microservice_name=microservice_name,
+                microservice_description=description,
+                test=test,
+                package=package,
+                file_name_purpose=EXECUTOR_FILE_NAME,
+                tag_name=EXECUTOR_FILE_TAG,
+                file_name=EXECUTOR_FILE_NAME,
+            )
+        )
+        microservice_content = self.extract_content_from_result(
+            microservice_content_raw, 'microservice.py', match_single_block=True
+        )
         if microservice_content == '':
             microservice_content_raw = conversation.chat('You must add the executor code.')
             microservice_content = self.extract_content_from_result(
@@ -89,19 +88,16 @@ metas:
         persist_file(microservice_content, os.path.join(MICROSERVICE_FOLDER_v1, 'microservice.py'))
 
         print_colored('', '############# Test Microservice #############', 'blue')
-        user_query = (
-                general_guidelines()
-                + self.wrap_content_in_code_block(microservice_content, 'microservice.py', 'python')
-                + test_executor_file_task(microservice_name, test)
-        )
         conversation = self.gpt_session.get_conversation()
-        test_microservice_content_raw = conversation.chat(user_query)
-        if is_chain_of_thought:
-            test_microservice_content_raw = conversation.chat(
-                f"General rules: " + not_allowed_executor() +
-                chain_of_thought_optimization('python', 'test_microservice.py')
-                + "Don't add any additional tests. "
+        test_microservice_content_raw = conversation.chat(
+            template_generate_test.format(
+                code_files_wrapped=self.files_to_string({'microservice.py': microservice_content}),
+                microservice_name=microservice_name,
+                file_name_purpose=TEST_EXECUTOR_FILE_NAME,
+                tag_name=TEST_EXECUTOR_FILE_TAG,
+                file_name=TEST_EXECUTOR_FILE_NAME,
             )
+        )
         test_microservice_content = self.extract_content_from_result(
             test_microservice_content_raw, 'microservice.py', match_single_block=True
         )
@@ -109,37 +105,41 @@ metas:
 
         print_colored('', '############# Requirements #############', 'blue')
         requirements_path = os.path.join(MICROSERVICE_FOLDER_v1, 'requirements.txt')
-        user_query = (
-                general_guidelines()
-                + self.wrap_content_in_code_block(microservice_content, 'microservice.py', 'python')
-                + self.wrap_content_in_code_block(test_microservice_content, 'test_microservice.py', 'python')
-                + requirements_file_task()
-        )
         conversation = self.gpt_session.get_conversation()
-        requirements_content_raw = conversation.chat(user_query)
-        if is_chain_of_thought:
-            requirements_content_raw = conversation.chat(
-                chain_of_thought_optimization('', requirements_path) + "Keep the same version of jina ")
+        requirements_content_raw = conversation.chat(
+            template_generate_requirements.format(
+                code_files_wrapped=self.files_to_string(
+                    {'microservice.py': microservice_content, 'test_microservice.py': test_microservice_content}
+                ),
+                file_name_purpose=REQUIREMENTS_FILE_NAME,
+                file_name=REQUIREMENTS_FILE_NAME,
+                tag_name=REQUIREMENTS_FILE_TAG,
+            )
+        )
 
         requirements_content = self.extract_content_from_result(requirements_content_raw, 'requirements.txt',
                                                                 match_single_block=True)
         persist_file(requirements_content, requirements_path)
 
         print_colored('', '############# Dockerfile #############', 'blue')
-        user_query = (
-                general_guidelines()
-                + self.wrap_content_in_code_block(microservice_content, 'microservice.py', 'python')
-                + self.wrap_content_in_code_block(test_microservice_content, 'test_microservice.py', 'python')
-                + self.wrap_content_in_code_block(requirements_content, 'requirements.txt', '')
-                + docker_file_task()
-        )
         conversation = self.gpt_session.get_conversation()
-        dockerfile_content_raw = conversation.chat(user_query)
-        if is_chain_of_thought:
-            dockerfile_content_raw = conversation.chat(
-                f"General rules: " + not_allowed_executor() + chain_of_thought_optimization('dockerfile', 'Dockerfile'))
-        dockerfile_content = self.extract_content_from_result(dockerfile_content_raw, 'Dockerfile',
-                                                              match_single_block=True)
+        dockerfile_content_raw = conversation.chat(
+            template_generate_dockerfile.format(
+                code_files_wrapped=self.files_to_string(
+                    {
+                        'microservice.py': microservice_content,
+                        'test_microservice.py': test_microservice_content,
+                        'requirements.txt': requirements_content,
+                    }
+                ),
+                file_name_purpose=DOCKER_FILE_NAME,
+                file_name=DOCKER_FILE_NAME,
+                tag_name=DOCKER_FILE_TAG,
+            )
+        )
+        dockerfile_content = self.extract_content_from_result(
+            dockerfile_content_raw, 'Dockerfile', match_single_block=True
+        )
         persist_file(dockerfile_content, os.path.join(MICROSERVICE_FOLDER_v1, 'Dockerfile'))
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
@@ -152,13 +152,18 @@ metas:
         conversation = self.gpt_session.get_conversation([])
         conversation.chat(
             template_generate_playground.format(
-                general_guidelines=general_guidelines(),
                 code_files_wrapped=self.files_to_string(file_name_to_content, ['microservice.py', 'test_microservice.py']),
                 microservice_name=microservice_name,
 
             )
         )
-        playground_content_raw = conversation.chat(chain_of_thought_optimization('python', 'app.py', 'the playground'))
+        playground_content_raw = conversation.chat(
+            template_chain_of_thought.format(
+                file_name_purpose='app.py/the playground',
+                file_name='app.py',
+                tag_name='python',
+            )
+        )
         playground_content = self.extract_content_from_result(playground_content_raw, 'app.py', match_single_block=True)
         persist_file(playground_content, os.path.join(microservice_path, 'app.py'))
 
@@ -195,12 +200,10 @@ metas:
             })
             user_query = template_solve_dependency_issue.format(
                 description=description, error=error, all_files_string=all_files_string,
-                not_allowed_docker=not_allowed_docker()
             )
         else:
             user_query = template_solve_code_issue.format(
                 description=description, error=error, all_files_string=self.files_to_string(file_name_to_content),
-                not_allowed_executor=not_allowed_executor()
             )
         conversation = self.gpt_session.get_conversation()
         returned_files_raw = conversation.chat(user_query)
@@ -234,7 +237,7 @@ metas:
         print_colored('', '############# What packages to use? #############', 'blue')
         conversation = self.gpt_session.get_conversation()
         packages_raw = conversation.chat(
-            template_generate_possible_packages.format(description=description, not_allowed_executor=not_allowed_executor())
+            template_generate_possible_packages.format(description=description)
         )
         packages_csv_string = self.extract_content_from_result(packages_raw, 'packages.csv')
         packages = [package.split(',') for package in packages_csv_string.split('\n')]
