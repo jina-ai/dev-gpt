@@ -120,7 +120,7 @@ gptdeploy generate \
 
 ## Hacker News Search
 ```bash
-generate \
+gptdeploy generate \
 --description "Given a search query, find articles on hacker news using the hacker news api and return a list of (title, author, website_link, first_image_on_the_website)" \
 --test "searching for GPT gives results" \
 --model gpt-4 \
