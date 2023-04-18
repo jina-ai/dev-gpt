@@ -50,7 +50,7 @@ If you have updated it already, please restart your terminal.
                     continue
             return True
         except openai.error.InvalidRequestError:
-            print_colored('GPT-4 is not available. Using GPT-3.5-turbo instead.', 'yellow')
+            print_colored('GPT version info', 'GPT-4 is not available. Using GPT-3.5-turbo instead.', 'yellow')
             return False
 
     def get_conversation(self, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
