@@ -100,7 +100,7 @@ jc delete <microservice id>
 In this section you can get a feeling for the kind of microservices that can be generated with GPT Deploy.
 ### Chemical Formula Visualization
 ```bash
-generate \
+gptdeploy generate \
 --description "Convert a chemical formula into a 2D chemical structure diagram" \
 --test "C=C, CN=C=O, CCC(=O)O" \
 --model gpt-4 \
