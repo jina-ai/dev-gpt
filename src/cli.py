@@ -2,6 +2,7 @@ import functools
 import os
 
 import click
+from langchain.callbacks import get_openai_callback
 
 from src.apis.jina_cloud import jina_auth_login
 from src.options.configure.key_handling import set_api_key
@@ -64,7 +65,10 @@ def generate(
 
     from src.options.generate.generator import Generator
     generator = Generator(description, test, model=model)
-    generator.generate(path)
+    with get_openai_callback() as cb:
+        generator.generate(path)
+        print(f"Prompt/Completion/Total Tokens: {cb.prompt_tokens}/{cb.completion_tokens}/{cb.total_tokens}")
+        print(f"Total Cost on OpenAI (USD): ${cb.total_cost}")
 
 @main.command()
 @path_param
