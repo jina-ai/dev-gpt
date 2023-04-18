@@ -11,7 +11,7 @@ from src.options.generate.templates import template_generate_microservice_name, 
     template_solve_code_issue, \
     template_solve_dependency_issue, template_is_dependency_issue, template_generate_playground, \
     template_generate_executor, template_generate_test, template_generate_requirements, template_generate_dockerfile, \
-    template_chain_of_thought
+    template_chain_of_thought, template_summarize_error
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
 
@@ -55,8 +55,6 @@ metas:
 
     def generate_microservice(
             self,
-            description,
-            test,
             path,
             microservice_name,
             packages,
@@ -70,9 +68,9 @@ metas:
         microservice_content_raw = conversation.chat(
             template_generate_executor.format(
                 microservice_name=microservice_name,
-                microservice_description=description,
-                test=test,
-                package=package,
+                microservice_description=self.task_description,
+                test=self.test_description,
+                packages=packages,
                 file_name_purpose=EXECUTOR_FILE_NAME,
                 tag_name=EXECUTOR_FILE_TAG,
                 file_name=EXECUTOR_FILE_NAME,
@@ -168,7 +166,7 @@ metas:
         playground_content = self.extract_content_from_result(playground_content_raw, 'app.py', match_single_block=True)
         persist_file(playground_content, os.path.join(microservice_path, 'app.py'))
 
-    def debug_microservice(self, path, microservice_name, num_approach, packages, description, test):
+    def debug_microservice(self, path, microservice_name, num_approach, packages):
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
             print('Trying to build the microservice. Might take a while...')
@@ -178,8 +176,7 @@ metas:
             error = process_error_message(log_hubble)
             if error:
                 print('An error occurred during the build process. Feeding the error back to the assistent...')
-                self.do_debug_iteration(description, error, next_microservice_path,
-                                        previous_microservice_path, test)
+                self.do_debug_iteration(error, next_microservice_path, previous_microservice_path)
                 if i == MAX_DEBUGGING_ITERATIONS - 1:
                     raise self.MaxDebugTimeReachedException('Could not debug the microservice.')
             else:
@@ -188,8 +185,7 @@ metas:
 
         return get_microservice_path(path, microservice_name, packages, num_approach, i)
 
-    def do_debug_iteration(self, description, error, next_microservice_path, previous_microservice_path,
-                           test):
+    def do_debug_iteration(self, error, next_microservice_path, previous_microservice_path):
         os.makedirs(next_microservice_path)
         file_name_to_content = get_all_microservice_files_with_content(previous_microservice_path)
 
@@ -201,11 +197,11 @@ metas:
                 key in ['requirements.txt', 'Dockerfile']
             })
             user_query = template_solve_dependency_issue.format(
-                description=description, summarized_error=summarized_error, all_files_string=all_files_string,
+                description=self.task_description, summarized_error=summarized_error, all_files_string=all_files_string,
             )
         else:
             user_query = template_solve_code_issue.format(
-                description=description, summarized_error=summarized_error, all_files_string=self.files_to_string(file_name_to_content),
+                description=self.task_description, summarized_error=summarized_error, all_files_string=self.files_to_string(file_name_to_content),
             )
         conversation = self.gpt_session.get_conversation()
         returned_files_raw = conversation.chat(user_query)
@@ -236,11 +232,11 @@ metas:
         name = self.extract_content_from_result(name_raw, 'name.txt')
         return name
 
-    def get_possible_packages(self, description):
+    def get_possible_packages(self):
         print_colored('', '############# What packages to use? #############', 'blue')
         conversation = self.gpt_session.get_conversation()
         packages_raw = conversation.chat(
-            template_generate_possible_packages.format(description=description)
+            template_generate_possible_packages.format(description=self.task_description)
         )
         packages_csv_string = self.extract_content_from_result(packages_raw, 'packages.csv')
         packages_list = [[pkg.strip() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]
@@ -250,17 +246,15 @@ metas:
     def generate(self, microservice_path):
         generated_name = self.generate_microservice_name(self.task_description)
         microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
-        packages_list = self.get_possible_packages(description)
+        packages_list = self.get_possible_packages()
         packages_list = [
             packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0
         ]
         for num_approach, packages in enumerate(packages_list):
             try:
-                self.generate_microservice(
-                    self.task_description, self.test_description, microservice_path, microservice_name, packages, num_approach
-                )
+                self.generate_microservice(microservice_path, microservice_name, packages, num_approach)
                 final_version_path = self.debug_microservice(
-                    microservice_path, microservice_name, num_approach, packages, description, test
+                    microservice_path, microservice_name, num_approach, packages
                 )
                 self.generate_playground(microservice_name, final_version_path)
             except self.MaxDebugTimeReachedException:
@@ -280,11 +274,5 @@ gptdeploy deploy --path {microservice_path}
 
     def summarize_error(self, error):
         conversation = self.gpt_session.get_conversation([])
-        user_query = f'''
-Here is an error message I encountered during the docker build process:
-"{error}"
-Your task is to summarize the error message as compact and informative as possible while maintaining all information necessary to debug the core issue.
-Warnings are not worth mentioning.
-'''
-        error_summary = conversation.query(user_query)
+        error_summary = conversation.chat(template_summarize_error.format(error=error))
         return error_summary

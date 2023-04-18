@@ -4,6 +4,7 @@ from time import sleep
 from typing import List, Any
 
 import openai
+from langchain import PromptTemplate
 from langchain.callbacks import CallbackManager
 from langchain.chat_models import ChatOpenAI
 from openai.error import RateLimitError
@@ -88,12 +89,14 @@ class _GPTConversation:
 
     @staticmethod
     def _create_system_message(task_description, test_description, system_definition_examples: List[str] = []) -> SystemMessage:
-        system_message = system_message_base
+        system_message = PromptTemplate.from_template(system_message_base).format(
+            task_description=task_description,
+            test_description=test_description,
+        )
         if 'executor' in system_definition_examples:
             system_message += f'\n{executor_example}'
         if 'docarray' in system_definition_examples:
             system_message += f'\n{docarray_example}'
         if 'client' in system_definition_examples:
             system_message += f'\n{client_example}'
-        # create from template
         return SystemMessage(content=system_message)

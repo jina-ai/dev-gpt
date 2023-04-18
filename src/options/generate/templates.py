@@ -57,7 +57,8 @@ b) has a stable api among different versions
 c) does not have system requirements
 d) can solve the task when running in a docker container
 e) the implementation of the core problem using the package would obey the following rules:
-''' + not_allowed_executor_string() + '''
+''' + not_allowed_executor_string + '''
+
 When answering, just write "yes" or "no".
 
 5. Output the most suitable 5 python packages starting with the best one. 
@@ -66,11 +67,11 @@ If the package is mentioned in the description, then it is automatically the bes
 The output must be a list of lists wrapped into ``` and starting with **packages.csv** like this:
 **packages.csv**
 ```
-package1
-package2
-package3
-package4
-package5
+package1a, package1b ...
+package2a, package2b, package2c
+package3a ...
+package4a ...
+package5a ...
 ...
 ```
 ''')
@@ -90,7 +91,7 @@ template_generate_executor = PromptTemplate.from_template(
 Write the executor called '{microservice_name}'. The name is very important to keep.
 It matches the following description: '{microservice_description}'.
 It will be tested with the following scenario: '{test}'.
-For the implementation use the following package: '{package}'.
+For the implementation use the following package: '{packages}'.
 
 Obey the following rules:
 Have in mind that d.uri is never a path to a local file. It is always a url.
@@ -156,6 +157,14 @@ The Dockerfile runs the test during the build process.
 )
 
 
+template_summarize_error = PromptTemplate.from_template(
+    '''Here is an error message I encountered during the docker build process:
+"{error}"
+Your task is to summarize the error message as compact and informative as possible while maintaining all information necessary to debug the core issue.
+Warnings are not worth mentioning.'''
+)
+
+
 template_is_dependency_issue = PromptTemplate.from_template(
     '''Your task is to assist in identifying the root cause of a Docker build error for a python application.
 The error message is as follows:
@@ -172,15 +181,13 @@ Is this a dependency installation failure? Answer with "yes" or "no".'''
 
 template_solve_dependency_issue = PromptTemplate.from_template(
     '''Your task is to provide guidance on how to solve an error that occurred during the Docker build process. 
-The error message is:
-**microservice.log**
-```
-{error}
-```
+Here is the summary of the error that occurred:
+{summarized_error}
+
 To solve this error, you should:
-1. Identify the type of error by examining the stack trace. 
-2. Suggest how to solve it. 
-3. Your suggestion must include the files that need to be changed, but not files that don't need to be changed. 
+1. Suggest 3 to 5 possible solutions on how to solve it. You have no access to the documentation of the package.
+2. Decide for the best solution and explain it in detail.
+3. Write down the files that need to be changed, but not files that don't need to be changed. 
 For files that need to be changed, you must provide the complete file with the exact same syntax to wrap the code.
 Obey the following rules:
 ''' + not_allowed_docker_string() + '''
@@ -188,6 +195,22 @@ Obey the following rules:
 You are given the following files:
 
 {all_files_string}
+
+Output all the files that need change. 
+Don't output files that don't need change. If you output a file, then write the 
+complete file. Use the exact following syntax to wrap the code:
+
+**...**
+```
+...code...
+```
+
+Example:
+
+**requirements.txt**
+```
+jina==2.0.0
+```
 '''
 )
 
@@ -205,19 +228,31 @@ Here are all the files I use:
 {all_files_string}
 
 
-This is the error I encounter currently during the docker build process:
-{error}
+Here is the summary of the error that occurred:
+{summarized_error}
 
-Look at the stack trace of the current error. First, think about what kind of error is this? 
-Then think about possible reasons which might have caused it. Then suggest how to 
-solve it. Output all the files that need change. 
+To solve this error, you should:
+1. Suggest 3 to 5 possible solutions on how to solve it. You have no access to the documentation of the package.
+2. Decide for the best solution and explain it in detail.
+3. Write down the files that need to be changed, but not files that don't need to be changed.
+Obey the following rules:
+''' + f'{not_allowed_executor_string}\n{not_allowed_docker_string}' + '''
+
+Output all the files that need change. 
 Don't output files that don't need change. If you output a file, then write the 
-complete file. Use the exact same syntax to wrap the code:
+complete file. Use the exact following syntax to wrap the code:
+
 **...**
 ```...
 ...code...
 ```
-'''
+
+Example:
+
+**microservice.py**
+```python
+print('hello world')
+```'''
 )
 
 
@@ -237,7 +272,7 @@ response = client.post('/', inputs=DocumentArray([d])) # always use '/'
 print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
 ```
 Note that the response will always be in response[0].text
-You must provide the complete file with the exact same syntax to wrap the code.
+You must provide the complete app.py file with the exact same syntax to wrap the code.
 The playground (app.py) must read the host from sys.argv because it will be started with a custom host: streamlit run app.py -- --host grpc://...
 The playground (app.py) must not let the user configure the host on the ui.
 '''

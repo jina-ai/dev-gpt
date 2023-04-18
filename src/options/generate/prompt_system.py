@@ -1,4 +1,5 @@
 from src.constants import FLOW_URL_PLACEHOLDER
+from src.options.generate.templates import not_allowed_docker_string, not_allowed_executor_string
 
 executor_example = '''Using the Jina framework, users can define executors. 
 Here is an example of how an executor can be defined. It always starts with a comment:
@@ -83,4 +84,4 @@ and the following test scenario:
 {test_description}
 ```
 
-You must obey the following rules:''' + f'\n{not_allowed_executor}\n{not_allowed_docker}'
+You must obey the following rules:''' + f'\n{not_allowed_executor_string}\n{not_allowed_docker_string}'
