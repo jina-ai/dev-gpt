@@ -31,7 +31,7 @@ def validate_folder_is_correct(microservice_path):
         raise ValueError(f'Path {microservice_path} needs to contain only one folder. Please make sure that you only have one microservice in this folder.')
     latest_version_path = get_latest_version_path(microservice_path)
     required_files = [
-        'app.py',
+        'gateway/app.py',
         'requirements.txt',
         'Dockerfile',
         'config.yml',

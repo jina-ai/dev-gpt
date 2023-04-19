@@ -76,7 +76,7 @@ If you have updated it already, please restart your terminal.
         print('\n')
         money_prompt = self._calculate_money_spent(self.chars_prompt_so_far, self.pricing_prompt)
         money_generation = self._calculate_money_spent(self.chars_generation_so_far, self.pricing_generation)
-        print('Total money spent so far on openai.com:', f'${money_prompt + money_generation}')
+        print('Total money spent so far on openai.com:', f'${money_prompt + money_generation:.3f}')
         print('\n')
 
     @staticmethod

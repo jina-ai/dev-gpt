@@ -61,7 +61,7 @@ class PlaygroundGateway(Gateway):
 
 
 class CustomGateway(CompositeGateway):
-    """The CustomGateway assumes that the gateway has been started with http on port 8081.
+    """The CustomGateway assumes that the gateway has been started with http on port 8080.
     This is the port on which the nginx process listens. After nginx has been started,
     it will start the playground on port 8501 and the actual HTTP gateway will start on port 8082.
 
@@ -71,12 +71,12 @@ class CustomGateway(CompositeGateway):
     """
 
     def __init__(self, **kwargs):
-        # need to update port to 8082, as nginx will listen on 8081
+        # need to update port to 8082, as nginx will listen on 8080
         http_idx = 0
         http_port = kwargs['runtime_args']['port'][http_idx]
-        if kwargs['runtime_args']['port'][http_idx] != 8081:
+        if kwargs['runtime_args']['port'][http_idx] != 8080:
             raise ValueError(
-                f'Please, let http port ({http_port}) be 8081 for nginx to work'
+                f'Please, let http port ({http_port}) be 8080 for nginx to work'
             )
         kwargs['runtime_args']['port'][http_idx] = 8082
         super().__init__(**kwargs)

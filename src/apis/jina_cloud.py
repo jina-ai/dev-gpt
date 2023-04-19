@@ -33,8 +33,8 @@ def wait_until_app_is_ready(url):
         time.sleep(0.5)
 
 
-def open_streamlit_app():
-    url = "http://localhost:8081/playground"
+def open_streamlit_app(host: str):
+    url = f"{host}/playground"
     wait_until_app_is_ready(url)
     webbrowser.open(url, new=2)
 
@@ -144,19 +144,11 @@ Please try again later.
                         )
 
     print(f'''
-Your Microservice is deployed.
-Run the following command to start the playground:
-
-streamlit run {os.path.join(microservice_path, "app.py")} --server.port 8081 --server.address 0.0.0.0 -- --host {host}
-'''
-          )
+Your Microservice is deployed at {host} and the playground is available at {host}/playground
+We open now the playground in your browser.
+''')
+    open_streamlit_app(host)
     return host
-
-
-def run_streamlit_app(app_path):
-    subprocess.run(['streamlit', 'run', app_path, 'server.address', '0.0.0.0', '--server.port', '8081', '--', '--host',
-                    'http://localhost:8080'])
-
 
 def run_locally(executor_name, microservice_version_path):
     if is_docker_running():
@@ -184,15 +176,8 @@ c) try to run your microservice locally without docker. It is worth a try but mi
 Your microservice started locally.
 We now start the playground for you.
 ''')
-
-        app_path = os.path.join(microservice_version_path, "app.py")
-
-        # Run the Streamlit app in a separate thread
-        streamlit_thread = threading.Thread(target=run_streamlit_app, args=(app_path,))
-        streamlit_thread.start()
-
         # Open the Streamlit app in the user's default web browser
-        open_streamlit_app()
+        open_streamlit_app(host='http://localhost:8080')
 
         flow.block()
 
@@ -204,7 +189,6 @@ def create_flow_yaml(dest_folder, executor_name, use_docker):
         prefix = 'jinaai'
     flow = f'''jtype: Flow
 with:
-  name: nowapi
   port: 8080
   protocol: http
 jcloud:
@@ -214,8 +198,7 @@ jcloud:
   name: gptdeploy
 gateway:
     uses: {prefix}://{get_user_name(DEMO_TOKEN)}/Gateway{executor_name}:latest
-    port: [8081]
-    protocol: ['http']
+    {"" if use_docker else "install-requirements: True"}
 executors:
   - name: {executor_name.lower()}
     uses: {prefix}://{get_user_name(DEMO_TOKEN)}/{executor_name}:latest

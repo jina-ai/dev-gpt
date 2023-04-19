@@ -166,12 +166,13 @@ metas:
         # fill-in name of microservice
         gateway_name = f'Gateway{microservice_name}'
         custom_gateway_path = os.path.join(gateway_path, 'custom_gateway.py')
-        with open(custom_gateway_path, 'rw') as f:
+        with open(custom_gateway_path, 'r') as f:
             custom_gateway_content = f.read()
-            custom_gateway_content = custom_gateway_content.replace(
-                'class CustomGateway(CompositeGateway):',
-                f'class {gateway_name}(CompositeGateway):'
-            )
+        custom_gateway_content = custom_gateway_content.replace(
+            'class CustomGateway(CompositeGateway):',
+            f'class {gateway_name}(CompositeGateway):'
+        )
+        with open(custom_gateway_path, 'w') as f:
             f.write(custom_gateway_content)
 
         # write config.yml
