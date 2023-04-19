@@ -4,9 +4,7 @@ REQUIREMENTS_FILE_NAME = 'requirements.txt'
 DOCKER_FILE_NAME = 'Dockerfile'
 CLIENT_FILE_NAME = 'client.py'
 STREAMLIT_FILE_NAME = 'streamlit.py'
-GPT_3_5_TURBO_API_FILE_NAME = 'gpt_3_5_turbo_api.py'
 
-GPT_3_5_TURBO_API_FILE_TAG = 'python'
 EXECUTOR_FILE_TAG = 'python'
 TEST_EXECUTOR_FILE_TAG = 'python'
 REQUIREMENTS_FILE_TAG = ''
@@ -16,7 +14,6 @@ STREAMLIT_FILE_TAG = 'python'
 
 
 FILE_AND_TAG_PAIRS = [
-    (GPT_3_5_TURBO_API_FILE_NAME, GPT_3_5_TURBO_API_FILE_NAME),
     (EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG),
     (TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG),
     (REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG),
@@ -37,5 +34,3 @@ PROBLEMATIC_PACKAGES = [
     # 'Pyrender', 'Trimesh',
     'ModernGL', 'PyOpenGL', 'Pyglet', 'pythreejs', 'panda3d' # because they need a screen
 ]
-
-GPT_3_5_TURBO_API_FILE_NAME = 'gpt_3_5_turbo_api.py'

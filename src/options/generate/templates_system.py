@@ -8,7 +8,6 @@ The system definition defines the agent the user is talking to.
 The user prompt is precise question and the expected answer format.
 Example:
 # in the executor init:
-from gpt_3_5_turbo_api import GPT_3_5_Turbo_API
 gpt = GPT_3_5_Turbo_API(
     system=\'\'\'
 You are a tv-reporter who is specialized in C-list celebrities.
