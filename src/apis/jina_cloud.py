@@ -155,7 +155,7 @@ streamlit run {os.path.join(microservice_path, "app.py")} --server.port 8081 --s
 
 def run_streamlit_app(app_path):
     subprocess.run(['streamlit', 'run', app_path, 'server.address', '0.0.0.0', '--server.port', '8081', '--', '--host',
-                    'grpc://localhost:8080'])
+                    'http://localhost:8080'])
 
 
 def run_locally(executor_name, microservice_version_path):
@@ -207,6 +207,7 @@ jtype: Flow
 with:
   name: nowapi
   port: 8080
+  protocol: http
 jcloud:
   version: 3.14.2.dev18
   labels:
