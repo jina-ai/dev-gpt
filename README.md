@@ -98,6 +98,7 @@ jc delete <microservice id>
 
 ## Examples
 In this section you can get a feeling for the kind of microservices that can be generated with GPT Deploy.
+
 ### Chemical Formula Visualization
 ```bash
 gptdeploy generate \
@@ -118,7 +119,17 @@ gptdeploy generate \
 ```
 <img src="res/obj_render_example.gif" alt="2D Rendering of 3D Model" width="400" />
 
-## Hacker News Search
+### Product Recommendation
+```bash
+gptdeploy generate \
+--description "Generate personalized product recommendations based on user product browsing history and the product categories fashion, electronics and sport" --test "Test that a user how visited p1(electronics),p2(fashion),p3(fashion) is more likely to buy p4(fashion) than p5(sports)" \
+--model gpt-4 \
+--path microservice \
+--verbose
+```
+<img src="res/recommendation_example.png" alt="Product Recommendation" width="400" />
+
+### Hacker News Search
 ```bash
 gptdeploy generate \
 --description "Given a search query, find articles on hacker news using the hacker news api and return a list of (title, author, website_link, first_image_on_the_website)" \

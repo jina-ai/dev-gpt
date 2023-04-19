@@ -52,6 +52,26 @@ metas:
                 all_microservice_files_string += f'**{file_name}**\n```{tag}\n{file_name_to_content[file_name]}\n```\n\n'
         return all_microservice_files_string.strip()
 
+
+    def generate_and_persist_file(self, section_title, template, destination_folder, file_name, **template_kwargs):
+        print_colored('', f'\n############# {section_title} #############', 'blue')
+        conversation = self.gpt_session.get_conversation()
+        template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
+        content_raw = conversation.chat(
+            template.format(
+                file_name=file_name,
+                **template_kwargs
+            )
+        )
+        content = self.extract_content_from_result(content_raw, file_name, match_single_block=True)
+        if content == '':
+            content_raw = conversation.chat(f'You must add the {file_name} code.')
+            content = self.extract_content_from_result(
+                content_raw, file_name, match_single_block=True
+            )
+        persist_file(content, os.path.join(destination_folder, file_name))
+        return content_raw
+
     def generate_microservice(
             self,
             path,
@@ -62,84 +82,58 @@ metas:
         MICROSERVICE_FOLDER_v1 = get_microservice_path(path, microservice_name, packages, num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
-        print_colored('', '\n############# Microservice #############', 'blue')
-        conversation = self.gpt_session.get_conversation()
-        microservice_content_raw = conversation.chat(
-            template_generate_executor.format(
-                microservice_name=microservice_name,
-                microservice_description=self.task_description,
-                test=self.test_description,
-                packages=packages,
-                file_name_purpose=EXECUTOR_FILE_NAME,
-                tag_name=EXECUTOR_FILE_TAG,
-                file_name=EXECUTOR_FILE_NAME,
-            )
-        )
-        microservice_content = self.extract_content_from_result(
-            microservice_content_raw, 'microservice.py', match_single_block=True
-        )
-        if microservice_content == '':
-            microservice_content_raw = conversation.chat('You must add the executor code.')
-            microservice_content = self.extract_content_from_result(
-                microservice_content_raw, 'microservice.py', match_single_block=True
-            )
-        persist_file(microservice_content, os.path.join(MICROSERVICE_FOLDER_v1, 'microservice.py'))
-
-        print_colored('', '\n############# Test Microservice #############', 'blue')
-        conversation = self.gpt_session.get_conversation()
-        test_microservice_content_raw = conversation.chat(
-            template_generate_test.format(
-                code_files_wrapped=self.files_to_string({'microservice.py': microservice_content}),
-                microservice_name=microservice_name,
-                test_description=self.test_description,
-                file_name_purpose=TEST_EXECUTOR_FILE_NAME,
-                tag_name=TEST_EXECUTOR_FILE_TAG,
-                file_name=TEST_EXECUTOR_FILE_NAME,
-            )
-        )
-        test_microservice_content = self.extract_content_from_result(
-            test_microservice_content_raw, 'microservice.py', match_single_block=True
-        )
-        persist_file(test_microservice_content, os.path.join(MICROSERVICE_FOLDER_v1, 'test_microservice.py'))
-
-        print_colored('', '\n############# Requirements #############', 'blue')
-        requirements_path = os.path.join(MICROSERVICE_FOLDER_v1, 'requirements.txt')
-        conversation = self.gpt_session.get_conversation()
-        requirements_content_raw = conversation.chat(
-            template_generate_requirements.format(
-                code_files_wrapped=self.files_to_string(
-                    {'microservice.py': microservice_content, 'test_microservice.py': test_microservice_content}
-                ),
-                file_name_purpose=REQUIREMENTS_FILE_NAME,
-                file_name=REQUIREMENTS_FILE_NAME,
-                tag_name=REQUIREMENTS_FILE_TAG,
-            )
+        microservice_content = self.generate_and_persist_file(
+            'Microservice',
+            template_generate_executor,
+            MICROSERVICE_FOLDER_v1,
+            microservice_name=microservice_name,
+            microservice_description=self.task_description,
+            test_description=self.test_description,
+            packages=packages,
+            file_name_purpose=EXECUTOR_FILE_NAME,
+            tag_name=EXECUTOR_FILE_TAG,
+            file_name=EXECUTOR_FILE_NAME,
         )
 
-        requirements_content = self.extract_content_from_result(requirements_content_raw, 'requirements.txt',
-                                                                match_single_block=True)
-        persist_file(requirements_content, requirements_path)
+        test_microservice_content = self.generate_and_persist_file(
+            'Test Microservice',
+            template_generate_test,
+            MICROSERVICE_FOLDER_v1,
+            code_files_wrapped=self.files_to_string({'microservice.py': microservice_content}),
+            microservice_name=microservice_name,
+            microservice_description=self.task_description,
+            test_description=self.test_description,
+            file_name_purpose=TEST_EXECUTOR_FILE_NAME,
+            tag_name=TEST_EXECUTOR_FILE_TAG,
+            file_name=TEST_EXECUTOR_FILE_NAME,
+        )
 
-        print_colored('', '\n############# Dockerfile #############', 'blue')
-        conversation = self.gpt_session.get_conversation()
-        dockerfile_content_raw = conversation.chat(
-            template_generate_dockerfile.format(
-                code_files_wrapped=self.files_to_string(
-                    {
-                        'microservice.py': microservice_content,
-                        'test_microservice.py': test_microservice_content,
-                        'requirements.txt': requirements_content,
-                    }
-                ),
-                file_name_purpose=DOCKER_FILE_NAME,
-                file_name=DOCKER_FILE_NAME,
-                tag_name=DOCKER_FILE_TAG,
-            )
+        requirements_content = self.generate_and_persist_file(
+            'Requirements',
+            template_generate_requirements,
+            MICROSERVICE_FOLDER_v1,
+            code_files_wrapped=self.files_to_string({
+                'microservice.py': microservice_content,
+                'test_microservice.py': test_microservice_content
+            }),
+            file_name_purpose=REQUIREMENTS_FILE_NAME,
+            file_name=REQUIREMENTS_FILE_NAME,
+            tag_name=REQUIREMENTS_FILE_TAG,
         )
-        dockerfile_content = self.extract_content_from_result(
-            dockerfile_content_raw, 'Dockerfile', match_single_block=True
+
+        self.generate_and_persist_file(
+            'Dockerfile',
+            template_generate_dockerfile,
+            MICROSERVICE_FOLDER_v1,
+            code_files_wrapped=self.files_to_string({
+                'microservice.py': microservice_content,
+                'test_microservice.py': test_microservice_content,
+                'requirements.txt': requirements_content
+            }),
+            file_name_purpose=DOCKER_FILE_NAME,
+            file_name=DOCKER_FILE_NAME,
+            tag_name=DOCKER_FILE_TAG,
         )
-        persist_file(dockerfile_content, os.path.join(MICROSERVICE_FOLDER_v1, 'Dockerfile'))
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
         print('\nFirst version of the microservice generated. Start iterating on it to make the tests pass...')

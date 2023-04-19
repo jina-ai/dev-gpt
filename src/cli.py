@@ -46,7 +46,7 @@ def main(ctx):
 @click.option('--description', required=True, help='Description of the microservice.')
 @click.option('--test', required=True, help='Test scenario for the microservice.')
 @click.option('--model', default='gpt-4', help='GPT model to use (default: gpt-4).')
-@click.option('--verbose', default=False, is_flag=True, help='Verbose mode.')
+@click.option('--verbose', default=False, is_flag=True, help='Verbose mode.')   # only for development
 @path_param
 def generate(
         description,
@@ -65,10 +65,8 @@ def generate(
 
     from src.options.generate.generator import Generator
     generator = Generator(description, test, model=model)
-    with get_openai_callback() as cb:
-        generator.generate(path)
-        print(f"Prompt/Completion/Total Tokens: {cb.prompt_tokens}/{cb.completion_tokens}/{cb.total_tokens}")
-        print(f"Total Cost on OpenAI (USD): ${cb.total_cost}")
+    generator.generate(path)
+
 
 @main.command()
 @path_param
