@@ -53,14 +53,14 @@ metas:
         return all_microservice_files_string.strip()
 
 
-    def generate_and_persist_file(self, section_title, template, destination_folder, file_name, **kwargs):
+    def generate_and_persist_file(self, section_title, template, destination_folder, file_name, **template_kwargs):
         print_colored('', f'\n############# {section_title} #############', 'blue')
         conversation = self.gpt_session.get_conversation()
-        kwargs = {k: v for k, v in kwargs.items() if k in template.input_variables}
+        template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         content_raw = conversation.chat(
             template.format(
                 file_name=file_name,
-                **kwargs
+                **template_kwargs
             )
         )
         content = self.extract_content_from_result(content_raw, file_name, match_single_block=True)

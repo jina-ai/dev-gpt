@@ -69,7 +69,7 @@ class _GPTConversation:
             model_name=model,
             streaming=True,
             callback_manager=CallbackManager([AssistantStreamingStdOutCallbackHandler()]),
-            verbose=os.environ['VERBOSE'].lower() == 'true',
+            verbose=True,
             temperature=0,
         )
         self.messages: List[BaseMessage] = []

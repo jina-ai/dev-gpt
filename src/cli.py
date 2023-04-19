@@ -65,10 +65,8 @@ def generate(
 
     from src.options.generate.generator import Generator
     generator = Generator(description, test, model=model)
-    with get_openai_callback() as cb:
-        generator.generate(path)
-        # print(f"Prompt/Completion/Total Tokens: {cb.prompt_tokens}/{cb.completion_tokens}/{cb.total_tokens}")
-        # print(f"Total Cost on OpenAI (USD): ${cb.total_cost}")
+    generator.generate(path)
+
 
 @main.command()
 @path_param
