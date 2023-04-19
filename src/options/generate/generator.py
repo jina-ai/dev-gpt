@@ -54,7 +54,7 @@ metas:
 
 
     def generate_and_persist_file(self, section_title, template, destination_folder, file_name, **template_kwargs):
-        print_colored('', f'\n############# {section_title} #############', 'blue')
+        print_colored('', f'\n\n############# {section_title} #############', 'blue')
         conversation = self.gpt_session.get_conversation()
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         content_raw = conversation.chat(
@@ -139,7 +139,7 @@ metas:
         print('\nFirst version of the microservice generated. Start iterating on it to make the tests pass...')
 
     def generate_playground(self, microservice_name, microservice_path):
-        print_colored('', '\n############# Playground #############', 'blue')
+        print_colored('', '\n\n############# Playground #############', 'blue')
 
         file_name_to_content = get_all_microservice_files_with_content(microservice_path)
         conversation = self.gpt_session.get_conversation([])
@@ -228,7 +228,7 @@ metas:
         return name
 
     def get_possible_packages(self):
-        print_colored('', '############# What packages to use? #############', 'blue')
+        print_colored('', '\n\n############# What packages to use? #############', 'blue')
         conversation = self.gpt_session.get_conversation()
         packages_raw = conversation.chat(
             template_generate_possible_packages.format(description=self.task_description)
