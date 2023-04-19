@@ -207,6 +207,7 @@ jtype: Flow
 with:
   name: nowapi
   port: 8080
+  protocol: http
 jcloud:
   version: 3.14.2.dev18
   labels:
