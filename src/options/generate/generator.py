@@ -1,6 +1,7 @@
 import os
 import random
 import re
+import shutil
 
 from src.apis import gpt
 from src.apis.jina_cloud import process_error_message, push_executor
@@ -35,12 +36,12 @@ class Generator:
                 return single_code_block_match[0].strip()
         return ''
 
-    def write_config_yml(self, microservice_name, dest_folder):
-        config_content = f'''jtype: {microservice_name}
+    def write_config_yml(self, class_name, dest_folder, python_file='microservice.py'):
+        config_content = f'''jtype: {class_name}
 py_modules:
-  - microservice.py
+  - {python_file}
 metas:
-  name: {microservice_name}
+  name: {class_name}
 '''
         with open(os.path.join(dest_folder, 'config.yml'), 'w') as f:
             f.write(config_content)
@@ -147,7 +148,6 @@ metas:
             template_generate_playground.format(
                 code_files_wrapped=self.files_to_string(file_name_to_content, ['microservice.py', 'test_microservice.py']),
                 microservice_name=microservice_name,
-
             )
         )
         playground_content_raw = conversation.chat(
@@ -158,7 +158,27 @@ metas:
             )
         )
         playground_content = self.extract_content_from_result(playground_content_raw, 'app.py', match_single_block=True)
-        persist_file(playground_content, os.path.join(microservice_path, 'app.py'))
+
+        gateway_path = os.path.join(microservice_path, 'gateway')
+        shutil.copytree(os.path.join(os.path.dirname(__file__), 'static_files', 'gateway'), gateway_path)
+        persist_file(playground_content, os.path.join(gateway_path, 'app.py'))
+
+        # fill-in name of microservice
+        gateway_name = f'Gateway{microservice_name}'
+        custom_gateway_path = os.path.join(gateway_path, 'custom_gateway.py')
+        with open(custom_gateway_path, 'rw') as f:
+            custom_gateway_content = f.read()
+            custom_gateway_content = custom_gateway_content.replace(
+                'class CustomGateway(CompositeGateway):',
+                f'class {gateway_name}(CompositeGateway):'
+            )
+            f.write(custom_gateway_content)
+
+        # write config.yml
+        self.write_config_yml(gateway_name, gateway_path, 'custom_gateway.py')
+
+        # push the gateway
+        hubble_log = push_executor(gateway_path)
 
     def debug_microservice(self, path, microservice_name, num_approach, packages):
         for i in range(1, MAX_DEBUGGING_ITERATIONS):

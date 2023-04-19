@@ -202,8 +202,7 @@ def create_flow_yaml(dest_folder, executor_name, use_docker):
         prefix = 'jinaai+docker'
     else:
         prefix = 'jinaai'
-    flow = f'''
-jtype: Flow
+    flow = f'''jtype: Flow
 with:
   name: nowapi
   port: 8080
@@ -212,7 +211,10 @@ jcloud:
   labels:
     creator: microchain
   name: gptdeploy
-
+gateway:
+    uses: {prefix}://{get_user_name(DEMO_TOKEN)}/Gateway{executor_name}:latest
+    port: [8081]
+    protocol: ['http']
 executors:
   - name: {executor_name.lower()}
     uses: {prefix}://{get_user_name(DEMO_TOKEN)}/{executor_name}:latest
