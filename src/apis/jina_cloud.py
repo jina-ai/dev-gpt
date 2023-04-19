@@ -294,5 +294,3 @@ def process_error_message(error_message):
     if not response and last_line.startswith('error: '):
         return last_line
     return response
-
-push_executor('/Users/florianhonicke/jina/gptdeploy/microservice/NewsArticleSummaryExecutor7754860')
