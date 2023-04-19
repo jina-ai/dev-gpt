@@ -222,6 +222,7 @@ metas:
         return 'yes' in answer.lower()
 
     def generate_microservice_name(self, description):
+        print_colored('', '\n\n############# What should be the name of the Microservice? #############', 'blue')
         conversation = self.gpt_session.get_conversation()
         name_raw = conversation.chat(template_generate_microservice_name.format(description=description))
         name = self.extract_content_from_result(name_raw, 'name.txt')
