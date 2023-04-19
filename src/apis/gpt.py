@@ -12,7 +12,7 @@ from langchain.schema import HumanMessage, SystemMessage, BaseMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 from src.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
-    PRICING_GPT3_5_TURBO_GENERATION
+    PRICING_GPT3_5_TURBO_GENERATION, CHARS_PER_TOKEN
 from src.options.generate.templates_system import template_system_message_base, executor_example, docarray_example, client_example
 from src.utils.string_tools import print_colored
 
@@ -34,6 +34,11 @@ class GPTSession:
         self.model_name = model
         self.chars_prompt_so_far = 0
         self.chars_generation_so_far = 0
+
+    def get_conversation(self, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
+        return _GPTConversation(
+            self.model_name, self.cost_callback, self.task_description, self.test_description, system_definition_examples
+        )
 
     @staticmethod
     def configure_openai_api_key():
@@ -69,15 +74,14 @@ If you have updated it already, please restart your terminal.
         self.chars_prompt_so_far += chars_prompt
         self.chars_generation_so_far += chars_generation
         print('\n')
-        money_prompt = self.calculate_money_spent(self.chars_prompt_so_far, self.pricing_prompt)
-        money_generation = self.calculate_money_spent(self.chars_generation_so_far, self.pricing_generation)
+        money_prompt = self._calculate_money_spent(self.chars_prompt_so_far, self.pricing_prompt)
+        money_generation = self._calculate_money_spent(self.chars_generation_so_far, self.pricing_generation)
         print('Total money spent so far on openai.com:', f'${money_prompt + money_generation}')
         print('\n')
 
-    def get_conversation(self, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
-        return _GPTConversation(
-            self.model_name, self.cost_callback, self.task_description, self.test_description, system_definition_examples
-        )
+    @staticmethod
+    def _calculate_money_spent(num_chars, price):
+        return round(num_chars / CHARS_PER_TOKEN * price / 1000, 3)
 
 
 class AssistantStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
@@ -110,7 +114,7 @@ class _GPTConversation:
         response = self._chat([self.system_message] + self.messages)
         if os.environ['VERBOSE'].lower() == 'true':
             print()
-        self.cost_callback(sum([m.content for m in self.messages]), len(response.content))
+        self.cost_callback(sum([len(m.content) for m in self.messages]), len(response.content))
         self.messages.append(response)
         return response.content
 
