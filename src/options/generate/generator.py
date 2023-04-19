@@ -158,6 +158,11 @@ metas:
             )
         )
         playground_content = self.extract_content_from_result(playground_content_raw, 'app.py', match_single_block=True)
+        if playground_content == '':
+            content_raw = conversation.chat(f'You must add the app.py code.')
+            playground_content = self.extract_content_from_result(
+                content_raw, 'app.py', match_single_block=True
+            )
 
         gateway_path = os.path.join(microservice_path, 'gateway')
         shutil.copytree(os.path.join(os.path.dirname(__file__), 'static_files', 'gateway'), gateway_path)
