@@ -8,8 +8,9 @@ from langchain import PromptTemplate
 from langchain.callbacks import CallbackManager
 from langchain.chat_models import ChatOpenAI
 from openai.error import RateLimitError
-from langchain.schema import AIMessage, HumanMessage, SystemMessage, BaseMessage
+from langchain.schema import HumanMessage, SystemMessage, BaseMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from requests.exceptions import ConnectionError
 
 from src.options.generate.templates_system import template_system_message_base, executor_example, docarray_example, client_example
 from src.utils.string_tools import print_colored
@@ -83,7 +84,16 @@ class _GPTConversation:
         if os.environ['VERBOSE'].lower() == 'true':
             print_colored('user', prompt, 'blue')
         print_colored('assistant', '', 'green', end='')
-        response = self._chat([self.system_message] + self.messages)
+        for i in range(10):
+            try:
+                response = self._chat([self.system_message] + self.messages)
+                break
+            except ConnectionError as e:
+                print('There was a connection error. Retrying...')
+                if i == 9:
+                    raise e
+                sleep(10)
+
         if os.environ['VERBOSE'].lower() == 'true':
             print()
         self.messages.append(response)

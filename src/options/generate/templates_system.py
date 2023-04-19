@@ -1,6 +1,27 @@
 from src.constants import FLOW_URL_PLACEHOLDER
 from src.options.generate.templates_user import not_allowed_docker_string, not_allowed_executor_string
 
+gpt_example = '''
+# gpt_3_5_turbo is a language model that can be used to generate text.
+you can use it to generate text given a system definition and a user prompt.
+The system definition defines the agent the user is talking to.
+The user prompt is precise question and the expected answer format.
+Example:
+# in the executor init:
+from gpt_3_5_turbo_api import GPT_3_5_Turbo_API
+gpt = GPT_3_5_Turbo_API(
+    system=\'\'\'
+You are a tv-reporter who is specialized in C-list celebrities.
+When you get asked something like 'Who was having a date with <X>?', then you answer with a json like '{"dates": ["<Y>", "<Z>"]}'. 
+You must not answer something else - only the json.
+\'\'\')
+
+# in the executor endpoint function:
+response_string = gpt(prompt)
+response = json.loads(response_string) # response is a string
+
+'''
+
 executor_example = '''Using the Jina framework, users can define executors. 
 Here is an example of how an executor can be defined. It always starts with a comment:
 

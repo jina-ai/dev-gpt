@@ -6,7 +6,7 @@ from src.apis import gpt
 from src.apis.jina_cloud import process_error_message, push_executor
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
-    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, DOCKER_FILE_TAG
+    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, DOCKER_FILE_TAG, GPT_3_5_TURBO_API_FILE_NAME
 from src.options.generate.templates_user import template_generate_microservice_name, template_generate_possible_packages, \
     template_solve_code_issue, \
     template_solve_dependency_issue, template_is_dependency_issue, template_generate_playground, \
@@ -70,7 +70,7 @@ metas:
                 content_raw, file_name, match_single_block=True
             )
         persist_file(content, os.path.join(destination_folder, file_name))
-        return content_raw
+        return content
 
     def generate_microservice(
             self,
@@ -82,10 +82,13 @@ metas:
         MICROSERVICE_FOLDER_v1 = get_microservice_path(path, microservice_name, packages, num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
+        gpt_3_5_turbo_api_content = self.write_gpt_api_file(MICROSERVICE_FOLDER_v1)
+
         microservice_content = self.generate_and_persist_file(
             'Microservice',
             template_generate_executor,
             MICROSERVICE_FOLDER_v1,
+            code_files_wrapped=self.files_to_string({'gpt_3_5_turbo_api.py': gpt_3_5_turbo_api_content}),
             microservice_name=microservice_name,
             microservice_description=self.task_description,
             test_description=self.test_description,
@@ -99,7 +102,7 @@ metas:
             'Test Microservice',
             template_generate_test,
             MICROSERVICE_FOLDER_v1,
-            code_files_wrapped=self.files_to_string({'microservice.py': microservice_content}),
+            code_files_wrapped=self.files_to_string({'microservice.py': microservice_content, 'gpt_3_5_turbo_api.py': gpt_3_5_turbo_api_content,}),
             microservice_name=microservice_name,
             microservice_description=self.task_description,
             test_description=self.test_description,
@@ -114,7 +117,8 @@ metas:
             MICROSERVICE_FOLDER_v1,
             code_files_wrapped=self.files_to_string({
                 'microservice.py': microservice_content,
-                'test_microservice.py': test_microservice_content
+                'test_microservice.py': test_microservice_content,
+                'gpt_3_5_turbo_api.py': gpt_3_5_turbo_api_content,
             }),
             file_name_purpose=REQUIREMENTS_FILE_NAME,
             file_name=REQUIREMENTS_FILE_NAME,
@@ -128,7 +132,8 @@ metas:
             code_files_wrapped=self.files_to_string({
                 'microservice.py': microservice_content,
                 'test_microservice.py': test_microservice_content,
-                'requirements.txt': requirements_content
+                'requirements.txt': requirements_content,
+                'gpt_3_5_turbo_api.py': gpt_3_5_turbo_api_content,
             }),
             file_name_purpose=DOCKER_FILE_NAME,
             file_name=DOCKER_FILE_NAME,
@@ -136,6 +141,7 @@ metas:
         )
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
+
         print('\nFirst version of the microservice generated. Start iterating on it to make the tests pass...')
 
     def generate_playground(self, microservice_name, microservice_path):
@@ -271,3 +277,11 @@ gptdeploy deploy --path {microservice_path}
         conversation = self.gpt_session.get_conversation([])
         error_summary = conversation.chat(template_summarize_error.format(error=error))
         return error_summary
+
+    def write_gpt_api_file(self, MICROSERVICE_FOLDER_v1):
+        cur_dir = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(cur_dir, GPT_3_5_TURBO_API_FILE_NAME), 'r', encoding='utf-8') as file:
+            GPT_3_5_Turbo_API_content = file.read()
+        with open(os.path.join(MICROSERVICE_FOLDER_v1, GPT_3_5_TURBO_API_FILE_NAME), 'w', encoding='utf-8') as file:
+            file.write(GPT_3_5_Turbo_API_content)
+        return GPT_3_5_Turbo_API_content

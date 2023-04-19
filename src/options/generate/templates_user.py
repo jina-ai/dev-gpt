@@ -25,7 +25,9 @@ The executor and the test must not use a pre-trained model unless it is explicit
 The executor and the test must not train a model.
 The executor and the test must not use any attribute of Document accept Document.text.
 The executor and the test must not contain prototype or placeholder implementations.
-The executor and the test must run in a docker container based on debian.'''
+The executor and the test must run in a docker container based on debian.
+The executor and the test must use gpt_3_5_turbo_api if the task requires a language model. Other language models are not allowed.'''
+
 
 
 template_generate_microservice_name = PromptTemplate.from_template(
@@ -88,6 +90,8 @@ You must provide the complete file with the exact same syntax to wrap the code.'
 template_generate_executor = PromptTemplate.from_template(
     general_guidelines_string + '''
 
+{code_files_wrapped}
+
 Write the executor called '{microservice_name}'. The name is very important to keep.
 It matches the following description: '{microservice_description}'.
 It will be tested with the following scenario: '{test_description}'.
@@ -99,7 +103,7 @@ Have in mind that d.uri is never a path to a local file. It is always a url.
 
 Your approach:
 1. Identify the core challenge when implementing the executor.
-2. Think about solutions for these challenges.
+2. Think about solutions for these challenges including the usage of gpt via "from gpt_3_5_turbo_api import GPT_3_5_Turbo_API"
 3. Decide for one of the solutions.
 4. Write the code for the executor. Don't write code for the test.
 ''' + '\n' + template_code_wrapping_string
@@ -132,7 +136,13 @@ template_generate_requirements = PromptTemplate.from_template(
 
 {code_files_wrapped}
     
-Write the content of the requirements.txt file. Make sure to include pytest. Make sure that jina==3.14.1. Make sure that docarray==0.21.0.
+Write the content of the requirements.txt file. 
+Make sure to include pytest. 
+Make sure to include openai>=0.26.0.
+Make sure that jina==3.14.1. 
+Make sure that docarray==0.21.0.
+You must not add gpt_3_5_turbo_api to the requirements.txt file.
+
 All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts.
 ''' + '\n' + template_code_wrapping_string
 )
@@ -148,7 +158,8 @@ It is important to make sure that all libs are installed that are required by th
 Usually libraries are installed with apt-get.
 Be aware that the machine the docker container is running on does not have a GPU - only CPU.
 Add the config.yml file to the Dockerfile.
-Note that the Dockerfile only has access to the files: microservice.py, requirements.txt, config.yml, test_microservice.py.
+Add the gpt_3_5_turbo_api.py file to the Dockerfile.
+Note that the Dockerfile only has access to the files: microservice.py, requirements.txt, config.yml, test_microservice.py and gpt_3_5_turbo_api.py.
 The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard.
 The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"].
 Make sure the all files are in the /workdir.

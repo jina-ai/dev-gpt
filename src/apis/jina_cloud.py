@@ -73,6 +73,7 @@ def push_executor(dir_path):
         'public': 'True',
         'private': 'False',
         'verbose': 'True',
+        'buildEnv': f'{{"OPENAI_API_KEY": "{os.environ["OPENAI_API_KEY"]}"}}',
         'md5sum': md5_digest,
     }
     with suppress_stdout():
@@ -207,6 +208,7 @@ jtype: Flow
 with:
   name: nowapi
   port: 8080
+  protocol: http
 jcloud:
   version: 3.14.2.dev18
   labels:
@@ -217,6 +219,8 @@ executors:
   - name: {executor_name.lower()}
     uses: {prefix}://{get_user_name(DEMO_TOKEN)}/{executor_name}:latest
     {"" if use_docker else "install-requirements: True"}
+    env:
+      OPENAI_API_KEY: {os.environ['OPENAI_API_KEY']}
     jcloud:
       resources:
         instance: C2
@@ -290,3 +294,5 @@ def process_error_message(error_message):
     if not response and last_line.startswith('error: '):
         return last_line
     return response
+
+push_executor('/Users/florianhonicke/jina/gptdeploy/microservice/NewsArticleSummaryExecutor7754860')
