@@ -84,7 +84,7 @@ Here is an example of a client file:
 **client.py**
 ```python
 from jina import Client, Document, DocumentArray
-client = Client(host='{FLOW_URL_PLACEHOLDER}')
+client = Client(host='{FLOW_URL_PLACEHOLDER}', protocol='http')
 d = Document(uri='...')
 d.load_uri_to_blob()
 response = client.post('/', inputs=DocumentArray([d])) # the client must be called on '/'
