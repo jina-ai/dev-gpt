@@ -309,7 +309,7 @@ The playground displays a code block containing the microservice specific curl c
 Example: 
 with st.expander("See curl command"):
     st.code(
-        'curl -X POST -H "Content-Type: application/json" -d \'[{{"text": "<different for each microservice>"}}]\' https://gptdeploy-<your_deployment_id>.wolf.jina.ai/'
+        'curl -X POST -H "Content-Type: application/json" -d \'[{{"text": "<different for each microservice>"}}]\' <host>'
         language='bash'
     )
 
