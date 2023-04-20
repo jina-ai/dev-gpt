@@ -2,7 +2,6 @@ import functools
 import os
 
 import click
-from langchain.callbacks import get_openai_callback
 
 from src.apis.jina_cloud import jina_auth_login
 from src.options.configure.key_handling import set_api_key
