@@ -19,11 +19,21 @@ from src.options.generate.templates_system import template_system_message_base, 
 from src.utils.string_tools import print_colored
 
 
+def configure_openai_api_key():
+    if 'OPENAI_API_KEY' not in os.environ:
+        print_colored('You need to set OPENAI_API_KEY in your environment.', '''
+Run:
+gptdeploy configure --key <your_openai_api_key>
+
+If you have updated it already, please restart your terminal.
+''', 'red')
+        exit(1)
+    openai.api_key = os.environ['OPENAI_API_KEY']
+
 class GPTSession:
     def __init__(self, task_description, test_description, model: str = 'gpt-4', ):
         self.task_description = task_description
         self.test_description = test_description
-        self.configure_openai_api_key()
         if model == 'gpt-4' and self.is_gpt4_available():
             self.pricing_prompt = PRICING_GPT4_PROMPT
             self.pricing_generation = PRICING_GPT4_GENERATION
@@ -42,15 +52,7 @@ class GPTSession:
             self.model_name, self.cost_callback, self.task_description, self.test_description, system_definition_examples
         )
 
-    @staticmethod
-    def configure_openai_api_key():
-        if 'OPENAI_API_KEY' not in os.environ:
-            raise Exception('''
-You need to set OPENAI_API_KEY in your environment.
-If you have updated it already, please restart your terminal.
-'''
-)
-        openai.api_key = os.environ['OPENAI_API_KEY']
+
 
     @staticmethod
     def is_gpt4_available():

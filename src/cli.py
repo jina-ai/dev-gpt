@@ -3,9 +3,15 @@ import os
 
 import click
 
+from src.apis.gpt import configure_openai_api_key
 from src.apis.jina_cloud import jina_auth_login
 from src.options.configure.key_handling import set_api_key
 
+def openai_api_key_needed(func):
+    def wrapper(*args, **kwargs):
+        configure_openai_api_key()
+        return func(*args, **kwargs)
+    return wrapper
 
 def exception_interceptor(func):
     @functools.wraps(func)
@@ -41,6 +47,7 @@ def main(ctx):
         click.echo(ctx.get_help())
 
 
+@openai_api_key_needed
 @main.command()
 @click.option('--description', required=True, help='Description of the microservice.')
 @click.option('--test', required=True, help='Test scenario for the microservice.')
@@ -66,7 +73,7 @@ def generate(
     generator = Generator(description, test, model=model)
     generator.generate(path)
 
-
+@openai_api_key_needed
 @main.command()
 @path_param
 def run(path):
@@ -75,7 +82,7 @@ def run(path):
     path = os.path.abspath(path)
     Runner().run(path)
 
-
+@openai_api_key_needed
 @main.command()
 @path_param
 def deploy(path):
