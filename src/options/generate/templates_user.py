@@ -309,7 +309,7 @@ The playground displays a code block containing the microservice specific curl c
 Example: 
 
 deployment_id = os.environ.get("K8S_NAMESPACE_NAME", "")
-host = 'https://gptdeploy-{{deployment_id.split('-')[1}}.wolf.jina.ai/post' if deployment_id else "http://localhost:8080/post"
+host = f'https://gptdeploy-{{deployment_id.split('-')[1]}}.wolf.jina.ai/post' if deployment_id else "http://localhost:8080/post"
 with st.expander("See curl command"):
     st.code(
         f'curl -X \\'POST\\' \\'host\\' -H \\'accept: application/json\\' -H \\'Content-Type: application/json\\' -d \\'{{{{"data": [{{{{"text": "hello, world!"}}}}]}}}}\\''
