@@ -288,7 +288,7 @@ print('hello world')
 
 
 template_generate_playground = PromptTemplate.from_template(
-    general_guidelines_string + '''
+    general_guidelines_string + '''👨‍💻
 
 {code_files_wrapped}
 
@@ -299,14 +299,14 @@ The playground contains many emojis that fit the theme of the playground and has
 The playground encourages the user to deploy their own microservice by clicking on this link: https://github.com/jina-ai/gptdeploy
 The playground provides a javascript code snippet that can be used to send requests to the executor. It looks like this:
 ```javascript
-(async () => {
+(async () => {{
   const deploymentId = '<your_deployment_id>';
   const url = `https://gptdeploy-${deploymentId}.wolf.jina.ai/`;
-  const docArray = [{ text: '...' }];
+  const docArray = [{{ text: '...' }}];
 
-  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(docArray) });
+  const res = await fetch(url, {{ method: 'POST', headers: {{ 'Content-Type': 'application/json' }}, body: JSON.stringify(docArray) }});
   console.log((await res.json())[0].text);
-})();
+}})();
 ```
 Make sure you put the right example data into the text attribute of the document.
 
