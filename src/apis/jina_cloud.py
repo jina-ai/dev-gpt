@@ -33,8 +33,8 @@ def wait_until_app_is_ready(url):
         time.sleep(0.5)
 
 
-def open_streamlit_app():
-    url = "http://localhost:8081/playground"
+def open_streamlit_app(host: str):
+    url = f"{host}/playground"
     wait_until_app_is_ready(url)
     webbrowser.open(url, new=2)
 
@@ -121,7 +121,7 @@ def _deploy_on_jcloud(flow_yaml):
 
 def deploy_on_jcloud(executor_name, microservice_path):
     print('Deploy a jina flow')
-    full_flow_path = create_flow_yaml(microservice_path, executor_name, use_docker=True)
+    full_flow_path = create_flow_yaml(microservice_path, executor_name, use_docker=True, use_custom_gateway=True)
 
     for i in range(3):
         try:
@@ -145,18 +145,15 @@ Please try again later.
                         )
 
     print(f'''
-Your Microservice is deployed.
-Run the following command to start the playground:
-
-streamlit run {os.path.join(microservice_path, "app.py")} --server.port 8081 --server.address 0.0.0.0 -- --host {host}
-'''
-          )
+Your Microservice is deployed at {host} and the playground is available at {host}/playground
+We open now the playground in your browser.
+''')
+    open_streamlit_app(host)
     return host
 
 
 def run_streamlit_app(app_path):
-    subprocess.run(['streamlit', 'run', app_path, 'server.address', '0.0.0.0', '--server.port', '8081', '--', '--host',
-                    'http://localhost:8080'])
+    subprocess.run(['streamlit', 'run', app_path, 'server.address', '0.0.0.0', '--server.port', '8081'])
 
 
 def run_locally(executor_name, microservice_version_path):
@@ -178,7 +175,7 @@ c) try to run your microservice locally without docker. It is worth a try but mi
             exit(1)
         use_docker = False
     print('Run a jina flow locally')
-    full_flow_path = create_flow_yaml(microservice_version_path, executor_name, use_docker)
+    full_flow_path = create_flow_yaml(microservice_version_path, executor_name, use_docker, False)
     flow = Flow.load_config(full_flow_path)
     with flow:
         print(f'''
@@ -186,27 +183,25 @@ Your microservice started locally.
 We now start the playground for you.
 ''')
 
-        app_path = os.path.join(microservice_version_path, "app.py")
+        app_path = os.path.join(microservice_version_path, 'gateway', "app.py")
 
         # Run the Streamlit app in a separate thread
         streamlit_thread = threading.Thread(target=run_streamlit_app, args=(app_path,))
         streamlit_thread.start()
 
         # Open the Streamlit app in the user's default web browser
-        open_streamlit_app()
+        open_streamlit_app(host='http://localhost:8081')
 
         flow.block()
 
 
-def create_flow_yaml(dest_folder, executor_name, use_docker):
+def create_flow_yaml(dest_folder, executor_name, use_docker, use_custom_gateway):
     if use_docker:
         prefix = 'jinaai+docker'
     else:
         prefix = 'jinaai'
-    flow = f'''
-jtype: Flow
+    flow = f'''jtype: Flow
 with:
-  name: nowapi
   port: 8080
   protocol: http
 jcloud:
@@ -214,7 +209,9 @@ jcloud:
   labels:
     creator: microchain
   name: gptdeploy
-
+gateway:
+    {f"uses: {prefix}://{get_user_name(DEMO_TOKEN)}/Gateway{executor_name}:latest" if use_custom_gateway else ""}
+    {"" if use_docker else "install-requirements: True"}
 executors:
   - name: {executor_name.lower()}
     uses: {prefix}://{get_user_name(DEMO_TOKEN)}/{executor_name}:latest
