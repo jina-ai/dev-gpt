@@ -265,6 +265,10 @@ def shorten_logs(relevant_lines):
     return relevant_lines
 
 
+def clean_color_codes(response):
+    response = re.sub(r'\x1b\[[0-9;]*m', '', response)
+    return response
+
 def process_error_message(error_message):
     lines = error_message.split('\n')
 
@@ -283,6 +287,8 @@ def process_error_message(error_message):
     relevant_lines = shorten_logs(relevant_lines)
 
     response = '\n'.join(relevant_lines[-100:]).strip()
+
+    response = clean_color_codes(response)
 
     # the following code tests the case that the docker file is corrupted and can not be parsed
     # the method above will not return a relevant error message in this case
