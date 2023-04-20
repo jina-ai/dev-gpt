@@ -268,13 +268,13 @@ The playground contains emojis that fit the theme of the playground.
 This is an example how you can connect to the executor assuming the document (d) is already defined:
 ```
 from jina import Client, Document, DocumentArray
-client = Client(host='http://localhost:8082')
+client = Client(host='http://localhost:8080')
 response = client.post('/', inputs=DocumentArray([d])) # always use '/'
 print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
 ```
 Note that the response will always be in response[0].text
 You must provide the complete app.py file with the exact same syntax to wrap the code.
-The playground (app.py) must always use the host on http://localhost:8082.
+The playground (app.py) must always use the host on http://localhost:8080.
 The playground (app.py) must not let the user configure the host on the ui.
 The playground (app.py) must not import the executor.
 '''

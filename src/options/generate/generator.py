@@ -159,7 +159,7 @@ metas:
         )
         playground_content = self.extract_content_from_result(playground_content_raw, 'app.py', match_single_block=True)
         if playground_content == '':
-            content_raw = conversation.chat(f'You must add the app.py code.')
+            content_raw = conversation.chat(f'You must add the app.py code. You most not output any other code')
             playground_content = self.extract_content_from_result(
                 content_raw, 'app.py', match_single_block=True
             )

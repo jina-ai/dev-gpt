@@ -120,7 +120,7 @@ def _deploy_on_jcloud(flow_yaml):
 
 def deploy_on_jcloud(executor_name, microservice_path):
     print('Deploy a jina flow')
-    full_flow_path = create_flow_yaml(microservice_path, executor_name, use_docker=True)
+    full_flow_path = create_flow_yaml(microservice_path, executor_name, use_docker=True, use_custom_gateway=True)
 
     for i in range(3):
         try:
@@ -150,6 +150,11 @@ We open now the playground in your browser.
     open_streamlit_app(host)
     return host
 
+
+def run_streamlit_app(app_path):
+    subprocess.run(['streamlit', 'run', app_path, 'server.address', '0.0.0.0', '--server.port', '8081'])
+
+
 def run_locally(executor_name, microservice_version_path):
     if is_docker_running():
         use_docker = True
@@ -169,20 +174,27 @@ c) try to run your microservice locally without docker. It is worth a try but mi
             exit(1)
         use_docker = False
     print('Run a jina flow locally')
-    full_flow_path = create_flow_yaml(microservice_version_path, executor_name, use_docker)
+    full_flow_path = create_flow_yaml(microservice_version_path, executor_name, use_docker, False)
     flow = Flow.load_config(full_flow_path)
     with flow:
         print(f'''
 Your microservice started locally.
 We now start the playground for you.
 ''')
+
+        app_path = os.path.join(microservice_version_path, 'gateway', "app.py")
+
+        # Run the Streamlit app in a separate thread
+        streamlit_thread = threading.Thread(target=run_streamlit_app, args=(app_path,))
+        streamlit_thread.start()
+
         # Open the Streamlit app in the user's default web browser
-        open_streamlit_app(host='http://localhost:8080')
+        open_streamlit_app(host='http://localhost:8081')
 
         flow.block()
 
 
-def create_flow_yaml(dest_folder, executor_name, use_docker):
+def create_flow_yaml(dest_folder, executor_name, use_docker, use_custom_gateway):
     if use_docker:
         prefix = 'jinaai+docker'
     else:
@@ -197,7 +209,7 @@ jcloud:
     creator: microchain
   name: gptdeploy
 gateway:
-    uses: {prefix}://{get_user_name(DEMO_TOKEN)}/Gateway{executor_name}:latest
+    {f"uses: {prefix}://{get_user_name(DEMO_TOKEN)}/Gateway{executor_name}:latest" if use_custom_gateway else ""}
     {"" if use_docker else "install-requirements: True"}
 executors:
   - name: {executor_name.lower()}
