@@ -65,8 +65,7 @@ In this case, please cancel this run, rerun your gptdeploy command and login int
 def push_executor(dir_path):
     for i in range(3):
         try:
-            _push_executor(dir_path)
-            break
+            return _push_executor(dir_path)
         except timeout_decorator.timeout_decorator.TimeoutError:
             print('timeout error, retrying...')
             if i == 2:
