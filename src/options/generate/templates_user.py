@@ -275,7 +275,7 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
 Note that the response will always be in response[0].text
 You must provide the complete app.py file with the exact same syntax to wrap the code.
 The playground (app.py) must always use the host on http://localhost:8080.
-The playground (app.py) must not let the user configure the host on the ui.
+The playground (app.py) must not let the user configure the host on the UI.
 The playground (app.py) must not import the executor.
 '''
 )
