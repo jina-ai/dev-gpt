@@ -24,7 +24,7 @@ class Generator:
         self.test_description = test_description
 
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False):
-        pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?)```"
+        pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?)\n```" # the \n at the end makes sure that ``` within the generated code is not matched
         match = re.search(pattern, plain_text, re.MULTILINE)
         if match:
             return match.group(1).strip()

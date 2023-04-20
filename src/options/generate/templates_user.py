@@ -288,7 +288,7 @@ print('hello world')
 
 
 template_generate_playground = PromptTemplate.from_template(
-    general_guidelines_string + '''
+    general_guidelines_string + '''👨‍💻
 
 {code_files_wrapped}
 
@@ -296,7 +296,8 @@ Create a playground for the executor {microservice_name} using streamlit.
 The playground must look like it was made by a professional designer.
 All the ui elements are well thought out to make them visually appealing and easy to use.
 The playground contains many emojis that fit the theme of the playground and has an emoji as favicon.
-This is an example how you can connect to the executor assuming the document (d) is already defined:
+The playground encourages the user to deploy their own microservice by clicking on this link: https://github.com/jina-ai/gptdeploy
+The playground uses the following code to send a request to the microservice:
 ```
 from jina import Client, Document, DocumentArray
 client = Client(host='http://localhost:8080')
@@ -304,8 +305,23 @@ response = client.post('/', inputs=DocumentArray([d])) # always use '/'
 print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
 ```
 Note that the response will always be in response[0].text
-You must provide the complete app.py file with the exact same syntax to wrap the code.
-The playground (app.py) must always use the host on http://localhost:8080 and must not let the user configure the host on the UI.
+The playground displays a code block containing the microservice specific curl code that can be used to send the request to the microservice.
+Example: 
+
+deployment_id = os.environ.get("K8S_NAMESPACE_NAME", "")
+host = 'https://gptdeploy-{{deployment_id.split('-')[1}}.wolf.jina.ai/post' if deployment_id else "http://localhost:8080/post"
+with st.expander("See curl command"):
+    st.code(
+        f'curl -X \\'POST\\' \\'host\\' -H \\'accept: application/json\\' -H \\'Content-Type: application/json\\' -d \\'{{{{"data": [{{{{"text": "hello, world!"}}}}]}}}}\\''
+        language='bash'
+    )
+
+You must provide the complete app.py file using the following syntax to wrap the code:
+**app.py**
+```python
+...
+```
+The playground (app.py) must always use the host on http://localhost:8080  and must not let the user configure the host on the UI.
 The playground (app.py) must not import the executor.
 '''
 )
