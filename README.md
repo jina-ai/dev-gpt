@@ -270,6 +270,16 @@ gptdeploy generate \
 <img src="res/mandelbrot_example.png" alt="Mandelbrot Set Visualizer" width="400" />
 
 
+### Markdown to HTML Converter
+
+```bash
+gptdeploy generate --description "Convert markdown to HTML" --test "# Hello, welcome to GPT Deploy!"
+```
+
+<img src="res/markdown_to_html_example.png" alt="Markdown to HTML Converter" width="400" />
+
+
+
 [//]: # (## TO BE TESTED)
 
 
@@ -354,15 +364,6 @@ gptdeploy generate \
 [//]: # (```bash)
 
 [//]: # (gptdeploy generate --description "Align two DNA or RNA sequences using the Needleman-Wunsch algorithm" --test "AGTC, GTCA")
-
-[//]: # (```)
-
-[//]: # ()
-[//]: # (### Markdown to HTML Converter)
-
-[//]: # (```bash)
-
-[//]: # (gptdeploy generate --description "Convert markdown to HTML" --test "# Hello, welcome to GPT Deploy!")
 
 [//]: # (```)
 
