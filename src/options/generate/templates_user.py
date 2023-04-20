@@ -295,6 +295,7 @@ template_generate_playground = PromptTemplate.from_template(
 Create a playground for the executor {microservice_name} using streamlit.
 The playground must look like it was made by a professional designer.
 All the ui elements are well thought out to make them visually appealing and easy to use.
+Don't mention the word Playground in the title.
 The playground contains many emojis that fit the theme of the playground and has an emoji as favicon.
 The playground encourages the user to deploy their own microservice by clicking on this link: https://github.com/jina-ai/gptdeploy
 The playground uses the following code to send a request to the microservice:
