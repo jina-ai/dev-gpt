@@ -6,7 +6,7 @@ GPT Deploy: One line to generate them all 🧙🚀
 <img src="res/gpt-deploy-logo.png" alt="Jina NOW logo" width="150px">
 </p>
 <p align="center">
-Turn your natural language descriptions into fully functional, deployed microservices with a single command!
+Turn your natural language descriptions into fully functional, deployed AI-powered microservices with a single command!
 Your imagination is the limit!
 </p>
 
@@ -37,7 +37,7 @@ Your imagination is the limit!
 [![Watch the video](res/thumbnail.png)](https://user-images.githubusercontent.com/11627845/231530421-272a66aa-4260-4e17-ab7a-ba66adca754c.mp4)
 
 </p>
-This project streamlines the creation and deployment of microservices. 
+This project streamlines the creation and deployment of AI-powered microservices. 
 Simply describe your task using natural language, and the system will automatically build and deploy your microservice. 
 To ensure the microservice accurately aligns with your intended task a test scenario is required.
 
