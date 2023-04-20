@@ -105,13 +105,12 @@ In this section you can get a feeling for the kind of microservices that can be 
 ### Extract and summarize news articles given a URL
 ```bash
 gptdeploy generate \
---description "Extract text from a news article URL using Newspaper3k library and generate a summary." \
+--description "Extract text from a news article URL using Newspaper3k library and generate a summary using gpt." \
 --test "input: 'http://fox13now.com/2013/12/30/new-year-new-laws-obamacare-pot-guns-and-drones/' output: assert a summarized version of the article exists" \
 --model gpt-4 \
 --path microservice
 ```
 <img src="res/news_article_example.png" alt="News Article Example" width="400" />
-
 
 ### Chemical Formula Visualization
 ```bash
