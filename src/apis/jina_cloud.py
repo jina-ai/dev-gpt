@@ -15,6 +15,7 @@ from hubble.executor.helper import upload_file, archive_package, get_request_hea
 from jcloud.flow import CloudFlow
 from jina import Flow
 
+from src.apis.gpt import configure_openai_api_key
 from src.constants import DEMO_TOKEN
 from src.utils.io import suppress_stdout, is_docker_running
 from src.utils.string_tools import print_colored
