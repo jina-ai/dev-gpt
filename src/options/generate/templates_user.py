@@ -321,8 +321,7 @@ You must provide the complete app.py file using the following syntax to wrap the
 ```python
 ...
 ```
-The playground (app.py) must always use the host on http://localhost:8080.
-The playground (app.py) must not let the user configure the host on the UI.
+The playground (app.py) must always use the host on http://localhost:8080  and must not let the user configure the host on the UI.
 The playground (app.py) must not import the executor.
 '''
 )
@@ -335,5 +334,10 @@ Be very hesitant to change the code. Only make a change if you are sure that it 
 
 Output only {file_name_purpose}
 Write the whole content of {file_name_purpose} - even if you decided to change only a small thing or even nothing.
-''' + '\n' + template_code_wrapping_string
+''' + '\n' + template_code_wrapping_string + '''
+
+Remember: 
+The playground (app.py) must always use the host on http://localhost:8080 and must not let the user configure the host on the UI.
+The playground (app.py) must not import the executor.
+'''
 )
