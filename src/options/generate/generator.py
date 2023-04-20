@@ -185,6 +185,7 @@ metas:
         self.write_config_yml(gateway_name, gateway_path, 'custom_gateway.py')
 
         # push the gateway
+        print('Final step...')
         hubble_log = push_executor(gateway_path)
 
     def debug_microservice(self, path, microservice_name, num_approach, packages):
