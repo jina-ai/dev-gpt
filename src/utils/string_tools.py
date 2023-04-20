@@ -1,8 +1,5 @@
-import os
 import platform
 
-if platform.system() == "Windows":
-    os.system("color")
 
 def print_colored(headline, text, color_code, end='\n'):
     if color_code == 'black':
@@ -24,6 +21,10 @@ def print_colored(headline, text, color_code, end='\n'):
     color_start = f"\033[{color_code}m"
     reset = "\033[0m"
     bold_start = "\033[1m"
+    if platform.system() == "Windows":
+        color_start = ""
+        reset = ""
+        bold_start = ""
     if headline:
         print(f"{bold_start}{color_start}{headline}{reset}")
     print(f"{color_start}{text}{reset}", end=end)
