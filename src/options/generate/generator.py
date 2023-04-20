@@ -70,7 +70,7 @@ metas:
                 content_raw, file_name, match_single_block=True
             )
         persist_file(content, os.path.join(destination_folder, file_name))
-        return content_raw
+        return content
 
     def generate_microservice(
             self,
@@ -114,7 +114,7 @@ metas:
             MICROSERVICE_FOLDER_v1,
             code_files_wrapped=self.files_to_string({
                 'microservice.py': microservice_content,
-                'test_microservice.py': test_microservice_content
+                'test_microservice.py': test_microservice_content,
             }),
             file_name_purpose=REQUIREMENTS_FILE_NAME,
             file_name=REQUIREMENTS_FILE_NAME,
@@ -128,7 +128,7 @@ metas:
             code_files_wrapped=self.files_to_string({
                 'microservice.py': microservice_content,
                 'test_microservice.py': test_microservice_content,
-                'requirements.txt': requirements_content
+                'requirements.txt': requirements_content,
             }),
             file_name_purpose=DOCKER_FILE_NAME,
             file_name=DOCKER_FILE_NAME,
@@ -136,6 +136,7 @@ metas:
         )
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
+
         print('\nFirst version of the microservice generated. Start iterating on it to make the tests pass...')
 
     def generate_playground(self, microservice_name, microservice_path):
@@ -272,3 +273,4 @@ gptdeploy deploy --path {microservice_path}
         conversation = self.gpt_session.get_conversation([])
         error_summary = conversation.chat(template_summarize_error.format(error=error))
         return error_summary
+

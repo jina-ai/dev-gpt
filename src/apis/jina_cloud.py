@@ -73,6 +73,7 @@ def push_executor(dir_path):
         'public': 'True',
         'private': 'False',
         'verbose': 'True',
+        'buildEnv': f'{{"OPENAI_API_KEY": "{os.environ["OPENAI_API_KEY"]}"}}',
         'md5sum': md5_digest,
     }
     with suppress_stdout():
@@ -218,6 +219,8 @@ executors:
   - name: {executor_name.lower()}
     uses: {prefix}://{get_user_name(DEMO_TOKEN)}/{executor_name}:latest
     {"" if use_docker else "install-requirements: True"}
+    env:
+      OPENAI_API_KEY: {os.environ['OPENAI_API_KEY']}
     jcloud:
       resources:
         instance: C2
