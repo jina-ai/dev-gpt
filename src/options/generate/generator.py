@@ -2,6 +2,7 @@ import os
 import random
 import re
 import shutil
+from typing import List
 
 from src.apis import gpt
 from src.apis.jina_cloud import process_error_message, push_executor
@@ -55,9 +56,9 @@ metas:
         return all_microservice_files_string.strip()
 
 
-    def generate_and_persist_file(self, section_title, template, destination_folder, file_name, **template_kwargs):
+    def generate_and_persist_file(self, section_title, template, destination_folder=None, file_name=None, system_definition_examples: List[str] = ['gpt', 'executor', 'docarray', 'client'],  **template_kwargs):
         print_colored('', f'\n\n############# {section_title} #############', 'blue')
-        conversation = self.gpt_session.get_conversation()
+        conversation = self.gpt_session.get_conversation(system_definition_examples=system_definition_examples)
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         content_raw = conversation.chat(
             template.format(
@@ -67,11 +68,12 @@ metas:
         )
         content = self.extract_content_from_result(content_raw, file_name, match_single_block=True)
         if content == '':
-            content_raw = conversation.chat(f'You must add the {file_name} code.')
+            content_raw = conversation.chat(f'You must add the content for {file_name}.')
             content = self.extract_content_from_result(
                 content_raw, file_name, match_single_block=True
             )
-        persist_file(content, os.path.join(destination_folder, file_name))
+        if destination_folder:
+            persist_file(content, os.path.join(destination_folder, file_name))
         return content
 
     def generate_microservice(
@@ -259,14 +261,15 @@ metas:
 
     def get_possible_packages(self):
         print_colored('', '\n\n############# What packages to use? #############', 'blue')
-        conversation = self.gpt_session.get_conversation(['gpt'])
-        packages_raw = conversation.chat(
-            template_generate_possible_packages.format(description=self.task_description)
+        packages_csv_string = self.generate_and_persist_file(
+            'packages to use',
+            template_generate_possible_packages,
+            None,
+            file_name='packages.csv',
+            system_definition_examples=['gpt'],
+            description=self.task_description
+
         )
-        packages_csv_string = self.extract_content_from_result(packages_raw, 'packages.csv', match_single_block=True)
-        if not packages_csv_string:
-            packages_raw = conversation.chat(template_generate_possible_packages_output_format_string)
-            packages_csv_string = self.extract_content_from_result(packages_raw, 'packages.csv', match_single_block=True)
         packages_list = [[pkg.strip() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]
         packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
         return packages_list

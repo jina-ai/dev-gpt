@@ -48,7 +48,7 @@ PDFParserExecutor
 
 
 template_generate_possible_packages_output_format_string = '''You must output the package combinations as a list of lists wrapped into ``` and name it **packages.csv**. Do not use quotation marks around packages names in the output. Separate packages in a combination by comma. The output looks this:
-**packages.csv**
+**{file_name}**
 ```
 package1a, package1b ...
 package2a, package2b, package2c
