@@ -277,7 +277,7 @@ Obey the following rules:
 
 Output all the files that need change. 
 Don't output files that don't need change. If you output a file, then write the complete file.
-If you change microservice.py and it uses gpt_3_5_turbo_api, then you must keep the code for gpt_3_5_turbo_api to the microservice.py file.
+If you change microservice.py and it uses gpt_3_5_turbo_api, then you must keep the code for gpt_3_5_turbo_api in the microservice.py file.
 Use the exact following syntax to wrap the code:
 
 **...**
