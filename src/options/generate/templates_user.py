@@ -26,7 +26,7 @@ The executor and the test must not train a model.
 The executor and the test must not use any attribute of Document accept Document.text.
 The executor and the test must not contain prototype or placeholder implementations.
 The executor and the test must run in a docker container based on debian.
-The executor and the test must use gpt_3_5_turbo_api if the task requires a language model. Other language models are not allowed.'''
+The executor and the test must use gpt_3_5_turbo_api if the task requires understanding or generating natural language or using any language model. Other language models are not allowed.'''
 
 
 
@@ -47,13 +47,26 @@ PDFParserExecutor
 )
 
 
+template_generate_possible_packages_output_format_string = '''You must output the package combinations as a list of lists wrapped into ``` and name it **packages.csv**. Do not use quotation marks around packages names in the output. Separate packages in a combination by comma. The output looks this:
+**packages.csv**
+```
+package1a, package1b ...
+package2a, package2b, package2c
+package3a ...
+package4a ...
+package5a ...
+...
+```'''
+
+
 template_generate_possible_packages = PromptTemplate.from_template(
     '''Here is the task description of the problem you need to solve:
 "{description}"
-1. Write down all the non-trivial subtasks you need to solve.
+1. Write down the different strategies to solve the task. For each strategy write down all the non-trivial subtasks you need to solve. If there is a natural language understanding or generation stragegy, write it down.
 2. Find out what is the core problem to solve.
-3. List up to 15 Python packages that are specifically designed or have functionalities to solve the complete core problem.
-4. For each of the 15 package think if it fulfills the following requirements:
+3. List up to 15 Python packages that are specifically designed or have functionalities to solve the complete core problem with one of the defined strategies. You must add gpt_3_5_turbo_api if the task involves generating or understanding natural language or using a (pre-trained) language model.
+4. Exclude any package that can generate or understand natural language or enables using any language model, but you must not exclude gpt_3_5_turbo_api. Print the cleaned list of packages and give a brief reason for keeping it after its name.
+5. For each cleaned package think if it fulfills the following requirements:
 a) specifically designed or have functionalities to solve the complete core problem.
 b) has a stable api among different versions
 c) does not have system requirements
@@ -63,20 +76,11 @@ e) the implementation of the core problem using the package would obey the follo
 
 When answering, just write "yes" or "no".
 
-5. Output the most suitable 5 python packages starting with the best one. 
+6. Determine the 5 most suitable python package combinations, ordered from the best to the least suitable. Combine the packages to achieve a comprehensive solution.
 If the package is mentioned in the description, then it is automatically the best one.
+If you listed gpt_3_5_turbo_api earlier, you must use it. gpt_3_5_turbo_api is the best package for handling text-based tasks. Also, gpt_3_5_turbo_api doesn't need any other packages processing text or using language models. It can handle any text-based task alone.
 
-The output must be a list of lists wrapped into ``` and starting with **packages.csv** like this:
-**packages.csv**
-```
-package1a, package1b ...
-package2a, package2b, package2c
-package3a ...
-package4a ...
-package5a ...
-...
-```
-''')
+''' + template_generate_possible_packages_output_format_string)
 
 
 template_code_wrapping_string = '''The code will go into {file_name_purpose}. Make sure to wrap the code into ``` marks even if you only output code:
@@ -101,7 +105,7 @@ Have in mind that d.uri is never a path to a local file. It is always a url.
 
 Your approach:
 1. Identify the core challenge when implementing the executor.
-2. Think about solutions for these challenges including the usage of gpt via "gpt_3_5_turbo_api"
+2. Think about solutions for these challenges.
 3. Decide for one of the solutions.
 4. Write the code for the executor. Don't write code for the test.
 If you decided to use gpt, then the executor must include the following code:
