@@ -108,7 +108,7 @@ Your approach:
 2. Think about solutions for these challenges. Use gpt_3_5_turbo_api if it is mentioned in the above list of packages.
 3. Decide for one of the solutions.
 4. Write the code for the executor. Don't write code for the test.
-If you decided to use gpt or if gpt_3_5_turbo_api is in the package list, then you must always include the following code in microservice.py:
+If and only if gpt_3_5_turbo_api is in the package list, then you must always include the following code in microservice.py:
 ```
 import os
 import openai
