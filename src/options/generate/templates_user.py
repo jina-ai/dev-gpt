@@ -234,8 +234,8 @@ You are given the following files:
 
 {all_files_string}
 
-Output all the files that need change. If you change microservice.py and it uses gpt_3_5_turbo_api, then you must keep the code for gpt_3_5_turbo_api to the microservice.py file.
-Don't output files that don't need change. If you output a file, then write the complete file. Use the exact following syntax to wrap the code:
+Output all the files that need change. Don't output files that don't need change.
+If you output a file, then write the complete file. Use the exact following syntax to wrap the code:
 
 **...**
 ```
@@ -276,8 +276,9 @@ Obey the following rules:
 ''' + f'{not_allowed_executor_string}\n{not_allowed_docker_string}' + '''
 
 Output all the files that need change. 
-Don't output files that don't need change. If you output a file, then write the 
-complete file. Use the exact following syntax to wrap the code:
+Don't output files that don't need change. If you output a file, then write the complete file.
+If you change microservice.py and it uses gpt_3_5_turbo_api, then you must keep the code for gpt_3_5_turbo_api to the microservice.py file.
+Use the exact following syntax to wrap the code:
 
 **...**
 ```...
