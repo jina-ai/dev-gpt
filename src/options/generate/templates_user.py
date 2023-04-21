@@ -313,8 +313,8 @@ print(response[0].text) # can also be blob in case of image/audio..., this shoul
 ```
 Note that the response will always be in response[0].text
 The playground displays a code block containing the microservice specific curl code that can be used to send the request to the microservice.
-Example: 
-
+While the exact payload in the curl might change, the host and deployment ID always stay the same. Example: 
+```
 deployment_id = os.environ.get("K8S_NAMESPACE_NAME", "")
 host = f'https://gptdeploy-{{deployment_id.split("-")[1]}}.wolf.jina.ai/post' if deployment_id else "http://localhost:8080/post"
 with st.expander("See curl command"):
@@ -322,7 +322,7 @@ with st.expander("See curl command"):
         f'curl -X \\'POST\\' \\'host\\' -H \\'accept: application/json\\' -H \\'Content-Type: application/json\\' -d \\'{{{{"data": [{{{{"text": "hello, world!"}}}}]}}}}\\'',
         language='bash'
     )
-
+```
 You must provide the complete app.py file using the following syntax to wrap the code:
 **app.py**
 ```python
