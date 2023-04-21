@@ -7,7 +7,7 @@ from src.apis import gpt
 from src.apis.jina_cloud import process_error_message, push_executor
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
-    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, DOCKER_FILE_TAG
+    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, DOCKER_FILE_TAG, UNNECESSARY_PACKAGES
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
     template_solve_code_issue, \
@@ -263,10 +263,10 @@ metas:
         packages_raw = conversation.chat(
             template_generate_possible_packages.format(description=self.task_description)
         )
-        packages_csv_string = self.extract_content_from_result(packages_raw, 'packages.csv')
+        packages_csv_string = self.extract_content_from_result(packages_raw, 'packages.csv', match_single_block=True)
         if not packages_csv_string:
             packages_raw = conversation.chat(template_generate_possible_packages_output_format_string)
-            packages_csv_string = self.extract_content_from_result(packages_raw, 'packages.csv')
+            packages_csv_string = self.extract_content_from_result(packages_raw, 'packages.csv', match_single_block=True)
         packages_list = [[pkg.strip() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]
         packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
         return packages_list
@@ -277,6 +277,9 @@ metas:
         packages_list = self.get_possible_packages()
         packages_list = [
             packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0
+        ]
+        packages_list = [
+            [package for package in packages if package not in UNNECESSARY_PACKAGES] for packages in packages_list
         ]
         for num_approach, packages in enumerate(packages_list):
             try:
