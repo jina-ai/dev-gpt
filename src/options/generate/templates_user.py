@@ -97,7 +97,7 @@ template_generate_executor = PromptTemplate.from_template(
 Write the executor called '{microservice_name}'. The name is very important to keep.
 It matches the following description: '{microservice_description}'.
 It will be tested with the following scenario: '{test_description}'.
-For the implementation use the following package: '{packages}'.
+For the implementation use the following package(s): '{packages}'.
 
 Obey the following rules:
 Have in mind that d.uri is never a path to a local file. It is always a url.
@@ -105,10 +105,11 @@ Have in mind that d.uri is never a path to a local file. It is always a url.
 
 Your approach:
 1. Identify the core challenge when implementing the executor.
-2. Think about solutions for these challenges.
+2. Think about solutions for these challenges. Use gpt_3_5_turbo_api if it is mentioned in the above list of packages.
 3. Decide for one of the solutions.
 4. Write the code for the executor. Don't write code for the test.
-If you decided to use gpt, then the executor must include the following code:
+If you decided to use gpt or if gpt_3_5_turbo_api is in the package list, then you must always include the following code in microservice.py:
+```
 import os
 import openai
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -129,9 +130,10 @@ class GPT_3_5_Turbo_API:
             }}]
         )
         return response.choices[0]['message']['content']
+```
 
 
-''' + '\n' + template_code_wrapping_string
+''' + template_code_wrapping_string
 )
 
 
@@ -141,7 +143,7 @@ template_generate_test = PromptTemplate.from_template(
 {code_files_wrapped}
 
 Write a single test case that tests the following scenario: '{test_description}'. In case the test scenario is not precise enough, test a general case without any assumptions.
-Start the test with an extensive comment about the test case.
+Start the test with an extensive comment about the test case. If gpt_3_5_turbo_api is used in the executor, then the test must not check the exact output of the executor as it is not deterministic. 
 
 Use the following import to import the executor:
 ```
@@ -152,6 +154,7 @@ from microservice import {microservice_name}
 The test must not open local files.
 The test must not mock a function of the executor.
 The test must not use other data than the one provided in the test scenario.
+The test must not set any environment variables which require a key.
 ''' + '\n' + template_code_wrapping_string
 )
 
@@ -231,9 +234,8 @@ You are given the following files:
 
 {all_files_string}
 
-Output all the files that need change. 
-Don't output files that don't need change. If you output a file, then write the 
-complete file. Use the exact following syntax to wrap the code:
+Output all the files that need change. If you change microservice.py and it uses gpt_3_5_turbo_api, then you must keep the code for gpt_3_5_turbo_api to the microservice.py file.
+Don't output files that don't need change. If you output a file, then write the complete file. Use the exact following syntax to wrap the code:
 
 **...**
 ```
