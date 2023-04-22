@@ -1,8 +1,19 @@
 import os
 
+def listdir_no_hidden(path):
+    """
+    List all non-hidden files and directories in the specified path.
+
+    :param path: str, optional (default is '.')
+        The path to the directory you want to list files and directories from.
+    :return: list
+        A list of filenames and directory names that are not hidden.
+    """
+    return [entry for entry in os.listdir(path) if not entry.startswith('.')]
+
 
 def get_latest_folder(path, max_fn=max):
-    return max_fn([os.path.join(path, f) for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))])
+    return max_fn([os.path.join(path, f) for f in listdir_no_hidden(path) if os.path.isdir(os.path.join(path, f))])
 
 def version_max_fn(path_list):
     version_list = [int(path.split('/')[-1].replace('v', '')) for path in path_list]
@@ -25,9 +36,9 @@ def validate_folder_is_correct(microservice_path):
         raise ValueError(f'Path {microservice_path} does not exist')
     if not os.path.isdir(microservice_path):
         raise ValueError(f'Path {microservice_path} is not a directory')
-    if len(os.listdir(microservice_path)) == 0:
+    if len(listdir_no_hidden(microservice_path)) == 0:
         raise ValueError(f'Path {microservice_path} is empty. Please generate a microservice first. Type `gptdeploy generate` for further instructions.')
-    if len(os.listdir(microservice_path)) > 1:
+    if len(listdir_no_hidden(microservice_path)) > 1:
         raise ValueError(f'Path {microservice_path} needs to contain only one folder. Please make sure that you only have one microservice in this folder.')
     latest_version_path = get_latest_version_path(microservice_path)
     required_files = [
