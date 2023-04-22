@@ -7,15 +7,15 @@ import threading
 import time
 import webbrowser
 from pathlib import Path
+from typing import Dict
 
 import click
 import hubble
 import requests
-from hubble.executor.helper import upload_file, archive_package, get_request_header
+from hubble.executor.helper import upload_file, archive_package, get_full_version
 from jcloud.flow import CloudFlow
 from jina import Flow
 
-from src.apis.gpt import configure_openai_api_key
 from src.constants import DEMO_TOKEN
 from src.utils.io import suppress_stdout, is_docker_running
 from src.utils.string_tools import print_colored
@@ -71,6 +71,21 @@ def push_executor(dir_path):
             print(f'connection error - retrying in 5 seconds...')
             time.sleep(5)
 
+def get_request_header() -> Dict:
+    """Return the header of request with an authorization token.
+
+    :return: request header
+    """
+    metas, envs = get_full_version()
+
+    headers = {
+        **{f'jinameta-{k}': str(v) for k, v in metas.items()},
+        **envs,
+    }
+    headers['Authorization'] = f'token {DEMO_TOKEN}'
+
+    return headers
+
 def _push_executor(dir_path):
     dir_path = Path(dir_path)
     md5_hash = hashlib.md5()
@@ -88,7 +103,6 @@ def _push_executor(dir_path):
     }
     with suppress_stdout():
         headers = get_request_header()
-        headers['Authorization'] = f'token {DEMO_TOKEN}'
 
     resp = upload_file(
         'https://api.hubble.jina.ai/v2/rpc/executor.push',
