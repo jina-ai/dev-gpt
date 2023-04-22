@@ -16,7 +16,7 @@ def get_latest_folder(path, max_fn=max):
     return max_fn([os.path.join(path, f) for f in listdir_no_hidden(path) if os.path.isdir(os.path.join(path, f))])
 
 def version_max_fn(path_list):
-    version_list = [int(path.split('/')[-1].replace('v', '')) for path in path_list]
+    version_list = [int(os.path.split(path)[-1].replace('v', '')) for path in path_list]
     max_version = max(version_list)
     max_index = version_list.index(max_version)
     return path_list[max_index]
@@ -28,7 +28,8 @@ def get_latest_version_path(microservice_path):
     return latest_version_path
 
 def get_executor_name(microservice_path):
-    return get_latest_folder(microservice_path).split('/')[-1]
+    latest_folder = get_latest_folder(microservice_path)
+    return os.path.split(latest_folder)[-1]
 
 
 def validate_folder_is_correct(microservice_path):
