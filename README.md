@@ -75,7 +75,7 @@ During this time, GPT iteratively builds your microservice until it finds a stra
 Be aware that the costs you have to pay for openai vary between $0.50 and $3.00 per microservice (using GPT-4).
 
 ### Run Microservice
-Run the microservice locally in docker. In case docker is not running on your machine, it will try to run it withouth docker.
+Run the microservice locally in docker. In case docker is not running on your machine, it will try to run it without docker.
 With this command a playground opens in your browser where you can test the microservice.
 ```bash
 gptdeploy run --path <path to microservice>
@@ -532,7 +532,7 @@ graph TB
 ## 🔮 vision
 Use natural language interface to generate, deploy and update your microservice infrastructure.
 
-## ✨ Contributers 
+## ✨ Contributors 
 If you want to contribute to this project, feel free to open a PR or an issue.
 In the following, you can find a list of things that need to be done.
 
