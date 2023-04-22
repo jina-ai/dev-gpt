@@ -1,3 +1,3 @@
 include requirements.txt
 include gptdeploy.cmd
-recursive-include /usr/local/lib/python3.8/site-packages/src/options/generate/static_files/gateway *
+recursive-include src/options/generate/static_files/gateway *
