@@ -98,9 +98,19 @@ jc list # get the microservice id
 jc delete <microservice id>
 ```
 
-
 ## Examples
 In this section you can get a feeling for the kind of microservices that can be generated with GPT Deploy.
+
+### Compliment Generator
+```bash
+gptdeploy generate \
+--description "The user writes something and gets a related deep compliment." \
+--test "Given the word test a deep compliment is generated" \
+--model gpt-4 \
+--path microservice
+```
+<img src="res/compliment_example.png" alt="Compliment Generator" width="400" />
+
 
 ### Extract and summarize news articles given a URL
 ```bash
@@ -465,6 +475,8 @@ gptdeploy generate --description "Convert markdown to HTML" --test "# Hello, wel
 
 [//]: # (```)
 
+[//]: # (generate --description "Get a png as input and return a vectorized version as svg." --test "Make sure when you convert the image back, it looks similar." --path microservice --verbose)
+
 ## Technical Insights
 The graphic below illustrates the process of creating a microservice and deploying it to the cloud elaboration two different implementation strategies.
 
@@ -555,7 +567,7 @@ Make sure it is only printed twice in case it changed.
 - [ ] use gptdeploy list to show all deployments
 - [ ] gptdeploy delete to delete a deployment
 - [ ] gptdeploy update to update a deployment
-- [ ] test param optional - but how would you test the pdf extractor without a pdf?
+- [ ] test param optional - in case the test param is not there first ask gpt if more information is required to write a test - like access to pdf data
 - [ ] section for microservices built by the community
 - [ ] test feedback for playground generation (could be part of the debugging)
 - [ ] should we send everything via json in the text attribute for simplicity?

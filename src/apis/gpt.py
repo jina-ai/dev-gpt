@@ -11,6 +11,7 @@ from openai.error import RateLimitError
 from langchain.schema import HumanMessage, SystemMessage, BaseMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from requests.exceptions import ConnectionError
+from urllib3.exceptions import InvalidChunkLength
 
 from src.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
     PRICING_GPT3_5_TURBO_GENERATION, CHARS_PER_TOKEN
@@ -119,7 +120,7 @@ class _GPTConversation:
             try:
                 response = self._chat([self.system_message] + self.messages)
                 break
-            except ConnectionError as e:
+            except (ConnectionError, InvalidChunkLength) as e:
                 print('There was a connection error. Retrying...')
                 if i == 9:
                     raise e
