@@ -62,6 +62,16 @@ In this case, please cancel this run, rerun your gptdeploy command and login int
 
 
 def push_executor(dir_path):
+    for i in range(3):
+        try:
+            return _push_executor(dir_path)
+        except Exception as e:
+            if i == 2:
+                raise e
+            print(f'connection error - retrying in 5 seconds...')
+            time.sleep(5)
+
+def _push_executor(dir_path):
     dir_path = Path(dir_path)
     md5_hash = hashlib.md5()
     bytesio = archive_package(dir_path)
