@@ -45,7 +45,7 @@ py_modules:
 metas:
   name: {class_name}
 '''
-        with open(os.path.join(dest_folder, 'config.yml'), 'w') as f:
+        with open(os.path.join(dest_folder, 'config.yml'), 'w', encoding='utf-8') as f:
             f.write(config_content)
 
     def files_to_string(self, file_name_to_content, restrict_keys=None):
@@ -175,13 +175,13 @@ metas:
         # fill-in name of microservice
         gateway_name = f'Gateway{microservice_name}'
         custom_gateway_path = os.path.join(gateway_path, 'custom_gateway.py')
-        with open(custom_gateway_path, 'r') as f:
+        with open(custom_gateway_path, 'r', encoding='utf-8') as f:
             custom_gateway_content = f.read()
         custom_gateway_content = custom_gateway_content.replace(
             'class CustomGateway(CompositeGateway):',
             f'class {gateway_name}(CompositeGateway):'
         )
-        with open(custom_gateway_path, 'w') as f:
+        with open(custom_gateway_path, 'w', encoding='utf-8') as f:
             f.write(custom_gateway_content)
 
         # write config.yml

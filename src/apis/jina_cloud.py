@@ -249,7 +249,7 @@ executors:
 '''
     full_flow_path = os.path.join(dest_folder,
                                   'flow.yml')
-    with open(full_flow_path, 'w') as f:
+    with open(full_flow_path, 'w', encoding='utf-8') as f:
         f.write(flow)
     return full_flow_path
 
@@ -264,12 +264,12 @@ def replace_client_line(file_content: str, replacement: str) -> str:
 
 
 def update_client_line_in_file(file_path, host):
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
 
     replaced_content = replace_client_line(content, f"client = Client(host='{host}')")
 
-    with open(file_path, 'w') as file:
+    with open(file_path, 'w', encoding='utf-8') as file:
         file.write(replaced_content)
 
 

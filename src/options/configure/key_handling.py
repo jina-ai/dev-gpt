@@ -65,7 +65,7 @@ def set_env_variable(shell, key):
     config_file = os.path.expanduser(shell_config[shell]["config_file"])
 
     try:
-        with open(config_file, "r") as file:
+        with open(config_file, "r", encoding='utf-8') as file:
             content = file.read()
 
         export_line = shell_config[shell]['export_line']
@@ -74,10 +74,10 @@ def set_env_variable(shell, key):
         if f"OPENAI_API_KEY" in content:
             content = re.sub(r'OPENAI_API_KEY=.*', f'OPENAI_API_KEY={key}', content, flags=re.MULTILINE)
 
-            with open(config_file, "w") as file:
+            with open(config_file, "w", encoding='utf-8') as file:
                 file.write(content)
         else:
-            with open(config_file, "a") as file:
+            with open(config_file, "a", encoding='utf-8') as file:
                 file.write(f"\n{export_line}\n")
 
         click.echo(f'''
@@ -130,7 +130,7 @@ def is_key_set_in_config_file(key):
     config_file = os.path.expanduser(shell_config[shell]["config_file"])
 
     try:
-        with open(config_file, "r") as file:
+        with open(config_file, "r", encoding='utf-8') as file:
             content = file.read()
             if f"OPENAI_API_KEY" in content:
                 return True

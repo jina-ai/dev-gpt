@@ -1,3 +1,4 @@
+from src import env  # noqa: F401 to make sure certain environment variables are set
 import functools
 import os
 

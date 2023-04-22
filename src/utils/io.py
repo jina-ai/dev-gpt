@@ -14,7 +14,7 @@ def get_microservice_path(path, microservice_name, packages, num_approach, versi
     return os.path.join(path, microservice_name, f'{num_approach}_{package_path}', f'v{version}')
 
 def persist_file(file_content, file_path):
-    with open(file_path, 'w') as f:
+    with open(file_path, 'w', encoding='utf-8') as f:
         f.write(file_content)
 
 
