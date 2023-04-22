@@ -1,6 +1,3 @@
 include requirements.txt
 include gptdeploy.cmd
-include src/options/generate/static_files/gateway/app_config.toml
-include src/options/generate/static_files/gateway/Dockerfile
-include src/options/generate/static_files/gateway/nginx.conf
-include src/options/generate/static_files/gateway/requirements.txt
+recursive-include src/options/generate/static_files/gateway *.toml *.cmd *.conf *.txt Dockerfile

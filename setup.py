@@ -7,7 +7,7 @@ def read_requirements():
 
 setup(
     name='gptdeploy',
-    version='0.18.24',
+    version='0.18.25',
     description='Use natural language interface to generate, deploy and update your microservice infrastructure.',
     long_description=open('README.md', 'r', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
@@ -15,6 +15,7 @@ setup(
     author_email='florian.hoenicke@jina.ai',
     url='https://github.com/jina-ai/gptdeploy',
     packages=find_packages(),
+    include_package_data=True,
     install_requires=read_requirements(),
     scripts=['gptdeploy.py'],
     entry_points={
