@@ -6,4 +6,3 @@ jina
 jcloud
 jina-hubble-sdk
 langchain
-timeout-decorator

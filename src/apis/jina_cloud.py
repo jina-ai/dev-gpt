@@ -11,7 +11,6 @@ from pathlib import Path
 import click
 import hubble
 import requests
-import timeout_decorator
 from hubble.executor.helper import upload_file, archive_package, get_request_header
 from jcloud.flow import CloudFlow
 from jina import Flow
@@ -63,19 +62,7 @@ In this case, please cancel this run, rerun your gptdeploy command and login int
 
 
 def push_executor(dir_path):
-    for i in range(3):
-        try:
-            return _push_executor(dir_path)
-        except timeout_decorator.timeout_decorator.TimeoutError:
-            print('timeout error, retrying...')
-            if i == 2:
-                raise Exception('timeout error, please try again later')
-            continue
-
-@timeout_decorator.timeout(10*60)
-def _push_executor(dir_path):
     dir_path = Path(dir_path)
-
     md5_hash = hashlib.md5()
     bytesio = archive_package(dir_path)
     content = bytesio.getvalue()
