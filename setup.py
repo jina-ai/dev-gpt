@@ -1,3 +1,5 @@
+from os import path
+
 from setuptools import setup, find_packages
 
 def read_requirements():
@@ -5,9 +7,20 @@ def read_requirements():
         return [line.strip() for line in f.readlines() if not line.startswith('#')]
 
 
+try:
+    libinfo_py = path.join('src', '__init__.py')
+    libinfo_content = open(libinfo_py, 'r', encoding='utf8').readlines()
+    version_line = [l.strip() for l in libinfo_content if l.startswith('__version__')][
+        0
+    ]
+    exec(version_line)  # gives __version__
+except FileNotFoundError:
+    __version__ = '0.0.0'
+
+
 setup(
     name='gptdeploy',
-    version='0.18.27',
+    version=__version__,
     description='Use natural language interface to generate, deploy and update your microservice infrastructure.',
     long_description=open('README.md', 'r', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
