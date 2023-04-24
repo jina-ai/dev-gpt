@@ -1,4 +1,4 @@
-from src import main
+from gptdeploy import main
 
 if __name__ == "__main__":
     main()
