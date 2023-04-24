@@ -185,7 +185,7 @@ def run_locally(executor_name, microservice_version_path):
         use_docker = True
     else:
         click.echo('''
-Docker daemon doesn\'t seem to be running.
+Docker daemon doesn\'t seem to be running (possible reasons: incorrect docker installation, docker command isn\'t in system path, insufficient permissions, docker is running but unrespnsive).
 It might be important to run your microservice within a docker container.
 Your machine might not have all the dependencies installed.
 You have 3 options:

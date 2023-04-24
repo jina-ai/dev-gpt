@@ -1,12 +1,8 @@
 import os
 
-import concurrent.futures
-from typing import Generator
+import subprocess
 import sys
 from contextlib import contextmanager
-
-import docker
-from docker import APIClient
 
 
 def get_microservice_path(path, microservice_name, packages, num_approach, version):
@@ -44,14 +40,12 @@ def suppress_stdout():
 
 def is_docker_running():
     try:
-        from hubble import __windows__
-        _client = docker.from_env()
-        # low-level client
-        _raw_client = APIClient(
-            base_url=docker.constants.DEFAULT_NPIPE
-            if __windows__
-            else docker.constants.DEFAULT_UNIX_SOCKET
-        )
-    except Exception:
+        if sys.platform.startswith('win'):
+            command = 'docker info'
+        else:
+            command = 'docker info 2> /dev/null'
+
+        subprocess.check_output(command, shell=True)
+        return True
+    except subprocess.CalledProcessError:
         return False
-    return True
