@@ -1,3 +1,3 @@
-__version__ = '0.18.32'
+__version__ = '0.18.33'
 
 from src.cli import main
