@@ -1,7 +1,6 @@
 jina==3.15.1.dev14
-protobuf<3.21.0
 click
-streamlit
+streamlit==1.9.0
 openai
 psutil
 jcloud
