@@ -1,8 +1,9 @@
+jina==3.15.1.dev14
+protobuf<3.21.0
 click
 streamlit
 openai
 psutil
-jina
 jcloud
 jina-hubble-sdk
 langchain
