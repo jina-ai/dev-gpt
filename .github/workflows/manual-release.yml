@@ -7,9 +7,6 @@ on:
         description: 'Short reason for this manual release'
         required: true
 
-permissions:
-  contents: write
-
 jobs:
   regular-release:
     runs-on: ubuntu-latest
