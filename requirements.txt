@@ -1,7 +1,7 @@
 jina==3.15.1.dev14
 click
 streamlit==1.9.0
-openai
+openai>=0.26.0
 psutil
 jcloud
 jina-hubble-sdk
