@@ -1,6 +1,6 @@
 import unittest.mock as mock
-from src.options.generate.generator import Generator
-from src.apis.gpt import GPTSession
+from gptdeploy.options.generate.generator import Generator
+from gptdeploy.apis.gpt import GPTSession
 
 def test_generator(tmpdir):
     # Define a mock response

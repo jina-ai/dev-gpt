@@ -1,4 +1,4 @@
-from src.apis.jina_cloud import clean_color_codes
+from gptdeploy.apis.jina_cloud import clean_color_codes
 
 
 def test_clean_color_codes():
