@@ -167,7 +167,7 @@ template_generate_requirements = PromptTemplate.from_template(
 Write the content of the requirements.txt file. 
 Make sure to include pytest. 
 Make sure to include openai>=0.26.0.
-Make sure that jina==3.14.1. 
+Make sure that jina==3.15.1.dev14. 
 Make sure that docarray==0.21.0.
 You must not add gpt_3_5_turbo_api to the requirements.txt file.
 
@@ -187,7 +187,7 @@ Usually libraries are installed with apt-get.
 Be aware that the machine the docker container is running on does not have a GPU - only CPU.
 Add the config.yml file to the Dockerfile.
 Note that the Dockerfile only has access to the files: microservice.py, requirements.txt, config.yml and test_microservice.py.
-The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard.
+The base image of the Dockerfile is FROM jinaai/jina:3.15.1-dev14-py39-standard.
 The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"].
 Make sure the all files are in the /workdir.
 The Dockerfile runs the test during the build process.

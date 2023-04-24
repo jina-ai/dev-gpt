@@ -229,7 +229,7 @@ with:
   port: 8080
   protocol: http
 jcloud:
-  version: 3.14.2.dev18
+  version: 3.15.1.dev14
   labels:
     creator: microchain
   name: gptdeploy
