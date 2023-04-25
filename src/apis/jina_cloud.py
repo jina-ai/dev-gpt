@@ -131,7 +131,7 @@ def _push_executor(dir_path):
             responses.append(d)
     return '\n'.join(responses)
 
-def is_microservice_in_hub(microservice_name):
+def is_executor_in_hub(microservice_name):
     url = f'https://api.hubble.jina.ai/v2/rpc/executor.list?search={microservice_name}&withAnonymous=true'
     resp = requests.get(url)
     executor_list = resp.json()['data']
