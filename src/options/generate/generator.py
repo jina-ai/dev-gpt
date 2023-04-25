@@ -13,8 +13,9 @@ from src.options.generate.templates_user import template_generate_microservice_n
     template_generate_possible_packages, \
     template_solve_code_issue, \
     template_solve_dependency_issue, template_is_dependency_issue, template_generate_playground, \
-    template_generate_executor, template_generate_test, template_generate_requirements, template_generate_dockerfile, \
-    template_chain_of_thought, template_summarize_error, template_generate_possible_packages_output_format_string
+    template_generate_executor, template_generate_test, template_generate_requirements, \
+    template_chain_of_thought, template_summarize_error, \
+    template_generate_apt_get_install
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
 
@@ -125,23 +126,30 @@ metas:
             tag_name=REQUIREMENTS_FILE_TAG,
         )
 
-        self.generate_and_persist_file(
-            'Dockerfile',
-            template_generate_dockerfile,
+        self.generate_dockerfile(
             MICROSERVICE_FOLDER_v1,
-            code_files_wrapped=self.files_to_string({
-                'microservice.py': microservice_content,
-                'test_microservice.py': test_microservice_content,
-                'requirements.txt': requirements_content,
-            }),
-            file_name_purpose=DOCKER_FILE_NAME,
-            file_name=DOCKER_FILE_NAME,
-            tag_name=DOCKER_FILE_TAG,
+            requirements_content,
         )
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
 
         print('\nFirst version of the microservice generated. Start iterating on it to make the tests pass...')
+
+    def generate_dockerfile(self, destination_folder, requirements_content):
+        conversation = self.gpt_session.get_conversation()
+        # read content of Dockerfile which is located in ./static_files/microservice/Dockerfile
+        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r') as f:
+            docker_file_template = f.read()
+        content_raw = conversation.chat(
+            template_generate_apt_get_install.format(
+                docker_file_wrapped=docker_file_template,
+                requirements_file_wrapped=self.files_to_string({
+                    'requirements.txt': requirements_content,
+                }),
+            )
+        )
+        docker_file = docker_file_template.format(apt_get_packages=content_raw)
+        persist_file(docker_file, os.path.join(destination_folder, DOCKER_FILE_NAME))
 
     def generate_playground(self, microservice_name, microservice_path):
         print_colored('', '\n\n############# Playground #############', 'blue')

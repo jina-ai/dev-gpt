@@ -176,22 +176,17 @@ All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not
 )
 
 
-template_generate_dockerfile = PromptTemplate.from_template(
-    general_guidelines_string + '''
-    
-{code_files_wrapped}
-    
-Write the Dockerfile that defines the environment with all necessary dependencies that the executor uses.
-It is important to make sure that all libs are installed that are required by the python packages.
-Usually libraries are installed with apt-get.
-Be aware that the machine the docker container is running on does not have a GPU - only CPU.
-Add the config.yml file to the Dockerfile.
-Note that the Dockerfile only has access to the files: microservice.py, requirements.txt, config.yml and test_microservice.py.
-The base image of the Dockerfile is FROM jinaai/jina:3.14.1-py39-standard.
-The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"].
-Make sure the all files are in the /workdir.
-The Dockerfile runs the test during the build process.
-''' + not_allowed_docker_string + '\n' + template_code_wrapping_string
+template_generate_apt_get_install = PromptTemplate.from_template(
+    '''Given the following Dockerfile:
+
+{docker_file_wrapped}
+
+Name all packages which need to be installed via `apt-get install` in above Dockerfile (`{apt_get_packages}`) for the following requirements.txt file:
+
+{requirements_file_wrapped}
+
+Output them as a comma-separated list:
+'''
 )
 
 
