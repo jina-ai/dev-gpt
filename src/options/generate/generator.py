@@ -12,10 +12,10 @@ from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
     template_solve_code_issue, \
-    template_solve_dependency_issue, template_is_dependency_issue, template_generate_playground, \
+    template_solve_pip_dependency_issue, template_is_dependency_issue, template_generate_playground, \
     template_generate_executor, template_generate_test, template_generate_requirements, \
     template_chain_of_thought, template_summarize_error, \
-    template_generate_apt_get_install
+    template_generate_apt_get_install, template_solve_apt_get_dependency_issue
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
 
@@ -148,7 +148,7 @@ metas:
                 }),
             )
         )
-        docker_file = docker_file_template.format(apt_get_packages=content_raw)
+        docker_file = docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=content_raw)
         persist_file(docker_file, os.path.join(destination_folder, DOCKER_FILE_NAME))
 
     def generate_playground(self, microservice_name, microservice_path):
@@ -223,41 +223,63 @@ metas:
         file_name_to_content = get_all_microservice_files_with_content(previous_microservice_path)
 
         summarized_error = self.summarize_error(error)
-        is_dependency_issue = self.is_dependency_issue(error, file_name_to_content['Dockerfile'])
-        if is_dependency_issue:
-            all_files_string = self.files_to_string({
-                key: val for key, val in file_name_to_content.items() if
-                key in ['requirements.txt', 'Dockerfile']
-            })
-            user_query = template_solve_dependency_issue.format(
-                summarized_error=summarized_error, all_files_string=all_files_string,
+        dock_req_string = self.files_to_string({
+            key: val for key, val in file_name_to_content.items() if
+            key in ['requirements.txt', 'Dockerfile']
+        })
+
+        is_apt_get_dependency_issue = self.is_dependency_issue(summarized_error, dock_req_string, 'apt-get')
+        if is_apt_get_dependency_issue:
+
+            user_query = template_solve_apt_get_dependency_issue.format(
+                summarized_error=summarized_error, all_files_string=dock_req_string,
             )
+            conversation = self.gpt_session.get_conversation([])
+            content_raw = conversation.chat(user_query)
+            with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r') as f:
+                docker_file_template = f.read()
+            file_name_to_content['Dockerfile'] = docker_file_template \
+                .replace('{{apt_get_packages}}', '{apt_get_packages}') \
+                .format(apt_get_packages=content_raw)
+            print('Dockerfile updated')
         else:
-            user_query = template_solve_code_issue.format(
-                task_description=self.task_description, test_description=self.test_description,
-                summarized_error=summarized_error, all_files_string=self.files_to_string(file_name_to_content),
-            )
-        conversation = self.gpt_session.get_conversation()
-        returned_files_raw = conversation.chat(user_query)
-        for file_name, tag in FILE_AND_TAG_PAIRS:
-            updated_file = self.extract_content_from_result(returned_files_raw, file_name)
-            if updated_file and (not is_dependency_issue or file_name in ['requirements.txt', 'Dockerfile']):
-                file_name_to_content[file_name] = updated_file
-                print(f'Updated {file_name}')
+            is_pip_dependency_issue = self.is_dependency_issue(summarized_error, dock_req_string, 'PIP')
+            if is_pip_dependency_issue:
+                user_query = template_solve_pip_dependency_issue.format(
+                    summarized_error=summarized_error, all_files_string=dock_req_string,
+                )
+            else:
+                user_query = template_solve_code_issue.format(
+                    task_description=self.task_description, test_description=self.test_description,
+                    summarized_error=summarized_error, all_files_string=self.files_to_string(file_name_to_content),
+                )
+            conversation = self.gpt_session.get_conversation()
+            returned_files_raw = conversation.chat(user_query)
+            for file_name, tag in FILE_AND_TAG_PAIRS:
+                if file_name in ['Dockerfile']:
+                    continue
+
+                updated_file = self.extract_content_from_result(returned_files_raw, file_name)
+                if updated_file and (not is_pip_dependency_issue or file_name == 'requirements.txt'):
+                    file_name_to_content[file_name] = updated_file
+                    print(f'Updated {file_name}')
+
         for file_name, content in file_name_to_content.items():
             persist_file(content, os.path.join(next_microservice_path, file_name))
 
     class MaxDebugTimeReachedException(BaseException):
         pass
 
-    def is_dependency_issue(self, error, docker_file: str):
+    def is_dependency_issue(self, summarized_error, dock_req_string: str, package_manager: str):
         # a few heuristics to quickly jump ahead
-        if any([error_message in error for error_message in ['AttributeError', 'NameError', 'AssertionError']]):
+        if any([error_message in summarized_error for error_message in ['AttributeError', 'NameError', 'AssertionError']]):
             return False
 
-        print_colored('', 'Is it a dependency issue?', 'blue')
+        print_colored('', f'Is it a {package_manager} dependency issue?', 'blue')
         conversation = self.gpt_session.get_conversation([])
-        answer = conversation.chat(template_is_dependency_issue.format(error=error, docker_file=docker_file))
+        answer = conversation.chat(
+            template_is_dependency_issue.format(summarized_error=summarized_error, all_files_string=dock_req_string).replace('PACKAGE_MANAGER', package_manager)
+        )
         return 'yes' in answer.lower()
 
     def generate_microservice_name(self, description):
