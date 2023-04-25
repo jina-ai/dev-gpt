@@ -205,8 +205,14 @@ metas:
                 if i == MAX_DEBUGGING_ITERATIONS - 1:
                     raise self.MaxDebugTimeReachedException('Could not debug the microservice.')
             else:
-                print('Successfully build microservice.')
-                break
+                # at the moment, there can be cases where no error log is extracted but the executor is still not published
+                # it leads to problems later on when someone tries a run or deployment
+                if is_microservice_in_hub(microservice_name):
+                    print('Successfully build microservice.')
+                    break
+                else:
+                    raise Exception(log_hubble)
+
 
         return get_microservice_path(path, microservice_name, packages, num_approach, i)
 
