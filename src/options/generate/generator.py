@@ -5,7 +5,7 @@ import shutil
 from typing import List
 
 from src.apis import gpt
-from src.apis.jina_cloud import process_error_message, push_executor
+from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, DOCKER_FILE_TAG, UNNECESSARY_PACKAGES
@@ -190,6 +190,9 @@ metas:
         # push the gateway
         print('Final step...')
         hubble_log = push_executor(gateway_path)
+        if not is_executor_in_hub(gateway_name):
+            raise Exception(f'{microservice_name} not in hub. Hubble logs: {hubble_log}')
+
 
     def debug_microservice(self, path, microservice_name, num_approach, packages):
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
@@ -205,8 +208,14 @@ metas:
                 if i == MAX_DEBUGGING_ITERATIONS - 1:
                     raise self.MaxDebugTimeReachedException('Could not debug the microservice.')
             else:
-                print('Successfully build microservice.')
-                break
+                # at the moment, there can be cases where no error log is extracted but the executor is still not published
+                # it leads to problems later on when someone tries a run or deployment
+                if is_executor_in_hub(microservice_name):
+                    print('Successfully build microservice.')
+                    break
+                else:
+                    raise Exception(f'{microservice_name} not in hub. Hubble logs: {log_hubble}')
+
 
         return get_microservice_path(path, microservice_name, packages, num_approach, i)
 
