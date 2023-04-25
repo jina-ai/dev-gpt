@@ -6,7 +6,7 @@ from contextlib import contextmanager
 
 
 def get_microservice_path(path, microservice_name, packages, num_approach, version):
-    package_path = '_'.join(packages)
+    package_path = '_'.join(packages).replace(' ', '_').lower()
     return os.path.join(path, microservice_name, f'{num_approach}_{package_path}', f'v{version}')
 
 def persist_file(file_content, file_path):
