@@ -234,7 +234,7 @@ metas:
             user_query = template_solve_apt_get_dependency_issue.format(
                 summarized_error=summarized_error, all_files_string=dock_req_string,
             )
-            conversation = self.gpt_session.get_conversation([])
+            conversation = self.gpt_session.get_conversation(None)
             content_raw = conversation.chat(user_query)
             with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r') as f:
                 docker_file_template = f.read()
@@ -276,7 +276,7 @@ metas:
             return False
 
         print_colored('', f'Is it a {package_manager} dependency issue?', 'blue')
-        conversation = self.gpt_session.get_conversation([])
+        conversation = self.gpt_session.get_conversation(None)
         answer = conversation.chat(
             template_is_dependency_issue.format(summarized_error=summarized_error, all_files_string=dock_req_string).replace('PACKAGE_MANAGER', package_manager)
         )
@@ -337,7 +337,7 @@ gptdeploy deploy --path {microservice_path}
             break
 
     def summarize_error(self, error):
-        conversation = self.gpt_session.get_conversation([])
+        conversation = self.gpt_session.get_conversation(None)
         error_summary = conversation.chat(template_summarize_error.format(error=error))
         return error_summary
 
