@@ -274,7 +274,7 @@ metas:
         # a few heuristics to quickly jump ahead
         if any([error_message in summarized_error for error_message in ['AttributeError', 'NameError', 'AssertionError']]):
             return False
-        if package_manager.lower() == 'pip' and 'ModuleNotFoundError' in summarized_error:
+        if package_manager.lower() == 'pip' and any([em in summarized_error for em in ['ModuleNotFoundError', 'ImportError']]):
             return True
 
         print_colored('', f'Is it a {package_manager} dependency issue?', 'blue')
