@@ -185,7 +185,7 @@ Name all packages which need to be installed via `apt-get install` in above Dock
 
 {requirements_file_wrapped}
 
-Output them as a comma-separated list:'''
+Output them as a white space separated list:'''
 )
 
 
@@ -254,7 +254,7 @@ You are given the following files:
 {all_files_string}
 
 To solve this error, you should determine the list of packages that need to be installed via `apt-get install` in the Dockerfile.
-Output them as a comma-separated list:'''
+Output them as a white space separated list:'''
 )
 
 
