@@ -167,7 +167,7 @@ template_generate_requirements = PromptTemplate.from_template(
 Write the content of the requirements.txt file. 
 Make sure to include pytest. 
 Make sure to include openai>=0.26.0.
-Make sure that jina==3.14.1. 
+Make sure that jina==3.15.1.dev14. 
 Make sure that docarray==0.21.0.
 You must not add gpt_3_5_turbo_api to the requirements.txt file.
 

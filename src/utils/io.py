@@ -1,4 +1,5 @@
 import os
+import re
 
 import subprocess
 import sys
@@ -6,7 +7,9 @@ from contextlib import contextmanager
 
 
 def get_microservice_path(path, microservice_name, packages, num_approach, version):
-    package_path = '_'.join(packages)
+    package_path = '_'.join(packages).replace(' ', '_').lower()
+    invalid_chars_regex = re.compile(r'[<>:"/\\|?*]')
+    package_path = invalid_chars_regex.sub('', package_path)
     return os.path.join(path, microservice_name, f'{num_approach}_{package_path}', f'v{version}')
 
 def persist_file(file_content, file_path):

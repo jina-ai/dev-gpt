@@ -131,6 +131,14 @@ def _push_executor(dir_path):
             responses.append(d)
     return '\n'.join(responses)
 
+def is_executor_in_hub(microservice_name):
+    url = f'https://api.hubble.jina.ai/v2/rpc/executor.list?search={microservice_name}&withAnonymous=true'
+    resp = requests.get(url)
+    executor_list = resp.json()['data']
+    for executor in executor_list:
+        if 'name' in executor and executor['name'] == microservice_name:
+            return True
+    return False
 
 def get_user_name(token=None):
     client = hubble.Client(max_retries=None, jsonify=True, token=token)
@@ -229,7 +237,7 @@ with:
   port: 8080
   protocol: http
 jcloud:
-  version: 3.14.2.dev18
+  version: 3.15.1.dev14
   labels:
     creator: microchain
   name: gptdeploy
