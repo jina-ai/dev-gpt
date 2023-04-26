@@ -282,7 +282,7 @@ To solve this error, you should:
 Obey the following rules:
 ''' + f'{not_allowed_executor_string}\n{not_allowed_docker_string}' + '''
 
-Output all the files that need change. 
+Output all the files that need change. You must not change the Dockerfile.
 Don't output files that don't need change. If you output a file, then write the complete file.
 If you change microservice.py and it uses gpt_3_5_turbo_api, then you must keep the code for gpt_3_5_turbo_api in the microservice.py file.
 Use the exact following syntax to wrap the code:
