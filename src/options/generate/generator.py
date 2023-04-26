@@ -2,7 +2,9 @@ import os
 import random
 import re
 import shutil
-from typing import List
+from typing import List, Callable
+
+from langchain import PromptTemplate
 
 from src.apis import gpt
 from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
@@ -21,10 +23,11 @@ from src.utils.string_tools import print_colored
 
 
 class Generator:
-    def __init__(self, task_description, test_description, model='gpt-4'):
+    def __init__(self, task_description, test_description, path, model='gpt-4'):
         self.gpt_session = gpt.GPTSession(task_description, test_description, model=model)
         self.task_description = task_description
         self.test_description = test_description
+        self.microservice_root_path = path
 
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False):
         pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?)\n```" # the \n at the end makes sure that ``` within the generated code is not matched
@@ -56,35 +59,47 @@ metas:
                 all_microservice_files_string += f'**{file_name}**\n```{tag}\n{file_name_to_content[file_name]}\n```\n\n'
         return all_microservice_files_string.strip()
 
+    def generate_and_persist_file(
+            self,
+            section_title: str,
+            template: PromptTemplate,
+            destination_folder: str,
+            file_name: str = None,
+            parse_result_fn: Callable = None,
+            system_definition_examples: List[str] = ['gpt', 'executor', 'docarray', 'client'],
+            **template_kwargs
+    ):
+        """todo: add docstring (e.g. parse_result_fn returns dictionary mapping file_name to its full content)"""
+        if parse_result_fn is None:
+            parse_result_fn = lambda x: {
+                file_name: self.extract_content_from_result(x, file_name, match_single_block=True)
+            }
 
-    def generate_and_persist_file(self, section_title, template, destination_folder=None, file_name=None, system_definition_examples: List[str] = ['gpt', 'executor', 'docarray', 'client'],  **template_kwargs):
         print_colored('', f'\n\n############# {section_title} #############', 'blue')
         conversation = self.gpt_session.get_conversation(system_definition_examples=system_definition_examples)
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
+        if 'file_name' in template.input_variables:
+            template_kwargs['file_name'] = file_name
         content_raw = conversation.chat(
             template.format(
-                file_name=file_name,
                 **template_kwargs
             )
         )
-        content = self.extract_content_from_result(content_raw, file_name, match_single_block=True)
+        content = parse_result_fn(content_raw)
         if content == '':
-            content_raw = conversation.chat(f'You must add the content for {file_name}.')
-            content = self.extract_content_from_result(
-                content_raw, file_name, match_single_block=True
-            )
-        if destination_folder:
-            persist_file(content, os.path.join(destination_folder, file_name))
+            content_raw = conversation.chat('You must add the content' + (f' for {file_name}.' if file_name else ''))
+            content = parse_result_fn(content_raw)
+        for _file_name, _file_content in content.items():
+            persist_file(_file_content, os.path.join(destination_folder, _file_name))
         return content
 
     def generate_microservice(
             self,
-            path,
             microservice_name,
             packages,
             num_approach,
     ):
-        MICROSERVICE_FOLDER_v1 = get_microservice_path(path, microservice_name, packages, num_approach, 1)
+        MICROSERVICE_FOLDER_v1 = get_microservice_path(self.microservice_root_path, microservice_name, packages, num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
         microservice_content = self.generate_and_persist_file(
@@ -98,7 +113,7 @@ metas:
             file_name_purpose=EXECUTOR_FILE_NAME,
             tag_name=EXECUTOR_FILE_TAG,
             file_name=EXECUTOR_FILE_NAME,
-        )
+        )[EXECUTOR_FILE_NAME]
 
         test_microservice_content = self.generate_and_persist_file(
             'Test Microservice',
@@ -111,7 +126,7 @@ metas:
             file_name_purpose=TEST_EXECUTOR_FILE_NAME,
             tag_name=TEST_EXECUTOR_FILE_TAG,
             file_name=TEST_EXECUTOR_FILE_NAME,
-        )
+        )[TEST_EXECUTOR_FILE_NAME]
 
         requirements_content = self.generate_and_persist_file(
             'Requirements',
@@ -124,7 +139,7 @@ metas:
             file_name_purpose=REQUIREMENTS_FILE_NAME,
             file_name=REQUIREMENTS_FILE_NAME,
             tag_name=REQUIREMENTS_FILE_TAG,
-        )
+        )[REQUIREMENTS_FILE_NAME]
 
         self.generate_dockerfile(
             MICROSERVICE_FOLDER_v1,
@@ -136,20 +151,23 @@ metas:
         print('\nFirst version of the microservice generated. Start iterating on it to make the tests pass...')
 
     def generate_dockerfile(self, destination_folder, requirements_content):
-        conversation = self.gpt_session.get_conversation()
-        # read content of Dockerfile which is located in ./static_files/microservice/Dockerfile
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r') as f:
             docker_file_template = f.read()
-        content_raw = conversation.chat(
-            template_generate_apt_get_install.format(
-                docker_file_wrapped=docker_file_template,
-                requirements_file_wrapped=self.files_to_string({
-                    'requirements.txt': requirements_content,
-                }),
-            )
+
+        def parse_result_fn(content_raw: str):
+            return {'Dockerfile': docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=content_raw)}
+
+        self.generate_and_persist_file(
+            section_title='Generate Dockerfile',
+            template=template_generate_apt_get_install,
+            destination_folder=destination_folder,
+            file_name='Dockerfile',
+            parse_result_fn=parse_result_fn,
+            docker_file_wrapped=docker_file_template,
+            requirements_file_wrapped=self.files_to_string({
+                'requirements.txt': requirements_content,
+            })
         )
-        docker_file = docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=content_raw)
-        persist_file(docker_file, os.path.join(destination_folder, DOCKER_FILE_NAME))
 
     def generate_playground(self, microservice_name, microservice_path):
         print_colored('', '\n\n############# Playground #############', 'blue')
@@ -201,13 +219,12 @@ metas:
         if not is_executor_in_hub(gateway_name):
             raise Exception(f'{microservice_name} not in hub. Hubble logs: {hubble_log}')
 
-
-    def debug_microservice(self, path, microservice_name, num_approach, packages):
+    def debug_microservice(self, microservice_name, num_approach, packages):
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
             print('Trying to debug the microservice. Might take a while...')
-            previous_microservice_path = get_microservice_path(path, microservice_name, packages, num_approach, i)
-            next_microservice_path = get_microservice_path(path, microservice_name, packages, num_approach, i + 1)
+            previous_microservice_path = get_microservice_path(self.microservice_root_path, microservice_name, packages, num_approach, i)
+            next_microservice_path = get_microservice_path(self.microservice_root_path, microservice_name, packages, num_approach, i + 1)
             log_hubble = push_executor(previous_microservice_path)
             error = process_error_message(log_hubble)
             if error:
@@ -224,8 +241,7 @@ metas:
                 else:
                     raise Exception(f'{microservice_name} not in hub. Hubble logs: {log_hubble}')
 
-
-        return get_microservice_path(path, microservice_name, packages, num_approach, i)
+        return get_microservice_path(self.microservice_root_path, microservice_name, packages, num_approach, i)
 
     def do_debug_iteration(self, error, next_microservice_path, previous_microservice_path):
         os.makedirs(next_microservice_path)
@@ -295,42 +311,44 @@ metas:
 
     def generate_microservice_name(self, description):
         print_colored('', '\n\n############# What should be the name of the Microservice? #############', 'blue')
-        conversation = self.gpt_session.get_conversation()
-        name_raw = conversation.chat(template_generate_microservice_name.format(description=description))
-        name = self.extract_content_from_result(name_raw, 'name.txt')
+        name = self.generate_and_persist_file(
+            section_title='Generate microservice name',
+            template=template_generate_microservice_name,
+            destination_folder=self.microservice_root_path,
+            file_name='name.txt',
+            description=description
+        )['name.txt']
         return name
 
     def get_possible_packages(self):
         print_colored('', '\n\n############# What packages to use? #############', 'blue')
         packages_csv_string = self.generate_and_persist_file(
-            'packages to use',
-            template_generate_possible_packages,
-            None,
+            section_title='Generate possible packages',
+            template=template_generate_possible_packages,
+            destination_folder=self.microservice_root_path,
             file_name='packages.csv',
             system_definition_examples=['gpt'],
             description=self.task_description
-
-        )
+        )['packages.csv']
         packages_list = [[pkg.strip() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]
-        packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
-        return packages_list
-
-    def generate(self, microservice_path):
-        generated_name = self.generate_microservice_name(self.task_description)
-        microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
-        packages_list = self.get_possible_packages()
         packages_list = [
             packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0
         ]
         packages_list = [
             [package for package in packages if package not in UNNECESSARY_PACKAGES] for packages in packages_list
         ]
+        packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
+        return packages_list
+
+    def generate(self):
+        os.makedirs(self.microservice_root_path)
+        generated_name = self.generate_microservice_name(self.task_description)
+        microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
+        packages_list = self.get_possible_packages()
         for num_approach, packages in enumerate(packages_list):
             try:
-                self.generate_microservice(microservice_path, microservice_name, packages, num_approach)
-                final_version_path = self.debug_microservice(
-                    microservice_path, microservice_name, num_approach, packages
-                )
+                self.generate_microservice(microservice_name, packages, num_approach)
+                final_version_path = self.debug_microservice(microservice_name, num_approach, packages)
                 self.generate_playground(microservice_name, final_version_path)
             except self.MaxDebugTimeReachedException:
                 print('Could not debug the Microservice with the approach:', packages)
@@ -341,8 +359,8 @@ metas:
                 continue
             print(f'''
 You can now run or deploy your microservice:
-gptdeploy run --path {microservice_path}
-gptdeploy deploy --path {microservice_path}
+gptdeploy run --path {self.microservice_root_path}
+gptdeploy deploy --path {self.microservice_root_path}
 '''
                   )
             break
