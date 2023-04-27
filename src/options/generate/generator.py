@@ -59,6 +59,16 @@ metas:
                 all_microservice_files_string += f'**{file_name}**\n```{tag}\n{file_name_to_content[file_name]}\n```\n\n'
         return all_microservice_files_string.strip()
 
+    def get_default_parse_result_fn(self, files_names: List[str]):
+        def _default_parse_result_fn(x):
+            _parsed_results = {}
+            for _file_name in files_names:
+                _content = self.extract_content_from_result(x, _file_name, match_single_block=len(files_names)==1)
+                if _content != '':
+                    _parsed_results[_file_name] = _content
+            return _parsed_results
+        return _default_parse_result_fn
+
     def generate_and_persist_file(
             self,
             section_title: str,
@@ -71,9 +81,7 @@ metas:
     ):
         """todo: add docstring (e.g. parse_result_fn returns dictionary mapping file_name to its full content)"""
         if parse_result_fn is None:
-            parse_result_fn = lambda x: {
-                file_name: self.extract_content_from_result(x, file_name, match_single_block=True)
-            }
+            parse_result_fn = self.get_default_parse_result_fn([file_name])
 
         print_colored('', f'\n\n############# {section_title} #############', 'blue')
         conversation = self.gpt_session.get_conversation(system_definition_examples=system_definition_examples)
@@ -86,7 +94,7 @@ metas:
             )
         )
         content = parse_result_fn(content_raw)
-        if content == '':
+        if content == {}:
             content_raw = conversation.chat('You must add the content' + (f' for {file_name}.' if file_name else ''))
             content = parse_result_fn(content_raw)
         for _file_name, _file_content in content.items():
@@ -119,7 +127,7 @@ metas:
             'Test Microservice',
             template_generate_test,
             MICROSERVICE_FOLDER_v1,
-            code_files_wrapped=self.files_to_string({'microservice.py': microservice_content}),
+            code_files_wrapped=self.files_to_string({EXECUTOR_FILE_NAME: microservice_content}),
             microservice_name=microservice_name,
             microservice_description=self.task_description,
             test_description=self.test_description,
@@ -133,41 +141,38 @@ metas:
             template_generate_requirements,
             MICROSERVICE_FOLDER_v1,
             code_files_wrapped=self.files_to_string({
-                'microservice.py': microservice_content,
-                'test_microservice.py': test_microservice_content,
+                EXECUTOR_FILE_NAME: microservice_content,
+                TEST_EXECUTOR_FILE_NAME: test_microservice_content,
             }),
             file_name_purpose=REQUIREMENTS_FILE_NAME,
             file_name=REQUIREMENTS_FILE_NAME,
             tag_name=REQUIREMENTS_FILE_TAG,
         )[REQUIREMENTS_FILE_NAME]
 
-        self.generate_dockerfile(
-            MICROSERVICE_FOLDER_v1,
-            requirements_content,
+        self.generate_and_persist_file(
+            section_title='Generate Dockerfile',
+            template=template_generate_apt_get_install,
+            destination_folder=MICROSERVICE_FOLDER_v1,
+            file_name=None,
+            parse_result_fn=self.parse_result_fn_dockerfile,
+            docker_file_wrapped=self.read_docker_template(),
+            requirements_file_wrapped=self.files_to_string({
+                REQUIREMENTS_FILE_NAME: requirements_content,
+            })
         )
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
 
         print('\nFirst version of the microservice generated. Start iterating on it to make the tests pass...')
 
-    def generate_dockerfile(self, destination_folder, requirements_content):
+    @staticmethod
+    def read_docker_template():
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r') as f:
-            docker_file_template = f.read()
+            return f.read()
 
-        def parse_result_fn(content_raw: str):
-            return {'Dockerfile': docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=content_raw)}
-
-        self.generate_and_persist_file(
-            section_title='Generate Dockerfile',
-            template=template_generate_apt_get_install,
-            destination_folder=destination_folder,
-            file_name='Dockerfile',
-            parse_result_fn=parse_result_fn,
-            docker_file_wrapped=docker_file_template,
-            requirements_file_wrapped=self.files_to_string({
-                'requirements.txt': requirements_content,
-            })
-        )
+    def parse_result_fn_dockerfile(self, content_raw: str):
+        docker_file_template = self.read_docker_template()
+        return {DOCKER_FILE_NAME: docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=content_raw)}
 
     def generate_playground(self, microservice_name, microservice_path):
         print_colored('', '\n\n############# Playground #############', 'blue')
@@ -246,6 +251,8 @@ metas:
     def do_debug_iteration(self, error, next_microservice_path, previous_microservice_path):
         os.makedirs(next_microservice_path)
         file_name_to_content = get_all_microservice_files_with_content(previous_microservice_path)
+        for file_name, content in file_name_to_content.items():
+            persist_file(content, os.path.join(next_microservice_path, file_name))
 
         summarized_error = self.summarize_error(error)
         dock_req_string = self.files_to_string({
@@ -255,42 +262,43 @@ metas:
 
         is_apt_get_dependency_issue = self.is_dependency_issue(summarized_error, dock_req_string, 'apt-get')
         if is_apt_get_dependency_issue:
-
-            user_query = template_solve_apt_get_dependency_issue.format(
-                summarized_error=summarized_error, all_files_string=dock_req_string,
+            self.generate_and_persist_file(
+                section_title='Debugging apt-get dependency issue',
+                template=template_solve_apt_get_dependency_issue,
+                destination_folder=next_microservice_path,
+                file_name=None,
+                parse_result_fn=self.parse_result_fn_dockerfile,
+                system_definition_examples=None,
+                summarized_error=summarized_error,
+                all_files_string=dock_req_string,
             )
-            conversation = self.gpt_session.get_conversation(None)
-            content_raw = conversation.chat(user_query)
-            with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r') as f:
-                docker_file_template = f.read()
-            file_name_to_content['Dockerfile'] = docker_file_template \
-                .replace('{{apt_get_packages}}', '{apt_get_packages}') \
-                .format(apt_get_packages=content_raw)
             print('Dockerfile updated')
         else:
             is_pip_dependency_issue = self.is_dependency_issue(summarized_error, dock_req_string, 'PIP')
             if is_pip_dependency_issue:
-                user_query = template_solve_pip_dependency_issue.format(
-                    summarized_error=summarized_error, all_files_string=dock_req_string,
+                self.generate_and_persist_file(
+                    section_title='Debugging pip dependency issue',
+                    template=template_solve_pip_dependency_issue,
+                    destination_folder=next_microservice_path,
+                    file_name=REQUIREMENTS_FILE_NAME,
+                    summarized_error=summarized_error,
+                    all_files_string=dock_req_string,
                 )
             else:
+                self.generate_and_persist_file(
+                    section_title='Debugging code issue',
+                    template=template_solve_code_issue,
+                    destination_folder=next_microservice_path,
+                    file_name=[EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, REQUIREMENTS_FILE_NAME],
+                    summarized_error=summarized_error,
+                    task_description=self.task_description,
+                    test_description=self.test_description,
+                    all_files_string=self.files_to_string(file_name_to_content),
+                )
                 user_query = template_solve_code_issue.format(
                     task_description=self.task_description, test_description=self.test_description,
                     summarized_error=summarized_error, all_files_string=self.files_to_string(file_name_to_content),
                 )
-            conversation = self.gpt_session.get_conversation()
-            returned_files_raw = conversation.chat(user_query)
-            for file_name, tag in FILE_AND_TAG_PAIRS:
-                if file_name in ['Dockerfile']:
-                    continue
-
-                updated_file = self.extract_content_from_result(returned_files_raw, file_name)
-                if updated_file and (not is_pip_dependency_issue or file_name == 'requirements.txt'):
-                    file_name_to_content[file_name] = updated_file
-                    print(f'Updated {file_name}')
-
-        for file_name, content in file_name_to_content.items():
-            persist_file(content, os.path.join(next_microservice_path, file_name))
 
     class MaxDebugTimeReachedException(BaseException):
         pass
