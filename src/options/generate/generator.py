@@ -2,7 +2,7 @@ import os
 import random
 import re
 import shutil
-from typing import List, Callable
+from typing import List, Callable, Union
 
 from langchain import PromptTemplate
 
@@ -74,7 +74,7 @@ metas:
             section_title: str,
             template: PromptTemplate,
             destination_folder: str,
-            file_name: str = None,
+            file_name_s: Union[str, List[str]] = None,
             parse_result_fn: Callable = None,
             system_definition_examples: List[str] = ['gpt', 'executor', 'docarray', 'client'],
             **template_kwargs
@@ -86,7 +86,7 @@ metas:
             section_title (str): The title of the section to be printed in the console.
             template (PromptTemplate): The template to be used for generating the file(s).
             destination_folder (str): The destination folder where the generated file(s) should be persisted.
-            file_name (str, optional): The name of the file(s) to be generated. Defaults to None.
+            file_name_s (Union[str, List[str]], optional): The name of the file(s) to be generated. Defaults to None.
             parse_result_fn (Callable, optional): A function that parses the generated content and returns a dictionary
                 mapping file_name to its content. If no content could be extract, it returns an empty dictionary.
                 Defaults to None. If None, default parsing is used which uses the file_name to extract from the generated content.
@@ -95,13 +95,13 @@ metas:
             **template_kwargs: The keyword arguments to be passed to the template.
         """
         if parse_result_fn is None:
-            parse_result_fn = self.get_default_parse_result_fn([file_name])
+            parse_result_fn = self.get_default_parse_result_fn([file_name_s] if isinstance(file_name_s, str) else file_name_s)
 
         print_colored('', f'\n\n############# {section_title} #############', 'blue')
         conversation = self.gpt_session.get_conversation(system_definition_examples=system_definition_examples)
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         if 'file_name' in template.input_variables:
-            template_kwargs['file_name'] = file_name
+            template_kwargs['file_name'] = file_name_s
         content_raw = conversation.chat(
             template.format(
                 **template_kwargs
@@ -109,7 +109,7 @@ metas:
         )
         content = parse_result_fn(content_raw)
         if content == {}:
-            content_raw = conversation.chat('You must add the content' + (f' for {file_name}.' if file_name else ''))
+            content_raw = conversation.chat('You must add the content' + (f' for {file_name_s}.' if file_name_s else ''))
             content = parse_result_fn(content_raw)
         for _file_name, _file_content in content.items():
             persist_file(_file_content, os.path.join(destination_folder, _file_name))
@@ -134,7 +134,7 @@ metas:
             packages=packages,
             file_name_purpose=EXECUTOR_FILE_NAME,
             tag_name=EXECUTOR_FILE_TAG,
-            file_name=EXECUTOR_FILE_NAME,
+            file_name_s=EXECUTOR_FILE_NAME,
         )[EXECUTOR_FILE_NAME]
 
         test_microservice_content = self.generate_and_persist_file(
@@ -147,7 +147,7 @@ metas:
             test_description=self.test_description,
             file_name_purpose=TEST_EXECUTOR_FILE_NAME,
             tag_name=TEST_EXECUTOR_FILE_TAG,
-            file_name=TEST_EXECUTOR_FILE_NAME,
+            file_name_s=TEST_EXECUTOR_FILE_NAME,
         )[TEST_EXECUTOR_FILE_NAME]
 
         requirements_content = self.generate_and_persist_file(
@@ -159,7 +159,7 @@ metas:
                 TEST_EXECUTOR_FILE_NAME: test_microservice_content,
             }),
             file_name_purpose=REQUIREMENTS_FILE_NAME,
-            file_name=REQUIREMENTS_FILE_NAME,
+            file_name_s=REQUIREMENTS_FILE_NAME,
             tag_name=REQUIREMENTS_FILE_TAG,
         )[REQUIREMENTS_FILE_NAME]
 
@@ -167,7 +167,7 @@ metas:
             section_title='Generate Dockerfile',
             template=template_generate_apt_get_install,
             destination_folder=MICROSERVICE_FOLDER_v1,
-            file_name=None,
+            file_name_s=None,
             parse_result_fn=self.parse_result_fn_dockerfile,
             docker_file_wrapped=self.read_docker_template(),
             requirements_file_wrapped=self.files_to_string({
@@ -280,7 +280,7 @@ metas:
                 section_title='Debugging apt-get dependency issue',
                 template=template_solve_apt_get_dependency_issue,
                 destination_folder=next_microservice_path,
-                file_name=None,
+                file_name_s=None,
                 parse_result_fn=self.parse_result_fn_dockerfile,
                 system_definition_examples=None,
                 summarized_error=summarized_error,
@@ -294,7 +294,7 @@ metas:
                     section_title='Debugging pip dependency issue',
                     template=template_solve_pip_dependency_issue,
                     destination_folder=next_microservice_path,
-                    file_name=REQUIREMENTS_FILE_NAME,
+                    file_name_s=REQUIREMENTS_FILE_NAME,
                     summarized_error=summarized_error,
                     all_files_string=dock_req_string,
                 )
@@ -303,7 +303,7 @@ metas:
                     section_title='Debugging code issue',
                     template=template_solve_code_issue,
                     destination_folder=next_microservice_path,
-                    file_name=[EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, REQUIREMENTS_FILE_NAME],
+                    file_name_s=[EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, REQUIREMENTS_FILE_NAME],
                     summarized_error=summarized_error,
                     task_description=self.task_description,
                     test_description=self.test_description,
@@ -337,7 +337,7 @@ metas:
             section_title='Generate microservice name',
             template=template_generate_microservice_name,
             destination_folder=self.microservice_root_path,
-            file_name='name.txt',
+            file_name_s='name.txt',
             description=description
         )['name.txt']
         return name
@@ -348,7 +348,7 @@ metas:
             section_title='Generate possible packages',
             template=template_generate_possible_packages,
             destination_folder=self.microservice_root_path,
-            file_name='packages.csv',
+            file_name_s='packages.csv',
             system_definition_examples=['gpt'],
             description=self.task_description
         )['packages.csv']
