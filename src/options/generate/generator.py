@@ -36,9 +36,9 @@ class Generator:
         self.gpt_session = gpt.GPTSession(task_description, test_description, model=model)
         self.microservice_specification = TaskSpecification(task=task_description, test=test_description)
 
-    def extract_content_from_result(self, plain_text, file_name, match_single_block=False):
-
-        pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?)\n```" # the \n at the end makes sure that ``` within the generated code is not matched
+    def extract_content_from_result(self, plain_text, file_name, match_single_block=False, can_contain_code_block=True):
+        optional_line_break = '\n' if can_contain_code_block else '' # the \n at the end makes sure that ``` within the generated code is not matched because it is not right before a line break
+        pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?){optional_line_break}```"
         match = re.search(pattern, plain_text, re.MULTILINE)
         if match:
             return match.group(1).strip()
@@ -361,7 +361,6 @@ Test scenario:
 ''')
 
     def refine_task(self, pm):
-
         task_description = self.microservice_specification.task
         if not task_description:
             task_description = self.get_user_input(pm, 'What should your microservice do?')
@@ -374,8 +373,8 @@ Test scenario:
             print('thinking...')
             agent_response_raw = conversation.chat(task_description, role='user')
 
-            question = self.extract_content_from_result(agent_response_raw, 'prompt.txt')
-            task_final = self.extract_content_from_result(agent_response_raw, 'task-final.txt')
+            question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
+            task_final = self.extract_content_from_result(agent_response_raw, 'task-final.txt', can_contain_code_block=False)
             if task_final:
                 self.microservice_specification.task = task_final
                 break
@@ -392,13 +391,14 @@ Test scenario:
         user_input = self.microservice_specification.task
         while True:
             conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
+            print('thinking...')
             agent_response_raw = conversation.chat(f'''**client-response.txt**
 ```
 {user_input}
 ```
 ''', role='user')
-            question = self.extract_content_from_result(agent_response_raw, 'prompt.txt')
-            test_final = self.extract_content_from_result(agent_response_raw, 'test-final.txt')
+            question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
+            test_final = self.extract_content_from_result(agent_response_raw, 'test-final.txt', can_contain_code_block=False)
             if test_final:
                 self.microservice_specification.test = test_final
                 break

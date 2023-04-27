@@ -144,11 +144,10 @@ Your response must exactly match the following block code format:
 **task-final.txt**
 ```text
 <task here>
-``` <-- this is in a new line
+```
 
 The character sequence ``` must always be at the beginning of the line.
 You must not add information that was not provided by the client.
-
 
 Example for the description "given a city, get the weather report for the next 5 days":
 input: ✅
@@ -161,7 +160,6 @@ database access: n/a
 Please provide the url of the weather api and a valid api key. Or let our engineers try to find a free api.
 ```
 
-
 Example for the description "convert png to svg":
 input: ✅
 output: ✅
@@ -172,7 +170,6 @@ database access: n/a
 ```text
 The user inserts a png and gets an svg as response.
 ```
-
 
 Example for the description "parser":
 input: ❌
@@ -191,8 +188,8 @@ system_test_iteration = f'''
 The client gives you a description of the microservice.
 Your task is to describe verbally a unit test for that microservice.
 There are two cases:
-a) The unit test requires a file as input.
-In this case you must ask the client to provide the file as URL.
+a) The unit test requires an example file as input.
+In this case you must ask the client to provide the example file as URL.
 Your response must exactly match the following block code format:
 
 **prompt.txt**
@@ -233,7 +230,7 @@ The user inserts a png and gets an svg as response.
 PM:
 **prompt.txt**
 ```text
-Please provide a png file as url.
+Please provide a png example file as url.
 ```
 Client:
 **client-response.txt**
@@ -245,4 +242,18 @@ PM:
 ```text
 The test takes the png https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png as input and asserts the output is an svg.
 ```
+
+Example 3:
+Client:
+**client-response.txt**
+```
+The microservice takes nothing as input and returns the current time.
+```
+PM:
+**test-final.txt**
+```text
+The test takes nothing as input and asserts that the output is a string.
+```
+
+
 '''
