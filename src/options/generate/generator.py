@@ -2,32 +2,29 @@ import os
 import random
 import re
 import shutil
-from typing import List, Callable, Union
+from typing import Callable, Union
 
-from langchain import PromptTemplate
 from typing import List, Text, Optional
 
 from langchain import PromptTemplate
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
+from langchain.schema import SystemMessage, HumanMessage
 from pydantic.dataclasses import dataclass
 
 from src.apis import gpt
 from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
-    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, DOCKER_FILE_TAG, UNNECESSARY_PACKAGES
+    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, UNNECESSARY_PACKAGES
 from src.options.generate.templates_system import template_system_message_base, gpt_example, executor_example, \
     docarray_example, client_example, system_task_iteration, system_task_introduction, system_test_iteration
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
     template_solve_code_issue, \
-    template_solve_pip_dependency_issue, template_is_dependency_issue, template_generate_playground, \
+    template_solve_pip_dependency_issue, \
+    template_generate_apt_get_install, template_solve_apt_get_dependency_issue, \
+    template_is_dependency_issue, template_generate_playground, \
     template_generate_executor, template_generate_test, template_generate_requirements, \
-    template_chain_of_thought, template_summarize_error, \
-    template_generate_apt_get_install, template_solve_apt_get_dependency_issue
-    template_solve_dependency_issue, template_is_dependency_issue, template_generate_playground, \
-    template_generate_executor, template_generate_test, template_generate_requirements, template_generate_dockerfile, \
-    template_chain_of_thought, template_summarize_error, template_generate_possible_packages_output_format_string
+    template_chain_of_thought, template_summarize_error
 from src.options.generate.ui import get_random_employee
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
@@ -376,6 +373,7 @@ metas:
         return packages_list
 
     def generate(self):
+        self.refine_specification()
         os.makedirs(self.microservice_root_path)
         generated_name = self.generate_microservice_name(self.microservice_specification.task)
         microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
@@ -469,6 +467,9 @@ Test scenario:
 
     @staticmethod
     def _create_system_message(task_description, test_description, system_definition_examples: List[str] = []) -> SystemMessage:
+        if system_definition_examples is None:
+            return None
+
         system_message = PromptTemplate.from_template(template_system_message_base).format(
             task_description=task_description,
             test_description=test_description,

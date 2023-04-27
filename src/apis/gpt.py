@@ -141,22 +141,3 @@ class _GPTConversation:
         self.cost_callback(sum([len(m.content) for m in self.messages]), len(response.content), self.print_costs)
         self.messages.append(response)
         return response.content
-
-    @staticmethod
-    def _create_system_message(task_description, test_description, system_definition_examples: List[str] = []) -> SystemMessage:
-        if system_definition_examples is None:
-            return None
-
-        system_message = PromptTemplate.from_template(template_system_message_base).format(
-            task_description=task_description,
-            test_description=test_description,
-        )
-        if 'gpt' in system_definition_examples:
-            system_message += f'\n{gpt_example}'
-        if 'executor' in system_definition_examples:
-            system_message += f'\n{executor_example}'
-        if 'docarray' in system_definition_examples:
-            system_message += f'\n{docarray_example}'
-        if 'client' in system_definition_examples:
-            system_message += f'\n{client_example}'
-        return SystemMessage(content=system_message)
