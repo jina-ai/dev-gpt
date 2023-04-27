@@ -2,30 +2,46 @@ import os
 import random
 import re
 import shutil
-from typing import List
+from typing import List, Text, Optional
+
+from langchain import PromptTemplate
+from langchain.schema import SystemMessage, HumanMessage, AIMessage
+from pydantic.dataclasses import dataclass
 
 from src.apis import gpt
 from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, DOCKER_FILE_TAG, UNNECESSARY_PACKAGES
+from src.options.generate.templates_system import template_system_message_base, gpt_example, executor_example, \
+    docarray_example, client_example
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
     template_solve_code_issue, \
     template_solve_dependency_issue, template_is_dependency_issue, template_generate_playground, \
     template_generate_executor, template_generate_test, template_generate_requirements, template_generate_dockerfile, \
     template_chain_of_thought, template_summarize_error, template_generate_possible_packages_output_format_string
+from src.options.generate.ui import get_random_employee
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
 
 
+@dataclass
+class TaskSpecification:
+    task: Optional[Text]
+    test: Optional[Text]
+
+system_task_introduction = f'''
+You are a product manager who refines the requirements of a client who wants to create a microservice.
+'''
+
 class Generator:
     def __init__(self, task_description, test_description, model='gpt-4'):
         self.gpt_session = gpt.GPTSession(task_description, test_description, model=model)
-        self.task_description = task_description
-        self.test_description = test_description
+        self.microservice_specification = TaskSpecification(task=task_description, test=test_description)
 
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False):
+
         pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?)\n```" # the \n at the end makes sure that ``` within the generated code is not matched
         match = re.search(pattern, plain_text, re.MULTILINE)
         if match:
@@ -56,9 +72,23 @@ metas:
         return all_microservice_files_string.strip()
 
 
-    def generate_and_persist_file(self, section_title, template, destination_folder=None, file_name=None, system_definition_examples: List[str] = ['gpt', 'executor', 'docarray', 'client'],  **template_kwargs):
+    def generate_and_persist_file(
+            self,
+            section_title,
+            template,
+            destination_folder=None,
+            file_name=None,
+            system_definition_examples: List[str] = ['gpt', 'executor', 'docarray', 'client'],
+            **template_kwargs
+    ):
+        """
+        Generates a file using the GPT-3 API and persists it to the destination folder if specified.
+        In case the content is not properly generated, it retries the generation.
+        It returns the generated content.
+        """
         print_colored('', f'\n\n############# {section_title} #############', 'blue')
-        conversation = self.gpt_session.get_conversation(system_definition_examples=system_definition_examples)
+        system_introduction_message = self._create_system_message(self.microservice_specification.task, self.microservice_specification.test, system_definition_examples)
+        conversation = self.gpt_session.get_conversation(messages=[system_introduction_message])
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         content_raw = conversation.chat(
             template.format(
@@ -91,8 +121,8 @@ metas:
             template_generate_executor,
             MICROSERVICE_FOLDER_v1,
             microservice_name=microservice_name,
-            microservice_description=self.task_description,
-            test_description=self.test_description,
+            microservice_description=self.microservice_specification.task,
+            test_description=self.microservice_specification.test,
             packages=packages,
             file_name_purpose=EXECUTOR_FILE_NAME,
             tag_name=EXECUTOR_FILE_TAG,
@@ -105,8 +135,8 @@ metas:
             MICROSERVICE_FOLDER_v1,
             code_files_wrapped=self.files_to_string({'microservice.py': microservice_content}),
             microservice_name=microservice_name,
-            microservice_description=self.task_description,
-            test_description=self.test_description,
+            microservice_description=self.microservice_specification.task,
+            test_description=self.microservice_specification.test,
             file_name_purpose=TEST_EXECUTOR_FILE_NAME,
             tag_name=TEST_EXECUTOR_FILE_TAG,
             file_name=TEST_EXECUTOR_FILE_NAME,
@@ -235,7 +265,7 @@ metas:
             )
         else:
             user_query = template_solve_code_issue.format(
-                task_description=self.task_description, test_description=self.test_description,
+                task_description=self.microservice_specification.task, test_description=self.microservice_specification.test,
                 summarized_error=summarized_error, all_files_string=self.files_to_string(file_name_to_content),
             )
         conversation = self.gpt_session.get_conversation()
@@ -276,7 +306,7 @@ metas:
             None,
             file_name='packages.csv',
             system_definition_examples=['gpt'],
-            description=self.task_description
+            description=self.microservice_specification.task
 
         )
         packages_list = [[pkg.strip() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]
@@ -284,7 +314,8 @@ metas:
         return packages_list
 
     def generate(self, microservice_path):
-        generated_name = self.generate_microservice_name(self.task_description)
+        self.refine_specification()
+        generated_name = self.generate_microservice_name(self.microservice_specification.task)
         microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
         packages_list = self.get_possible_packages()
         packages_list = [
@@ -320,3 +351,186 @@ gptdeploy deploy --path {microservice_path}
         error_summary = conversation.chat(template_summarize_error.format(error=error))
         return error_summary
 
+    def refine_specification(self):
+        pm = get_random_employee('pm')
+        print(f'{pm.emoji}👋 Hi, I\'m {pm.name}, a PM at Jina AI. Gathering the requirements for our engineers.')
+        self.refine_task(pm)
+        self.refine_test(pm)
+        print(f'''
+{pm.emoji} 👍 Great, I will handover the following requirements to our engineers:
+{self.microservice_specification.task}
+The following test scenario will be tested:
+{self.microservice_specification.test}
+''')
+
+    def refine_task(self, pm):
+        system_task_iteration = f'''
+The client writes a description of the microservice.
+You must only talk to the client about the microservice.
+You must not output anything else than what you got told in the following steps.
+1. 
+You must create a check list for the requirements of the microservice.
+Input and output have to be accurately specified.
+You must use the following format (insert ✅, ❌ or n/a) depending on whether the requirement is fulfilled, not fulfilled or not applicable:
+input: <insert one of ✅, ❌ or n/a here>
+output: <insert one of ✅, ❌ or n/a here>
+credentials: <insert one of ✅, ❌ or n/a here>
+database access: <insert one of ✅, ❌ or n/a here>
+
+2.
+You must do either a or b.
+a)
+If the description is not sufficiently specified, then ask for the missing information.
+Your response must exactly match the following block code format:
+
+**prompt.txt**
+```text
+<prompt to the client here>
+```
+
+b)
+Otherwise you respond with the summarized description.
+The summarized description must contain all the information mentioned by the client.
+Your response must exactly match the following block code format:
+
+**task-final.txt**
+```text
+<task here>
+``` <-- this is in a new line
+
+The character sequence ``` must always be at the beginning of the line.
+You must not add information that was not provided by the client.
+
+
+Example for the description "given a city, get the weather report for the next 5 days":
+input: ✅
+output: ✅
+credentials: ❌
+database access: n/a
+
+**prompt.txt**
+```text
+Please provide the url of the weather api and a valid api key. Or let our engineers try to find a free api.
+```
+
+
+Example for the description "convert png to svg"
+input: ✅
+output: ✅
+credentials: n/a
+database access: n/a
+
+**task-final.txt**
+```text
+The user inserts a png and gets an svg as response.
+```
+
+
+Example for the description "parser"
+input: ❌
+output: ❌
+credentials: n/a
+database access: n/a
+
+**prompt.txt**
+```text
+Please provide the input and output format.
+```
+
+'''
+
+
+
+        task_description = self.microservice_specification.task
+        if not task_description:
+            task_description = self.get_user_input(pm, 'What should your microservice do?')
+        messages = [
+            SystemMessage(content=system_task_introduction + system_task_iteration),
+        ]
+
+        while True:
+            conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
+            print('thinking...')
+            agent_response_raw = conversation.chat(task_description, role='user')
+
+            question = self.extract_content_from_result(agent_response_raw, 'prompt.txt')
+            task_final = self.extract_content_from_result(agent_response_raw, 'task-final.txt')
+            if task_final:
+                self.microservice_specification.task = task_final
+                break
+            if question:
+                task_description = self.get_user_input(pm, question)
+                messages.extend([HumanMessage(content=task_description)])
+            else:
+                task_description = self.get_user_input(pm, agent_response_raw + '\n: ')
+
+    def refine_test(self, pm):
+        system_test_iteration = f'''
+The client gives you a description of the microservice.
+Your task is to describe verbally a unit test for that microservice.
+There are two cases:
+a) The unit test requires a file as input.
+In this case you must ask the client to provide the file as URL.
+Your response must exactly match the following block code format:
+
+**prompt.txt**
+```text
+<prompt to the client here>
+```
+
+If you did a, you must not do b.
+b) Any strings, ints, or bools can be used as input for the unit test.
+In this case you must describe the unit test verbally.
+Your response must exactly match the following block code format:
+
+**test-final.txt**
+```text
+<task here>
+```
+
+If you did b, you must not do a.
+
+Example for the description "given a city, get the weather report for the next 5 days using the ap":
+'''
+        messages = [
+            SystemMessage(content=system_task_introduction + system_test_iteration),
+        ]
+        user_input = self.microservice_specification.task
+        while True:
+            conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
+            agent_response_raw = conversation.chat(user_input, role='user')
+            question = self.extract_content_from_result(agent_response_raw, 'prompt.txt')
+            test_final = self.extract_content_from_result(agent_response_raw, 'test-final.txt')
+            if test_final:
+                self.microservice_specification.task = test_final
+                break
+            if question:
+                user_input = self.get_user_input(pm, question)
+                messages.extend([HumanMessage(content=user_input)])
+            else:
+                user_input = self.get_user_input(pm, agent_response_raw + '\n: ')
+
+
+
+    @staticmethod
+    def _create_system_message(task_description, test_description, system_definition_examples: List[str] = []) -> SystemMessage:
+        system_message = PromptTemplate.from_template(template_system_message_base).format(
+            task_description=task_description,
+            test_description=test_description,
+        )
+        if 'gpt' in system_definition_examples:
+            system_message += f'\n{gpt_example}'
+        if 'executor' in system_definition_examples:
+            system_message += f'\n{executor_example}'
+        if 'docarray' in system_definition_examples:
+            system_message += f'\n{docarray_example}'
+        if 'client' in system_definition_examples:
+            system_message += f'\n{client_example}'
+        return SystemMessage(content=system_message)
+
+    @staticmethod
+    def get_user_input(employee, prompt_to_user):
+        val = input(f'{employee.emoji}❓ {prompt_to_user}\nyou: ')
+        while not val:
+            val = input('you: ')
+        return val

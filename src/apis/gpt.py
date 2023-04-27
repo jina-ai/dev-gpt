@@ -8,7 +8,7 @@ from langchain import PromptTemplate
 from langchain.callbacks import CallbackManager
 from langchain.chat_models import ChatOpenAI
 from openai.error import RateLimitError
-from langchain.schema import HumanMessage, SystemMessage, BaseMessage
+from langchain.schema import HumanMessage, SystemMessage, BaseMessage, AIMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import InvalidChunkLength
@@ -48,11 +48,10 @@ class GPTSession:
         self.chars_prompt_so_far = 0
         self.chars_generation_so_far = 0
 
-    def get_conversation(self, system_definition_examples: List[str] = ['gpt', 'executor', 'docarray', 'client']):
+    def get_conversation(self, messages: List[BaseMessage] = [], print_stream: bool = True, print_costs: bool = True):
         return _GPTConversation(
-            self.model_name, self.cost_callback, self.task_description, self.test_description, system_definition_examples
+            self.model_name, self.cost_callback, messages, print_stream, print_costs
         )
-
 
 
     @staticmethod
@@ -75,14 +74,15 @@ class GPTSession:
         except openai.error.InvalidRequestError:
             return False
 
-    def cost_callback(self, chars_prompt, chars_generation):
+    def cost_callback(self, chars_prompt, chars_generation, print_costs: bool = True):
         self.chars_prompt_so_far += chars_prompt
         self.chars_generation_so_far += chars_generation
-        print('\n')
-        money_prompt = self._calculate_money_spent(self.chars_prompt_so_far, self.pricing_prompt)
-        money_generation = self._calculate_money_spent(self.chars_generation_so_far, self.pricing_generation)
-        print('Total money spent so far on openai.com:', f'${money_prompt + money_generation:.3f}')
-        print('\n')
+        if print_costs:
+            print('\n')
+            money_prompt = self._calculate_money_spent(self.chars_prompt_so_far, self.pricing_prompt)
+            money_generation = self._calculate_money_spent(self.chars_generation_so_far, self.pricing_generation)
+            print('Total money spent so far on openai.com:', f'${money_prompt + money_generation:.3f}')
+            print('\n')
 
     @staticmethod
     def _calculate_money_spent(num_chars, price):
@@ -96,29 +96,39 @@ class AssistantStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
 
 
 class _GPTConversation:
-    def __init__(self, model: str, cost_callback, task_description, test_description, system_definition_examples: List[str] = ['executor', 'docarray', 'client']):
+    def __init__(self, model: str, cost_callback, messages: List[BaseMessage], print_stream, print_costs):
         self._chat = ChatOpenAI(
             model_name=model,
             streaming=True,
-            callback_manager=CallbackManager([AssistantStreamingStdOutCallbackHandler()]),
+            callback_manager=CallbackManager([AssistantStreamingStdOutCallbackHandler()] if print_stream else []),
             verbose=True,
             temperature=0,
         )
         self.cost_callback = cost_callback
-        self.messages: List[BaseMessage] = []
-        self.system_message = self._create_system_message(task_description, test_description, system_definition_examples)
-        if os.environ['VERBOSE'].lower() == 'true':
-            print_colored('system', self.system_message.content, 'magenta')
+        self.messages = messages
+        self.print_stream = print_stream
+        self.print_costs = print_costs
+        for message in messages:
+            if os.environ['VERBOSE'].lower() == 'true':
+                if isinstance(message, SystemMessage):
+                    print_colored('system - prompt', message.content, 'magenta')
+                elif isinstance(message, HumanMessage):
+                    print_colored('user - prompt', message.content, 'blue')
+                elif isinstance(message, AIMessage):
+                    print_colored('assistant - prompt', message.content, 'green')
 
-    def chat(self, prompt: str):
-        chat_message = HumanMessage(content=prompt)
+    def chat(self, prompt: str, role: str = 'user'):
+        MassageClass = HumanMessage if role == 'user' else SystemMessage
+        chat_message = MassageClass(content=prompt)
         self.messages.append(chat_message)
         if os.environ['VERBOSE'].lower() == 'true':
-            print_colored('user', prompt, 'blue')
-        print_colored('assistant', '', 'green', end='')
+            color = 'blue' if role == 'user' else 'magenta'
+            print_colored(role, prompt, color)
+        if self.print_stream:
+            print_colored('assistant', '', 'green', end='')
         for i in range(10):
             try:
-                response = self._chat([self.system_message] + self.messages)
+                response = self._chat(self.messages)
                 break
             except (ConnectionError, InvalidChunkLength) as e:
                 print('There was a connection error. Retrying...')
@@ -128,22 +138,7 @@ class _GPTConversation:
 
         if os.environ['VERBOSE'].lower() == 'true':
             print()
-        self.cost_callback(sum([len(m.content) for m in self.messages]), len(response.content))
+        self.cost_callback(sum([len(m.content) for m in self.messages]), len(response.content), self.print_costs)
         self.messages.append(response)
         return response.content
 
-    @staticmethod
-    def _create_system_message(task_description, test_description, system_definition_examples: List[str] = []) -> SystemMessage:
-        system_message = PromptTemplate.from_template(template_system_message_base).format(
-            task_description=task_description,
-            test_description=test_description,
-        )
-        if 'gpt' in system_definition_examples:
-            system_message += f'\n{gpt_example}'
-        if 'executor' in system_definition_examples:
-            system_message += f'\n{executor_example}'
-        if 'docarray' in system_definition_examples:
-            system_message += f'\n{docarray_example}'
-        if 'client' in system_definition_examples:
-            system_message += f'\n{client_example}'
-        return SystemMessage(content=system_message)
