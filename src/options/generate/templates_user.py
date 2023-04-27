@@ -2,11 +2,7 @@ from langchain import PromptTemplate
 
 
 general_guidelines_string = '''The code you write is production ready. Every file starts with comments describing what the code is doing before the first import. Comments can only be written within code blocks.
-Then all imports are listed. It is important to import all modules that could be needed in the Executor code. Always import:
-from jina import Executor, DocumentArray, Document, requests
-import json
-from io import BytesIO
-import requests as req
+Then all imports are listed.
 
 Start from top-level and then fully implement all methods.'''
 
@@ -16,17 +12,16 @@ Note that the Dockerfile runs the test_microservice.py during the build process.
 The Dockerfile must not attach a virtual display when running test_microservice.py.'''
 
 
-not_allowed_executor_string = '''The executor and the test must not use the GPU.
-The executor and the test must not access a database.
-The executor and the test must not access a display.
-The executor and the test must not access external apis except unless it is explicitly mentioned in the description or test case (e.g. by mentioning the api that should be used or by providing a URL to access the data). 
-The executor and the test must not load data from the local file system unless it was created by the executor itself.
-The executor and the test must not use a pre-trained model unless it is explicitly mentioned in the description.
-The executor and the test must not train a model.
-The executor and the test must not use any attribute of Document accept Document.text.
-The executor and the test must not contain prototype or placeholder implementations.
-The executor and the test must run in a docker container based on debian.
-The executor and the test must use gpt_3_5_turbo_api if the task requires understanding or generating natural language or using any language model. Other language models are not allowed.'''
+not_allowed_function_string = '''The implemented function and the test must not use the GPU.
+The implemented function and the test must not access a database.
+The implemented function and the test must not access a display.
+The implemented function and the test must not access external apis except unless it is explicitly mentioned in the description or test case (e.g. by mentioning the api that should be used or by providing a URL to access the data). 
+The implemented function and the test must not load data from the local file system unless it was created by the implemented function itself.
+The implemented function and the test must not use a pre-trained model unless it is explicitly mentioned in the description.
+The implemented function and the test must not train a model.
+The implemented function and the test must not contain prototype or placeholder implementations.
+The implemented function and the test must run in a docker container based on debian.
+The implemented function and the test must use gpt_3_5_turbo_api if the task requires understanding or generating natural language or using any language model. Other language models are not allowed.'''
 
 
 
@@ -72,7 +67,7 @@ b) has a stable api among different versions
 c) does not have system requirements
 d) can solve the task when running in a docker container
 e) the implementation of the core problem using the package would obey the following rules:
-''' + not_allowed_executor_string + '''
+''' + not_allowed_function_string + '''
 
 When answering, just write "yes" or "no".
 
@@ -91,49 +86,33 @@ template_code_wrapping_string = '''The code will go into {file_name_purpose}. Ma
 You must provide the complete file with the exact same syntax to wrap the code.'''
 
 
-template_generate_executor = PromptTemplate.from_template(
+gpt_35_turbo_usage_string = '''If you use gpt_3_5_turbo_api, then you must use the following import:
+```
+from apis import GPT_3_5_Turbo_API
+
+gpt_3_5_turbo_api = GPT_3_5_Turbo_API(system='...')
+gpt_completion = gpt_3_5_turbo_api('...')
+```
+'''
+
+
+template_generate_function = PromptTemplate.from_template(
     general_guidelines_string + '''
 
-Write the executor called '{microservice_name}'. The name is very important to keep.
-It matches the following description: '{microservice_description}'.
+Write a python function which receives as input a dictionary and outputs a dictionary. The function is called 'func'.
+The function must solve the task: '{microservice_description}'.
 It will be tested with the following scenario: '{test_description}'.
 For the implementation use the following package(s): '{packages}'.
 
 Obey the following rules:
-Have in mind that d.uri is never a path to a local file. It is always a url.
-''' + not_allowed_executor_string + '''
+''' + not_allowed_function_string + '''
 
 Your approach:
-1. Identify the core challenge when implementing the executor.
-2. Think about solutions for these challenges. Use gpt_3_5_turbo_api if it is mentioned in the above list of packages.
+1. Identify the core challenge when implementing the function.
+2. Think about solutions for these challenges. If gpt_3_5_turbo_api is mentioned in the above list of packages, then you must use it.
 3. Decide for one of the solutions.
-4. Write the code for the executor. Don't write code for the test.
-If and only if gpt_3_5_turbo_api is in the package list, then you must always include the following code in microservice.py:
-```
-import os
-import openai
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-class GPT_3_5_Turbo_API:
-    def __init__(self, system: str = ''):
-        self.system = system
-
-    def __call__(self, prompt: str) -> str:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{{
-                "role": 'system',
-                "content": self.system
-            }}, {{
-                "role": 'user',
-                "content": prompt
-            }}]
-        )
-        return response.choices[0]['message']['content']
-```
-
-
-''' + template_code_wrapping_string
+4. Write the code for the function. Don't write code for the test.
+''' + gpt_35_turbo_usage_string + '\n' + template_code_wrapping_string
 )
 
 
@@ -147,10 +126,10 @@ Start the test with an extensive comment about the test case. If gpt_3_5_turbo_a
 
 Use the following import to import the executor:
 ```
-from microservice import {microservice_name}
+from implementation import func
 ```
 
-''' + not_allowed_executor_string + '''
+''' + not_allowed_function_string + '''
 The test must not open local files.
 The test must not mock a function of the executor.
 The test must not use other data than the one provided in the test scenario.
@@ -164,10 +143,10 @@ template_generate_requirements = PromptTemplate.from_template(
 
 {code_files_wrapped}
     
-Write the content of the requirements.txt file. 
-Make sure to include pytest. 
+Write the content of the requirements.txt file.
+Make sure to include pytest.
 Make sure to include openai>=0.26.0.
-Make sure that jina==3.15.1.dev14. 
+Make sure that jina==3.15.1.dev14.
 Make sure that docarray==0.21.0.
 You must not add gpt_3_5_turbo_api to the requirements.txt file.
 
@@ -258,15 +237,14 @@ Output them as a white space separated list:'''
 )
 
 
-
 template_solve_code_issue = PromptTemplate.from_template(
     '''General rules:
-''' + not_allowed_executor_string + '''
+''' + not_allowed_function_string + '''
 
-Here is the description of the task the executor must solve:
+Here is the description of the task the function must solve:
 {task_description}
 
-Here is the test scenario the executor must pass:
+Here is the test scenario the function must pass:
 {test_description}
 Here are all the files I use:
 {all_files_string}
@@ -280,11 +258,10 @@ To solve this error, you should:
 2. Decide for the best solution and explain it in detail.
 3. Write down the files that need to be changed, but not files that don't need to be changed.
 Obey the following rules:
-''' + f'{not_allowed_executor_string}\n{not_allowed_docker_string}' + '''
+''' + f'{not_allowed_function_string}\n{not_allowed_docker_string}' + '''
 
 Output all the files that need change. You must not change the Dockerfile.
 Don't output files that don't need change. If you output a file, then write the complete file.
-If you change microservice.py and it uses gpt_3_5_turbo_api, then you must keep the code for gpt_3_5_turbo_api in the microservice.py file.
 Use the exact following syntax to wrap the code:
 
 **...**

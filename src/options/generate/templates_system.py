@@ -1,5 +1,5 @@
 from src.constants import FLOW_URL_PLACEHOLDER
-from src.options.generate.templates_user import not_allowed_docker_string, not_allowed_executor_string
+from src.options.generate.templates_user import not_allowed_docker_string, not_allowed_function_string
 
 gpt_example = '''
 # gpt_3_5_turbo is a language model that can be used to generate text.
@@ -105,5 +105,5 @@ and the following test scenario:
 ```
 
 You must obey the following rules:
-{not_allowed_executor_string}
+{not_allowed_function_string}
 {not_allowed_docker_string}'''

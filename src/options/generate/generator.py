@@ -10,12 +10,12 @@ from src.apis import gpt
 from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
-    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, DOCKER_FILE_TAG, UNNECESSARY_PACKAGES
+    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, UNNECESSARY_PACKAGES
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
     template_solve_code_issue, \
     template_solve_pip_dependency_issue, template_is_dependency_issue, template_generate_playground, \
-    template_generate_executor, template_generate_test, template_generate_requirements, \
+    template_generate_function, template_generate_test, template_generate_requirements, \
     template_chain_of_thought, template_summarize_error, \
     template_generate_apt_get_install, template_solve_apt_get_dependency_issue
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
@@ -124,18 +124,24 @@ metas:
         MICROSERVICE_FOLDER_v1 = get_microservice_path(self.microservice_root_path, microservice_name, packages, num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
+        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'microservice.py'), 'r') as f:
+            microservice_executor_boilerplate = f.read()
+        microservice_executor_code = microservice_executor_boilerplate.replace('class GPTDeployExecutor(Executor):', f'class {microservice_name}(Executor):')
+        persist_file(microservice_executor_code, os.path.join(MICROSERVICE_FOLDER_v1, 'microservice.py'))
+
         microservice_content = self.generate_and_persist_file(
-            'Microservice',
-            template_generate_executor,
-            MICROSERVICE_FOLDER_v1,
-            microservice_name=microservice_name,
+            section_title='Microservice',
+            template=template_generate_function,
+            destination_folder=MICROSERVICE_FOLDER_v1,
+            parse_result_fn='',
+            # microservice_name=microservice_name,
             microservice_description=self.task_description,
             test_description=self.test_description,
             packages=packages,
             file_name_purpose=EXECUTOR_FILE_NAME,
             tag_name=EXECUTOR_FILE_TAG,
             file_name_s=EXECUTOR_FILE_NAME,
-        )[EXECUTOR_FILE_NAME]
+        )['implementation.py']
 
         test_microservice_content = self.generate_and_persist_file(
             'Test Microservice',
