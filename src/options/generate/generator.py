@@ -14,7 +14,7 @@ from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX
     PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, DOCKER_FILE_TAG, UNNECESSARY_PACKAGES
 from src.options.generate.templates_system import template_system_message_base, gpt_example, executor_example, \
-    docarray_example, client_example
+    docarray_example, client_example, system_task_iteration, system_task_introduction, system_test_iteration
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
     template_solve_code_issue, \
@@ -30,10 +30,6 @@ from src.utils.string_tools import print_colored
 class TaskSpecification:
     task: Optional[Text]
     test: Optional[Text]
-
-system_task_introduction = f'''
-You are a product manager who refines the requirements of a client who wants to create a microservice.
-'''
 
 class Generator:
     def __init__(self, task_description, test_description, model='gpt-4'):
@@ -358,88 +354,13 @@ gptdeploy deploy --path {microservice_path}
         self.refine_test(pm)
         print(f'''
 {pm.emoji} 👍 Great, I will handover the following requirements to our engineers:
+Description of the microservice:
 {self.microservice_specification.task}
-The following test scenario will be tested:
+Test scenario:
 {self.microservice_specification.test}
 ''')
 
     def refine_task(self, pm):
-        system_task_iteration = f'''
-The client writes a description of the microservice.
-You must only talk to the client about the microservice.
-You must not output anything else than what you got told in the following steps.
-1. 
-You must create a check list for the requirements of the microservice.
-Input and output have to be accurately specified.
-You must use the following format (insert ✅, ❌ or n/a) depending on whether the requirement is fulfilled, not fulfilled or not applicable:
-input: <insert one of ✅, ❌ or n/a here>
-output: <insert one of ✅, ❌ or n/a here>
-credentials: <insert one of ✅, ❌ or n/a here>
-database access: <insert one of ✅, ❌ or n/a here>
-
-2.
-You must do either a or b.
-a)
-If the description is not sufficiently specified, then ask for the missing information.
-Your response must exactly match the following block code format:
-
-**prompt.txt**
-```text
-<prompt to the client here>
-```
-
-b)
-Otherwise you respond with the summarized description.
-The summarized description must contain all the information mentioned by the client.
-Your response must exactly match the following block code format:
-
-**task-final.txt**
-```text
-<task here>
-``` <-- this is in a new line
-
-The character sequence ``` must always be at the beginning of the line.
-You must not add information that was not provided by the client.
-
-
-Example for the description "given a city, get the weather report for the next 5 days":
-input: ✅
-output: ✅
-credentials: ❌
-database access: n/a
-
-**prompt.txt**
-```text
-Please provide the url of the weather api and a valid api key. Or let our engineers try to find a free api.
-```
-
-
-Example for the description "convert png to svg"
-input: ✅
-output: ✅
-credentials: n/a
-database access: n/a
-
-**task-final.txt**
-```text
-The user inserts a png and gets an svg as response.
-```
-
-
-Example for the description "parser"
-input: ❌
-output: ❌
-credentials: n/a
-database access: n/a
-
-**prompt.txt**
-```text
-Please provide the input and output format.
-```
-
-'''
-
-
 
         task_description = self.microservice_specification.task
         if not task_description:
@@ -465,51 +386,27 @@ Please provide the input and output format.
                 task_description = self.get_user_input(pm, agent_response_raw + '\n: ')
 
     def refine_test(self, pm):
-        system_test_iteration = f'''
-The client gives you a description of the microservice.
-Your task is to describe verbally a unit test for that microservice.
-There are two cases:
-a) The unit test requires a file as input.
-In this case you must ask the client to provide the file as URL.
-Your response must exactly match the following block code format:
-
-**prompt.txt**
-```text
-<prompt to the client here>
-```
-
-If you did a, you must not do b.
-b) Any strings, ints, or bools can be used as input for the unit test.
-In this case you must describe the unit test verbally.
-Your response must exactly match the following block code format:
-
-**test-final.txt**
-```text
-<task here>
-```
-
-If you did b, you must not do a.
-
-Example for the description "given a city, get the weather report for the next 5 days using the ap":
-'''
         messages = [
             SystemMessage(content=system_task_introduction + system_test_iteration),
         ]
         user_input = self.microservice_specification.task
         while True:
             conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
-            agent_response_raw = conversation.chat(user_input, role='user')
+            agent_response_raw = conversation.chat(f'''**client-response.txt**
+```
+{user_input}
+```
+''', role='user')
             question = self.extract_content_from_result(agent_response_raw, 'prompt.txt')
             test_final = self.extract_content_from_result(agent_response_raw, 'test-final.txt')
             if test_final:
-                self.microservice_specification.task = test_final
+                self.microservice_specification.test = test_final
                 break
             if question:
                 user_input = self.get_user_input(pm, question)
                 messages.extend([HumanMessage(content=user_input)])
             else:
                 user_input = self.get_user_input(pm, agent_response_raw + '\n: ')
-
 
 
     @staticmethod
