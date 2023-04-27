@@ -129,7 +129,7 @@ database access: <insert one of ✅, ❌ or n/a here>
 You must do either a or b.
 a)
 If the description is not sufficiently specified, then ask for the missing information.
-Your response must exactly match the following block code format:
+Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
 **prompt.txt**
 ```text
@@ -139,7 +139,7 @@ Your response must exactly match the following block code format:
 b)
 Otherwise you respond with the summarized description.
 The summarized description must contain all the information mentioned by the client.
-Your response must exactly match the following block code format:
+Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
 **task-final.txt**
 ```text
@@ -190,7 +190,7 @@ Your task is to describe verbally a unit test for that microservice.
 There are two cases:
 a) The unit test requires an example file as input.
 In this case you must ask the client to provide the example file as URL.
-Your response must exactly match the following block code format:
+Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
 **prompt.txt**
 ```text
@@ -200,7 +200,7 @@ Your response must exactly match the following block code format:
 If you did a, you must not do b.
 b) Any strings, ints, or bools can be used as input for the unit test.
 In this case you must describe the unit test verbally.
-Your response must exactly match the following block code format:
+Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
 **test-final.txt**
 ```text

@@ -24,7 +24,7 @@ from src.options.generate.templates_user import template_generate_microservice_n
     template_generate_apt_get_install, template_solve_apt_get_dependency_issue, \
     template_is_dependency_issue, template_generate_playground, \
     template_generate_executor, template_generate_test, template_generate_requirements, \
-    template_chain_of_thought, template_summarize_error
+    template_chain_of_thought, template_summarize_error, template_task_refinement
 from src.options.generate.ui import get_random_employee
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
@@ -417,9 +417,9 @@ Test scenario:
 ''')
 
     def refine_task(self, pm):
-        task_description = self.microservice_specification.task
-        if not task_description:
-            task_description = self.get_user_input(pm, 'What should your microservice do?')
+        user_input = self.microservice_specification.task
+        if not user_input:
+            user_input = self.get_user_input(pm, 'What should your microservice do?')
         messages = [
             SystemMessage(content=system_task_introduction + system_task_iteration),
         ]
@@ -427,7 +427,7 @@ Test scenario:
         while True:
             conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
             print('thinking...')
-            agent_response_raw = conversation.chat(task_description, role='user')
+            agent_response_raw = conversation.chat(template_task_refinement.format(user_input=user_input), role='user')
 
             question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
             task_final = self.extract_content_from_result(agent_response_raw, 'task-final.txt', can_contain_code_block=False)
@@ -435,10 +435,10 @@ Test scenario:
                 self.microservice_specification.task = task_final
                 break
             if question:
-                task_description = self.get_user_input(pm, question)
-                messages.extend([HumanMessage(content=task_description)])
+                user_input = self.get_user_input(pm, question)
+                messages.extend([HumanMessage(content=user_input)])
             else:
-                task_description = self.get_user_input(pm, agent_response_raw + '\n: ')
+                user_input = self.get_user_input(pm, agent_response_raw + '\n: ')
 
     def refine_test(self, pm):
         messages = [

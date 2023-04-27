@@ -356,3 +356,24 @@ The playground (app.py) must always use the host on http://localhost:8080 and mu
 The playground (app.py) must not import the executor.
 '''
 )
+
+
+template_task_refinement = PromptTemplate.from_template(
+    '''
+**client response**
+```text
+{user_input}
+```
+Either ask for clarification like this:
+**prompt.txt**
+```text
+<prompt to the client here>
+```
+
+Or write the summarized description like this:
+**task-final.txt**
+```text
+<task here>
+```
+'''
+)
