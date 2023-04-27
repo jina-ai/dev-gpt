@@ -79,7 +79,21 @@ metas:
             system_definition_examples: List[str] = ['gpt', 'executor', 'docarray', 'client'],
             **template_kwargs
     ):
-        """todo: add docstring (e.g. parse_result_fn returns dictionary mapping file_name to its full content)"""
+        """This function generates file(s) using the given template and persists it/them in the given destination folder.
+        It also returns the generated content as a dictionary mapping file_name to its content.
+
+        Args:
+            section_title (str): The title of the section to be printed in the console.
+            template (PromptTemplate): The template to be used for generating the file(s).
+            destination_folder (str): The destination folder where the generated file(s) should be persisted.
+            file_name (str, optional): The name of the file(s) to be generated. Defaults to None.
+            parse_result_fn (Callable, optional): A function that parses the generated content and returns a dictionary
+                mapping file_name to its content. If no content could be extract, it returns an empty dictionary.
+                Defaults to None. If None, default parsing is used which uses the file_name to extract from the generated content.
+            system_definition_examples (List[str], optional): The system definition examples to be used for the conversation.
+                Defaults to ['gpt', 'executor', 'docarray', 'client'].
+            **template_kwargs: The keyword arguments to be passed to the template.
+        """
         if parse_result_fn is None:
             parse_result_fn = self.get_default_parse_result_fn([file_name])
 
