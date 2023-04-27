@@ -370,7 +370,7 @@ Either ask for clarification like this:
 <prompt to the client here>
 ```
 
-Or write the summarized description like this:
+Or write the summarized microservice description like this:
 **task-final.txt**
 ```text
 <task here>

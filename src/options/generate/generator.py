@@ -7,7 +7,7 @@ from typing import Callable, Union
 from typing import List, Text, Optional
 
 from langchain import PromptTemplate
-from langchain.schema import SystemMessage, HumanMessage
+from langchain.schema import SystemMessage, HumanMessage, AIMessage
 from pydantic.dataclasses import dataclass
 
 from src.apis import gpt
@@ -327,6 +327,9 @@ metas:
     class MaxDebugTimeReachedException(BaseException):
         pass
 
+    class TaskRefinementException(BaseException):
+        pass
+
     def is_dependency_issue(self, summarized_error, dock_req_string: str, package_manager: str):
         # a few heuristics to quickly jump ahead
         if any([error_message in summarized_error for error_message in ['AttributeError', 'NameError', 'AssertionError']]):
@@ -417,34 +420,42 @@ Test scenario:
 ''')
 
     def refine_task(self, pm):
-        user_input = self.microservice_specification.task
-        if not user_input:
-            user_input = self.get_user_input(pm, 'What should your microservice do?')
-        messages = [
-            SystemMessage(content=system_task_introduction + system_task_iteration),
-        ]
+        try:
+            user_input = self.microservice_specification.task
+            if not user_input:
+                user_input = self.get_user_input(pm, 'What should your microservice do?')
+            messages = [
+                SystemMessage(content=system_task_introduction + system_task_iteration),
+            ]
 
-        while True:
-            conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
-            print('thinking...')
-            agent_response_raw = conversation.chat(template_task_refinement.format(user_input=user_input), role='user')
+            while True:
+                conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
+                print('thinking...')
+                agent_response_raw = conversation.chat(template_task_refinement.format(user_input=user_input), role='user')
 
-            question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
-            task_final = self.extract_content_from_result(agent_response_raw, 'task-final.txt', can_contain_code_block=False)
-            if task_final:
-                self.microservice_specification.task = task_final
-                break
-            if question:
-                user_input = self.get_user_input(pm, question)
-                messages.extend([HumanMessage(content=user_input)])
-            else:
-                user_input = self.get_user_input(pm, agent_response_raw + '\n: ')
+                question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
+                task_final = self.extract_content_from_result(agent_response_raw, 'task-final.txt', can_contain_code_block=False)
+                if task_final:
+                    self.microservice_specification.task = task_final
+                    break
+                if question:
+                    messages.append(HumanMessage(content=user_input),)
+                    user_input = self.get_user_input(pm, question)
+                    messages.append(AIMessage(content=question))
+                elif task_final:
+                    user_input = self.get_user_input(pm, agent_response_raw + '\n: ')
+                else:
+                    raise self.TaskRefinementException()
+        except self.TaskRefinementException as e:
+            print_colored('', f'{pm.emoji} Could not refine the task. Please try again...', 'red')
+            self.refine_task(pm)
+
 
     def refine_test(self, pm):
+        user_input = self.microservice_specification.task
         messages = [
             SystemMessage(content=system_task_introduction + system_test_iteration),
         ]
-        user_input = self.microservice_specification.task
         while True:
             conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
             print('thinking...')
@@ -487,6 +498,7 @@ Test scenario:
     @staticmethod
     def get_user_input(employee, prompt_to_user):
         val = input(f'{employee.emoji}❓ {prompt_to_user}\nyou: ')
+        print()
         while not val:
             val = input('you: ')
         return val

@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from time import sleep
 
 from typing import List, Any
@@ -49,6 +50,7 @@ class GPTSession:
         self.chars_generation_so_far = 0
 
     def get_conversation(self, messages: List[BaseMessage] = [], print_stream: bool = True, print_costs: bool = True):
+        messages = deepcopy(messages)
         return _GPTConversation(
             self.model_name, self.cost_callback, messages, print_stream, print_costs
         )

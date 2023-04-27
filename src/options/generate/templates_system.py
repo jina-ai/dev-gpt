@@ -185,7 +185,7 @@ Please provide the input and output format.
 '''
 
 system_test_iteration = f'''
-The client gives you a description of the microservice.
+The client gives you a description of the microservice (web service).
 Your task is to describe verbally a unit test for that microservice.
 There are two cases:
 a) The unit test requires an example file as input.
