@@ -107,7 +107,7 @@ class _GPTConversation:
         self.cost_callback = cost_callback
         self.messages: List[BaseMessage] = []
         self.system_message = self._create_system_message(task_description, test_description, system_definition_examples)
-        if os.environ['VERBOSE'].lower() == 'true':
+        if os.environ['VERBOSE'].lower() == 'true' and self.system_message is not None:
             print_colored('system', self.system_message.content, 'magenta')
 
     def chat(self, prompt: str):
@@ -118,7 +118,9 @@ class _GPTConversation:
         print_colored('assistant', '', 'green', end='')
         for i in range(10):
             try:
-                response = self._chat([self.system_message] + self.messages)
+                response = self._chat(
+                    [self.system_message] + self.messages if self.system_message is not None else self.messages
+                )
                 break
             except (ConnectionError, InvalidChunkLength) as e:
                 print('There was a connection error. Retrying...')
@@ -134,6 +136,9 @@ class _GPTConversation:
 
     @staticmethod
     def _create_system_message(task_description, test_description, system_definition_examples: List[str] = []) -> SystemMessage:
+        if system_definition_examples is None:
+            return None
+
         system_message = PromptTemplate.from_template(template_system_message_base).format(
             task_description=task_description,
             test_description=test_description,

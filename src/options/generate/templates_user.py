@@ -176,22 +176,16 @@ All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not
 )
 
 
-template_generate_dockerfile = PromptTemplate.from_template(
-    general_guidelines_string + '''
-    
-{code_files_wrapped}
-    
-Write the Dockerfile that defines the environment with all necessary dependencies that the executor uses.
-It is important to make sure that all libs are installed that are required by the python packages.
-Usually libraries are installed with apt-get.
-Be aware that the machine the docker container is running on does not have a GPU - only CPU.
-Add the config.yml file to the Dockerfile.
-Note that the Dockerfile only has access to the files: microservice.py, requirements.txt, config.yml and test_microservice.py.
-The base image of the Dockerfile is FROM jinaai/jina:3.15.1-dev14-py39-standard.
-The entrypoint is ENTRYPOINT ["jina", "executor", "--uses", "config.yml"].
-Make sure the all files are in the /workdir.
-The Dockerfile runs the test during the build process.
-''' + not_allowed_docker_string + '\n' + template_code_wrapping_string
+template_generate_apt_get_install = PromptTemplate.from_template(
+    '''Given the following Dockerfile:
+
+{docker_file_wrapped}
+
+Name all packages which need to be installed via `apt-get install` in above Dockerfile (`{{apt_get_packages}}`) for the following requirements.txt file:
+
+{requirements_file_wrapped}
+
+Output them as a white space separated list:'''
 )
 
 
@@ -207,17 +201,17 @@ template_is_dependency_issue = PromptTemplate.from_template(
     '''Your task is to assist in identifying the root cause of a Docker build error for a python application.
 The error message is as follows:
 
-{error}
+{summarized_error}
 
-The docker file is as follows:
+You are given the following files:
 
-{docker_file}
+{all_files_string}
 
-Is this a dependency installation failure? Answer with "yes" or "no".'''
+Is this a PACKAGE_MANAGER dependency installation failure? Answer with "yes" or "no".'''
 )
 
 
-template_solve_dependency_issue = PromptTemplate.from_template(
+template_solve_pip_dependency_issue = PromptTemplate.from_template(
     '''Your task is to provide guidance on how to solve an error that occurred during the Docker build process. 
 Here is the summary of the error that occurred:
 {summarized_error}
@@ -225,21 +219,19 @@ Here is the summary of the error that occurred:
 To solve this error, you should:
 1. Suggest 3 to 5 possible solutions on how to solve it. You have no access to the documentation of the package.
 2. Decide for the best solution and explain it in detail.
-3. Write down the files that need to be changed, but not files that don't need to be changed. 
+3. Write down how requirements.txt should look like to solve the error. 
 For files that need to be changed, you must provide the complete file with the exact same syntax to wrap the code.
-Obey the following rules:
-''' + not_allowed_docker_string + '''
 
 You are given the following files:
 
 {all_files_string}
 
-Output all the files that need change. Don't output files that don't need change.
+Output how the requirements.txt file should look like to solve the error.
 If you output a file, then write the complete file. Use the exact following syntax to wrap the code:
 
-**...**
+**requirements.txt**
 ```
-...code...
+...packages...
 ```
 
 Example:
@@ -250,6 +242,21 @@ jina==2.0.0
 ```
 '''
 )
+
+
+template_solve_apt_get_dependency_issue = PromptTemplate.from_template(
+    '''Your task is to provide guidance on how to solve an error that occurred during the Docker build process. 
+Here is the summary of the error that occurred:
+{summarized_error}
+
+You are given the following files:
+
+{all_files_string}
+
+To solve this error, you should determine the list of packages that need to be installed via `apt-get install` in the Dockerfile.
+Output them as a white space separated list:'''
+)
+
 
 
 template_solve_code_issue = PromptTemplate.from_template(
@@ -275,7 +282,7 @@ To solve this error, you should:
 Obey the following rules:
 ''' + f'{not_allowed_executor_string}\n{not_allowed_docker_string}' + '''
 
-Output all the files that need change. 
+Output all the files that need change. You must not change the Dockerfile.
 Don't output files that don't need change. If you output a file, then write the complete file.
 If you change microservice.py and it uses gpt_3_5_turbo_api, then you must keep the code for gpt_3_5_turbo_api in the microservice.py file.
 Use the exact following syntax to wrap the code:
