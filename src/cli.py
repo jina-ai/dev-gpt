@@ -71,8 +71,8 @@ def generate(
             return
 
     from src.options.generate.generator import Generator
-    generator = Generator(description, test, model=model)
-    generator.generate(path)
+    generator = Generator(description, test, path=path, model=model)
+    generator.generate()
 
 @openai_api_key_needed
 @main.command()
