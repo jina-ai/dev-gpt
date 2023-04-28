@@ -42,7 +42,7 @@ class Generator:
                 return single_code_block_match[0].strip()
         return ''
 
-    def write_config_yml(self, class_name, dest_folder, python_file='microservice.py'):
+    def write_config_yml(self, class_name, dest_folder, python_file=EXECUTOR_FILE_NAME):
         config_content = f'''jtype: {class_name}
 py_modules:
   - {python_file}
@@ -127,7 +127,7 @@ metas:
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'microservice.py'), 'r') as f:
             microservice_executor_boilerplate = f.read()
         microservice_executor_code = microservice_executor_boilerplate.replace('class GPTDeployExecutor(Executor):', f'class {microservice_name}(Executor):')
-        persist_file(microservice_executor_code, os.path.join(MICROSERVICE_FOLDER_v1, 'microservice.py'))
+        persist_file(microservice_executor_code, os.path.join(MICROSERVICE_FOLDER_v1, EXECUTOR_FILE_NAME))
 
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'apis.py'), 'r') as f:
             persist_file(f.read(), os.path.join(MICROSERVICE_FOLDER_v1, 'apis.py'))

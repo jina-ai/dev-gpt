@@ -1,4 +1,4 @@
-EXECUTOR_FILE_NAME = 'microservice.py'
+EXECUTOR_FILE_NAME = '__init__.py.py'
 IMPLEMENTATION_FILE_NAME = 'implementation.py'
 TEST_EXECUTOR_FILE_NAME = 'test_microservice.py'
 REQUIREMENTS_FILE_NAME = 'requirements.txt'
