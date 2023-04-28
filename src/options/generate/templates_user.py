@@ -88,7 +88,7 @@ You must provide the complete file with the exact same syntax to wrap the code.'
 
 gpt_35_turbo_usage_string = '''If you use gpt_3_5_turbo_api, then you must use the following import:
 ```
-from apis import GPT_3_5_Turbo_API
+from .apis import GPT_3_5_Turbo_API
 
 gpt_3_5_turbo_api = GPT_3_5_Turbo_API(system='...')
 gpt_completion = gpt_3_5_turbo_api('...')

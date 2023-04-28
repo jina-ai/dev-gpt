@@ -1,7 +1,7 @@
 from jina import Executor, requests as jina_requests, DocumentArray
 import json
 
-from implementation import func
+from .implementation import func
 
 
 class GPTDeployExecutor(Executor):
