@@ -357,17 +357,19 @@ The playground (app.py) must not import the executor.
 '''
 )
 
-
+# Create a wrapper around google called Joogle. It modifies the page summary preview text of the search results to insert the word Jina as much as possible.
 template_refinement = PromptTemplate.from_template(
     '''
-**client response**
+1.Quickly go through the checklist (input/output well defined? api or db access needed?)  and think about if you should ask something to the client or if you should write the final description.
+**client-response.txt**
 ```text
 {user_input}
 ```
+2.Either write the prompt.txt or the final.txt file.
 Either ask for clarification like this:
 **prompt.txt**
 ```text
-<prompt to the client here>
+<prompt to the client here (must be exactly one question)>
 ```
 
 Or write the summarized microservice{_optional_test} description like this:
@@ -377,5 +379,6 @@ Or write the summarized microservice{_optional_test} description like this:
 ```
 Note that your response must be either prompt.txt or final.txt. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.
+Note that prompt.txt must not contain multiple questions.
 '''
 )

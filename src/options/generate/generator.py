@@ -445,18 +445,18 @@ Test scenario:
                 ),
                 role='user'
             )
-
             question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
+            messages.append(HumanMessage(content=user_input), )
+            messages.append(AIMessage(content=question))
             final = self.extract_content_from_result(agent_response_raw, 'final.txt', can_contain_code_block=False)
             if final:
                 setattr(self.microservice_specification, refinement_type, final)
                 break
             elif question:
-                messages.append(HumanMessage(content=user_input),)
-                messages.append(AIMessage(content=question))
                 user_input = self.get_user_input(pm, question)
             else:
-                raise self.TaskRefinementException()
+                user_input = 'Put your answer into the right format.'
+                # raise self.TaskRefinementException()
 
 
     @staticmethod
