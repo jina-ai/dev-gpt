@@ -206,7 +206,7 @@ metas:
         print_colored('', '\n\n############# Playground #############', 'blue')
 
         file_name_to_content = get_all_microservice_files_with_content(microservice_path)
-        conversation = self.gpt_session.get_conversation([])
+        conversation = self.gpt_session.get_conversation()
         conversation.chat(
             template_generate_playground.format(
                 code_files_wrapped=self.files_to_string(file_name_to_content, ['microservice.py', 'test_microservice.py']),
@@ -296,7 +296,7 @@ metas:
                 destination_folder=next_microservice_path,
                 file_name_s=None,
                 parse_result_fn=self.parse_result_fn_dockerfile,
-                system_definition_examples=None,
+                system_definition_examples=[],
                 summarized_error=summarized_error,
                 all_files_string=dock_req_string,
             )
@@ -338,7 +338,7 @@ metas:
             return True
 
         print_colored('', f'Is it a {package_manager} dependency issue?', 'blue')
-        conversation = self.gpt_session.get_conversation(None)
+        conversation = self.gpt_session.get_conversation()
         answer = conversation.chat(
             template_is_dependency_issue.format(summarized_error=summarized_error, all_files_string=dock_req_string).replace('PACKAGE_MANAGER', package_manager)
         )
@@ -401,7 +401,7 @@ gptdeploy deploy --path {self.microservice_root_path}
             break
 
     def summarize_error(self, error):
-        conversation = self.gpt_session.get_conversation(None)
+        conversation = self.gpt_session.get_conversation()
         error_summary = conversation.chat(template_summarize_error.format(error=error))
         return error_summary
 
@@ -435,6 +435,7 @@ Test scenario:
         messages = [
             SystemMessage(content=system_task_introduction + template_init),
         ]
+        num_parsing_tries = 0
         while True:
             conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
             print('thinking...')
@@ -445,18 +446,22 @@ Test scenario:
                 ),
                 role='user'
             )
-            question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
-            messages.append(HumanMessage(content=user_input), )
-            messages.append(AIMessage(content=question))
+            messages.append(HumanMessage(content=user_input))
+            agent_question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
             final = self.extract_content_from_result(agent_response_raw, 'final.txt', can_contain_code_block=False)
             if final:
                 setattr(self.microservice_specification, refinement_type, final)
                 break
-            elif question:
-                user_input = self.get_user_input(pm, question)
+            elif agent_question:
+                messages.append(AIMessage(content=agent_question))
+                user_input = self.get_user_input(pm, agent_question)
             else:
-                user_input = 'Put your answer into the right format.'
-                # raise self.TaskRefinementException()
+                if num_parsing_tries > 2:
+                    raise self.TaskRefinementException()
+                num_parsing_tries += 1
+                messages.append(AIMessage(content=agent_response_raw))
+                messages.append(SystemMessage(content='You did not put your answer into the right format using *** and ```.'))
+
 
 
     @staticmethod

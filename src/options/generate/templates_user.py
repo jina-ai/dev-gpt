@@ -369,7 +369,7 @@ template_refinement = PromptTemplate.from_template(
 Either ask for clarification like this:
 **prompt.txt**
 ```text
-<prompt to the client here (must be exactly one question)>
+<prompt to the client here (must be only one question)>
 ```
 
 Or write the summarized microservice{_optional_test} description like this:
@@ -379,6 +379,6 @@ Or write the summarized microservice{_optional_test} description like this:
 ```
 Note that your response must be either prompt.txt or final.txt. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.
-Note that prompt.txt must not contain multiple questions.
+Note that prompt.txt must not only contain one question.
 '''
 )
