@@ -162,6 +162,7 @@ metas:
             'Requirements',
             template_generate_requirements,
             MICROSERVICE_FOLDER_v1,
+            system_definition_examples=None,
             code_files_wrapped=self.files_to_string({
                 IMPLEMENTATION_FILE_NAME: microservice_content,
                 TEST_EXECUTOR_FILE_NAME: test_microservice_content,

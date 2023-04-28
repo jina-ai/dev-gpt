@@ -125,9 +125,9 @@ template_generate_test = PromptTemplate.from_template(
 Write a single pytest case that tests the following scenario: '{test_description}'. In case the test scenario is not precise enough, test a general case without any assumptions.
 Start the test with an extensive comment about the test case. If gpt_3_5_turbo_api is used in the executor, then the test must not check the exact output of the executor as it is not deterministic. 
 
-Use the following import to import the executor:
+Use the following import to import the function:
 ```
-from implementation import func
+from .implementation import func
 ```
 
 ''' + not_allowed_function_string + '''
@@ -153,9 +153,9 @@ openai>=0.26.0
 pytest
 ```
 Add any more packages that are needed to run the code.
-You must not add gpt_3_5_turbo_api to the requirements.txt file.
+You must not add gpt_3_5_turbo_api to the requirements.txt file. 
 
-All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts.
+All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts. Output only the requirements.txt file.
 ''' + '\n' + template_code_wrapping_string
 )
 
