@@ -1,5 +1,6 @@
 from langchain import PromptTemplate
 
+from src.constants import IMPLEMENTATION_FILE_NAME
 
 general_guidelines_string = '''The code you write is production ready. Every file starts with comments describing what the code is doing before the first import. Comments can only be written within code blocks.
 Then all imports are listed.
@@ -151,6 +152,7 @@ docarray==0.21.0
 openai>=0.26.0
 pytest
 ```
+Add any more packages that are needed to run the code.
 You must not add gpt_3_5_turbo_api to the requirements.txt file.
 
 All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts.
@@ -260,10 +262,11 @@ To solve this error, you should:
 1. Suggest 3 to 5 possible solutions on how to solve it. You have no access to the documentation of the package.
 2. Decide for the best solution and explain it in detail.
 3. Write down the files that need to be changed, but not files that don't need to be changed.
+Note that any changes needed to make the test pass must be written under the constraint that ''' + IMPLEMENTATION_FILE_NAME +  ''' will be used in a different file as well.
 Obey the following rules:
 ''' + f'{not_allowed_function_string}\n{not_allowed_docker_string}\n{gpt_35_turbo_usage_string}' + '''
 
-Output all the files that need change. You must not change the Dockerfile.
+Output all the files that need change. You must not change the Dockerfile. 
 Don't output files that don't need change. If you output a file, then write the complete file.
 Use the exact following syntax to wrap the code:
 
