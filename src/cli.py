@@ -50,8 +50,8 @@ def main(ctx):
 
 @openai_api_key_needed
 @main.command()
-@click.option('--description', required=True, help='Description of the microservice.')
-@click.option('--test', required=True, help='Test scenario for the microservice.')
+@click.option('--description', required=False, help='Description of the microservice.')
+@click.option('--test', required=False, help='Test scenario for the microservice.')
 @click.option('--model', default='gpt-4', help='GPT model to use (default: gpt-4).')
 @click.option('--verbose', default=False, is_flag=True, help='Verbose mode.')   # only for development
 @path_param

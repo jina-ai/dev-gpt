@@ -1,7 +1,7 @@
 /microservice/
 
 .env
-config.yml
-executor
 data
 build
+gptdeploy.egg-info
+dist
