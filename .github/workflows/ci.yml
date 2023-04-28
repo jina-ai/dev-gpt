@@ -23,10 +23,11 @@ jobs:
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
           pip install pytest
+          pip install pytest-split
       - name: Test
         id: test
         run: |
-          pytest --suppress-no-test-exit-code --cov=now --cov-report=xml -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
+          pytest -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
         timeout-minutes: 20
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
