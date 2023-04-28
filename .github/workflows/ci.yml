@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  test_✨:
+  test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
