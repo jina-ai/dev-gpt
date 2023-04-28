@@ -11,6 +11,7 @@ from langchain.schema import SystemMessage, HumanMessage, AIMessage
 from pydantic.dataclasses import dataclass
 
 from src.apis import gpt
+from src.apis.gpt import _GPTConversation
 from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
@@ -110,7 +111,7 @@ metas:
             parse_result_fn = self.get_default_parse_result_fn(file_name_s)
 
         print_colored('', f'\n\n############# {section_title} #############', 'blue')
-        system_introduction_message = self._create_system_message(self.microservice_specification.task, self.microservice_specification.test, system_definition_examples)
+        system_introduction_message = _GPTConversation._create_system_message(self.microservice_specification.task, self.microservice_specification.test, system_definition_examples)
         conversation = self.gpt_session.get_conversation(messages=[system_introduction_message])
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         if 'file_name' in template.input_variables and len(file_name_s) == 1:

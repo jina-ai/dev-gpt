@@ -22,8 +22,10 @@ The implemented function and the test must not use a pre-trained model unless it
 The implemented function and the test must not train a model.
 The implemented function and the test must not contain prototype or placeholder implementations.
 The implemented function and the test must run in a docker container based on debian.
-The implemented function and the test must use gpt_3_5_turbo_api if the task requires understanding or generating natural language or using any language model. Other language models are not allowed.'''
-
+The implemented function and the test must not use libraries like Flask.
+The implemented function and the test must not have a __main__ function.
+The implemented function and the test must use gpt_3_5_turbo_api if the task requires understanding or generation of natural language or using any language model. Other language models are not allowed.
+The implemented function and the test must not use gpt_3_5_turbo_api or any other language model if the task does not require understanding or generation of natural language.'''
 
 
 template_generate_microservice_name = PromptTemplate.from_template(
@@ -87,7 +89,7 @@ template_code_wrapping_string = '''The code will go into {file_name_purpose}. Ma
 You must provide the complete file with the exact same syntax to wrap the code.'''
 
 
-gpt_35_turbo_usage_string = """If you use gpt_3_5_turbo_api, then this is an example on how to use it:
+gpt_35_turbo_usage_string = """If need to use gpt_3_5_turbo_api, then this is an example on how to use it:
 ```
 from .apis import GPT_3_5_Turbo_API
 
@@ -151,8 +153,7 @@ template_generate_requirements = PromptTemplate.from_template(
 {code_files_wrapped}
     
 Write the content of the requirements.txt file.
-The requirements.txt file must include the following packages:
-**requirements.txt**
+The requirements.txt file must include the following packages in that specified version:
 ```
 jina==3.15.1.dev14
 docarray==0.21.0
