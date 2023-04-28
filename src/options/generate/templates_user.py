@@ -87,21 +87,27 @@ template_code_wrapping_string = '''The code will go into {file_name_purpose}. Ma
 You must provide the complete file with the exact same syntax to wrap the code.'''
 
 
-gpt_35_turbo_usage_string = '''If you use gpt_3_5_turbo_api, then you must use in the following way:
+gpt_35_turbo_usage_string = """If you use gpt_3_5_turbo_api, then this is an example on how to use it:
 ```
 from .apis import GPT_3_5_Turbo_API
 
-gpt_3_5_turbo_api = GPT_3_5_Turbo_API(system=SYSTEM_MESSAGE)  # fill-in the system message (str)
-gpt_completion = gpt_3_5_turbo_api(PROMPT)  # fill-in the prompt (str); the output is a string
+gpt_3_5_turbo_api = GPT_3_5_Turbo_API(
+    system=\'\'\'
+You are a tv-reporter who is specialized in C-list celebrities.
+When you get asked something like 'Who was having a date with <X>?', then you answer with a json like '{{"dates": ["<Y>", "<Z>"]}}'. 
+You must not answer something else - only the json.
+\'\'\')
+
+response_string = gpt(prompt)  # fill-in the prompt (str); the output is a string
 ```
-'''
+"""
 
 
 template_generate_function = PromptTemplate.from_template(
     general_guidelines_string + '''
 
 Write a python function which receives as input a dictionary and outputs a dictionary. The function is called 'func'.
-The function must solve the task: '{microservice_description}'.
+The function must full-fill: '{microservice_description}'.
 It will be tested with the following scenario: '{test_description}'.
 For the implementation use the following package(s): '{packages}'.
 
@@ -146,6 +152,7 @@ template_generate_requirements = PromptTemplate.from_template(
     
 Write the content of the requirements.txt file.
 The requirements.txt file must include the following packages:
+**requirements.txt**
 ```
 jina==3.15.1.dev14
 docarray==0.21.0
