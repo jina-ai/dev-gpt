@@ -42,10 +42,10 @@ class Generator:
                 return single_code_block_match[0].strip()
         return ''
 
-    def write_config_yml(self, class_name, dest_folder):
+    def write_config_yml(self, class_name, dest_folder, python_file=EXECUTOR_FILE_NAME):
         config_content = f'''jtype: {class_name}
 py_modules:
-  - {EXECUTOR_FILE_NAME}
+  - {python_file}
 metas:
   name: {class_name}
 '''
