@@ -16,8 +16,7 @@ from urllib3.exceptions import InvalidChunkLength
 
 from src.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
     PRICING_GPT3_5_TURBO_GENERATION, CHARS_PER_TOKEN
-from src.options.generate.templates_system import template_system_message_base, executor_example, docarray_example, \
-    client_example, gpt_example
+from src.options.generate.templates_system import template_system_message_base
 from src.utils.string_tools import print_colored
 
 
@@ -143,3 +142,14 @@ class _GPTConversation:
         self.cost_callback(sum([len(m.content) for m in self.messages]), len(response.content), self.print_costs)
         self.messages.append(response)
         return response.content
+
+    @staticmethod
+    def _create_system_message(task_description, test_description, system_definition_examples: List[str] = []) -> SystemMessage:
+        if system_definition_examples is None:
+            return None
+
+        system_message = PromptTemplate.from_template(template_system_message_base).format(
+            task_description=task_description,
+            test_description=test_description,
+        )
+        return SystemMessage(content=system_message)
