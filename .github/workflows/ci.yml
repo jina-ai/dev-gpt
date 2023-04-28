@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  test_✨:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -22,6 +22,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
+          pip install pytest
       - name: Test
         id: test
         run: |
