@@ -181,7 +181,6 @@ database access: n/a
 ```text
 Please provide the input and output format.
 ```
-
 '''
 
 system_test_iteration = f'''
@@ -255,6 +254,4 @@ PM:
 ```text
 The test takes nothing as input and asserts that the output is a string.
 ```
-
-
 '''
