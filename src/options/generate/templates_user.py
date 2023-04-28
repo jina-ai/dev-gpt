@@ -92,7 +92,7 @@ gpt_35_turbo_usage_string = '''If you use gpt_3_5_turbo_api, then you must use i
 from .apis import GPT_3_5_Turbo_API
 
 gpt_3_5_turbo_api = GPT_3_5_Turbo_API(system=SYSTEM_MESSAGE)  # fill-in the system message (str)
-gpt_completion = gpt_3_5_turbo_api(PROMPT)  # fill-in the prompt (str)
+gpt_completion = gpt_3_5_turbo_api(PROMPT)  # fill-in the prompt (str); the output is a string
 ```
 '''
 
