@@ -2,7 +2,7 @@ import os
 import random
 import re
 import shutil
-from typing import Callable, Union
+from typing import Callable
 
 from typing import List, Text, Optional
 
@@ -14,21 +14,17 @@ from src.apis import gpt
 from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
-    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, UNNECESSARY_PACKAGES
-from src.options.generate.templates_system import template_system_message_base, gpt_example, executor_example, \
-    docarray_example, client_example, system_task_iteration, system_task_introduction, system_test_iteration
+    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, UNNECESSARY_PACKAGES, IMPLEMENTATION_FILE_NAME, \
+    IMPLEMENTATION_FILE_TAG
+from src.options.generate.templates_system import  system_task_iteration, system_task_introduction, system_test_iteration
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
     template_solve_code_issue, \
     template_solve_pip_dependency_issue, template_is_dependency_issue, template_generate_playground, \
     template_generate_function, template_generate_test, template_generate_requirements, \
     template_chain_of_thought, template_summarize_error, \
-    template_generate_apt_get_install, template_solve_apt_get_dependency_issue
-    template_solve_pip_dependency_issue, \
-    template_generate_apt_get_install, template_solve_apt_get_dependency_issue, \
-    template_is_dependency_issue, template_generate_playground, \
-    template_generate_executor, template_generate_test, template_generate_requirements, \
-    template_chain_of_thought, template_summarize_error, template_refinement
+    template_generate_apt_get_install, template_solve_apt_get_dependency_issue, template_refinement
+
 from src.options.generate.ui import get_random_employee
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
@@ -178,7 +174,6 @@ metas:
             'Requirements',
             template_generate_requirements,
             MICROSERVICE_FOLDER_v1,
-            system_definition_examples=None,
             code_files_wrapped=self.files_to_string({
                 IMPLEMENTATION_FILE_NAME: microservice_content,
                 TEST_EXECUTOR_FILE_NAME: test_microservice_content,
@@ -473,26 +468,6 @@ Test scenario:
                 messages.append(AIMessage(content=agent_response_raw))
                 messages.append(SystemMessage(content='You did not put your answer into the right format using *** and ```.'))
 
-
-
-    @staticmethod
-    def _create_system_message(task_description, test_description, system_definition_examples: List[str] = []) -> SystemMessage:
-        if system_definition_examples is None:
-            return None
-
-        system_message = PromptTemplate.from_template(template_system_message_base).format(
-            task_description=task_description,
-            test_description=test_description,
-        )
-        if 'gpt' in system_definition_examples:
-            system_message += f'\n{gpt_example}'
-        if 'executor' in system_definition_examples:
-            system_message += f'\n{executor_example}'
-        if 'docarray' in system_definition_examples:
-            system_message += f'\n{docarray_example}'
-        if 'client' in system_definition_examples:
-            system_message += f'\n{client_example}'
-        return SystemMessage(content=system_message)
 
     @staticmethod
     def get_user_input(employee, prompt_to_user):
