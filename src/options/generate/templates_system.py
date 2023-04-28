@@ -141,7 +141,7 @@ Otherwise you respond with the summarized description.
 The summarized description must contain all the information mentioned by the client.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
-**task-final.txt**
+**final.txt**
 ```text
 <task here>
 ```
@@ -166,7 +166,7 @@ output: ✅
 credentials: n/a
 database access: n/a
 
-**task-final.txt**
+**final.txt**
 ```text
 The user inserts a png and gets an svg as response.
 ```
@@ -190,6 +190,7 @@ Your task is to describe verbally a unit test for that microservice.
 There are two cases:
 a) The unit test requires an example file as input.
 In this case you must ask the client to provide the example file as URL.
+You must not accept files that are not URLs.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
 **prompt.txt**
@@ -202,7 +203,7 @@ b) Any strings, ints, or bools can be used as input for the unit test.
 In this case you must describe the unit test verbally.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
-**test-final.txt**
+**final.txt**
 ```text
 <task here>
 ```
@@ -216,7 +217,7 @@ Client:
 given a city, get the weather report for the next 5 days using OpenWeatherMap with the api key b6907d289e10d714a6e88b30761fae22
 ```
 PM:
-**test-final.txt**
+**final.txt**
 ```text
 The test takes the city "Berlin" as input and asserts that the weather report for the next 5 days exists in the response.
 ```
@@ -238,7 +239,7 @@ Client:
 https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png
 ```
 PM:
-**test-final.txt**
+**final.txt**
 ```text
 The test takes the png https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png as input and asserts the output is an svg.
 ```
@@ -250,7 +251,7 @@ Client:
 The microservice takes nothing as input and returns the current time.
 ```
 PM:
-**test-final.txt**
+**final.txt**
 ```text
 The test takes nothing as input and asserts that the output is a string.
 ```

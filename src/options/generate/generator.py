@@ -24,7 +24,7 @@ from src.options.generate.templates_user import template_generate_microservice_n
     template_generate_apt_get_install, template_solve_apt_get_dependency_issue, \
     template_is_dependency_issue, template_generate_playground, \
     template_generate_executor, template_generate_test, template_generate_requirements, \
-    template_chain_of_thought, template_summarize_error, template_task_refinement
+    template_chain_of_thought, template_summarize_error, template_refinement
 from src.options.generate.ui import get_random_employee
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
@@ -409,8 +409,20 @@ gptdeploy deploy --path {self.microservice_root_path}
     def refine_specification(self):
         pm = get_random_employee('pm')
         print(f'{pm.emoji}👋 Hi, I\'m {pm.name}, a PM at Jina AI. Gathering the requirements for our engineers.')
-        self.refine_task(pm)
-        self.refine_test(pm)
+        original_task = self.microservice_specification.task
+        while True:
+            try:
+                self.microservice_specification.test = None
+                if not original_task:
+                    self.microservice_specification.task = self.get_user_input(pm, 'What should your microservice do?')
+
+                self.refine_requirements(pm, system_task_iteration, 'task')
+                self.refine_requirements(pm, system_test_iteration, 'test')
+                break
+            except self.TaskRefinementException as e:
+
+                print_colored('', f'{pm.emoji} Could not refine your requirements. Please try again...', 'red')
+
         print(f'''
 {pm.emoji} 👍 Great, I will handover the following requirements to our engineers:
 Description of the microservice:
@@ -419,61 +431,33 @@ Test scenario:
 {self.microservice_specification.test}
 ''')
 
-    def refine_task(self, pm):
-        try:
-            user_input = self.microservice_specification.task
-            if not user_input:
-                user_input = self.get_user_input(pm, 'What should your microservice do?')
-            messages = [
-                SystemMessage(content=system_task_introduction + system_task_iteration),
-            ]
-
-            while True:
-                conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
-                print('thinking...')
-                agent_response_raw = conversation.chat(template_task_refinement.format(user_input=user_input), role='user')
-
-                question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
-                task_final = self.extract_content_from_result(agent_response_raw, 'task-final.txt', can_contain_code_block=False)
-                if task_final:
-                    self.microservice_specification.task = task_final
-                    break
-                if question:
-                    messages.append(HumanMessage(content=user_input),)
-                    user_input = self.get_user_input(pm, question)
-                    messages.append(AIMessage(content=question))
-                elif task_final:
-                    user_input = self.get_user_input(pm, agent_response_raw + '\n: ')
-                else:
-                    raise self.TaskRefinementException()
-        except self.TaskRefinementException as e:
-            print_colored('', f'{pm.emoji} Could not refine the task. Please try again...', 'red')
-            self.refine_task(pm)
-
-
-    def refine_test(self, pm):
+    def refine_requirements(self, pm, template_init, refinement_type):
         user_input = self.microservice_specification.task
         messages = [
-            SystemMessage(content=system_task_introduction + system_test_iteration),
+            SystemMessage(content=system_task_introduction + template_init),
         ]
         while True:
             conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
             print('thinking...')
-            agent_response_raw = conversation.chat(f'''**client-response.txt**
-```
-{user_input}
-```
-''', role='user')
+            agent_response_raw = conversation.chat(
+                template_refinement.format(
+                    user_input=user_input,
+                    _optional_test=' test' if refinement_type == 'test' else ''
+                ),
+                role='user'
+            )
+
             question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
-            test_final = self.extract_content_from_result(agent_response_raw, 'test-final.txt', can_contain_code_block=False)
-            if test_final:
-                self.microservice_specification.test = test_final
+            final = self.extract_content_from_result(agent_response_raw, 'final.txt', can_contain_code_block=False)
+            if final:
+                setattr(self.microservice_specification, refinement_type, final)
                 break
-            if question:
+            elif question:
+                messages.append(HumanMessage(content=user_input),)
+                messages.append(AIMessage(content=question))
                 user_input = self.get_user_input(pm, question)
-                messages.extend([HumanMessage(content=user_input)])
             else:
-                user_input = self.get_user_input(pm, agent_response_raw + '\n: ')
+                raise self.TaskRefinementException()
 
 
     @staticmethod

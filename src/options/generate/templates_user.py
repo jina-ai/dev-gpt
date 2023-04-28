@@ -358,7 +358,7 @@ The playground (app.py) must not import the executor.
 )
 
 
-template_task_refinement = PromptTemplate.from_template(
+template_refinement = PromptTemplate.from_template(
     '''
 **client response**
 ```text
@@ -370,10 +370,10 @@ Either ask for clarification like this:
 <prompt to the client here>
 ```
 
-Or write the summarized microservice description like this:
-**task-final.txt**
+Or write the summarized microservice{_optional_test} description like this:
+**final.txt**
 ```text
-<task here>
+<microservice{_optional_test} description here>
 ```
 '''
 )
