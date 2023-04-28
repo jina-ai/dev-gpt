@@ -1,4 +1,5 @@
-EXECUTOR_FILE_NAME = 'microservice.py'
+EXECUTOR_FILE_NAME = '__init__.py'
+IMPLEMENTATION_FILE_NAME = 'implementation.py'
 TEST_EXECUTOR_FILE_NAME = 'test_microservice.py'
 REQUIREMENTS_FILE_NAME = 'requirements.txt'
 DOCKER_FILE_NAME = 'Dockerfile'
@@ -6,6 +7,7 @@ CLIENT_FILE_NAME = 'client.py'
 STREAMLIT_FILE_NAME = 'streamlit.py'
 
 EXECUTOR_FILE_TAG = 'python'
+IMPLEMENTATION_FILE_TAG = 'python'
 TEST_EXECUTOR_FILE_TAG = 'python'
 REQUIREMENTS_FILE_TAG = ''
 DOCKER_FILE_TAG = 'dockerfile'
@@ -15,6 +17,7 @@ STREAMLIT_FILE_TAG = 'python'
 
 FILE_AND_TAG_PAIRS = [
     (EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG),
+    (IMPLEMENTATION_FILE_NAME, IMPLEMENTATION_FILE_TAG),
     (TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG),
     (REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG),
     (DOCKER_FILE_NAME, DOCKER_FILE_TAG),
@@ -38,7 +41,7 @@ DEMO_TOKEN = '45372338e04f5a41af949024db929d46'
 
 PROBLEMATIC_PACKAGES = [
     # 'Pyrender', 'Trimesh',
-    'ModernGL', 'PyOpenGL', 'Pyglet', 'pythreejs', 'panda3d', # because they need a screen,
+    'moderngl', 'pyopengl', 'pyglet', 'pythreejs', 'panda3d', # because they need a screen,
 ]
 
-UNNECESSARY_PACKAGES = ['FastAPI']
+UNNECESSARY_PACKAGES = ['fastapi']

@@ -1,5 +1,8 @@
 import os
 
+from src.constants import REQUIREMENTS_FILE_NAME, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, TEST_EXECUTOR_FILE_NAME
+
+
 def list_dirs_no_hidden(path):
     """
     List all non-hidden directories in the specified path.
@@ -44,11 +47,11 @@ def validate_folder_is_correct(microservice_path):
     latest_version_path = get_latest_version_path(microservice_path)
     required_files = [
         'gateway/app.py',
-        'requirements.txt',
-        'Dockerfile',
+        REQUIREMENTS_FILE_NAME,
+        DOCKER_FILE_NAME,
+        IMPLEMENTATION_FILE_NAME,
+        TEST_EXECUTOR_FILE_NAME,
         'config.yml',
-        'microservice.py',
-        'test_microservice.py',
     ]
     for file_name in required_files:
         if not os.path.exists(os.path.join(latest_version_path, file_name)):
