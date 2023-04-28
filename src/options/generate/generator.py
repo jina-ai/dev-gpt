@@ -39,7 +39,7 @@ class TaskSpecification:
 class Generator:
     def __init__(self, task_description, path, model='gpt-4'):
         self.gpt_session = gpt.GPTSession(task_description, model=model)
-        self.microservice_specification = TaskSpecification(task=task_description)
+        self.microservice_specification = TaskSpecification(task=task_description, test=None)
         self.microservice_root_path = path
 
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False, can_contain_code_block=True):
