@@ -358,7 +358,7 @@ metas:
             system_definition_examples=[],
             description=self.task_description
         )['packages.csv']
-        packages_list = [[pkg.strip() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]
+        packages_list = [[pkg.strip().lower() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]
         packages_list = [
             packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0
         ]
