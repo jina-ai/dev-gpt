@@ -345,7 +345,6 @@ metas:
         return 'yes' in answer.lower()
 
     def generate_microservice_name(self, description):
-        print_colored('', '\n\n############# What should be the name of the Microservice? #############', 'blue')
         name = self.generate_and_persist_file(
             section_title='Generate microservice name',
             template=template_generate_microservice_name,

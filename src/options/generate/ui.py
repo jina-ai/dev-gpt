@@ -7,9 +7,6 @@ product_manager_names = [
     ('Susana', 'f')
 ]
 engineer_names = [
-    ('Joschka', 'm'),
-    ('Johannes', 'm'),
-    ('Johanna', 'f'),
     ('Aaron', 'm'),
     ('Alaeddine', 'm'),
     ('Andrei', 'm'),
