@@ -145,7 +145,7 @@ template_generate_requirements = PromptTemplate.from_template(
 {code_files_wrapped}
     
 Write the content of the requirements.txt file.
-The requirements.txt file must included the following lines:
+The requirements.txt file must include the following packages:
 ```
 jina==3.15.1.dev14
 docarray==0.21.0
