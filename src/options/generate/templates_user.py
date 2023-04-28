@@ -375,5 +375,7 @@ Or write the summarized microservice{_optional_test} description like this:
 ```text
 <microservice{_optional_test} description here>
 ```
+Note that your response must be either prompt.txt or final.txt. You must not write both.
+Note that you must obey the double asterisk and tripple backtick syntax from above.
 '''
 )
