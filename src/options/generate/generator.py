@@ -10,7 +10,7 @@ from src.apis import gpt
 from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
-    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, UNNECESSARY_PACKAGES
+    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, UNNECESSARY_PACKAGES, IMPLEMENTATION_FILE_NAME
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
     template_solve_code_issue, \
@@ -76,7 +76,7 @@ metas:
             destination_folder: str,
             file_name_s: Union[str, List[str]] = None,
             parse_result_fn: Callable = None,
-            system_definition_examples: List[str] = ['gpt', 'executor', 'docarray', 'client'],
+            system_definition_examples: List[str] = [],
             **template_kwargs
     ):
         """This function generates file(s) using the given template and persists it/them in the given destination folder.
@@ -109,7 +109,7 @@ metas:
         )
         content = parse_result_fn(content_raw)
         if content == {}:
-            content_raw = conversation.chat('You must add the content' + (f' for {file_name_s}.' if file_name_s else ''))
+            content_raw = conversation.chat('You must add the content' + (f' for {file_name_s}' if isinstance(file_name_s, str) else ''))
             content = parse_result_fn(content_raw)
         for _file_name, _file_content in content.items():
             persist_file(_file_content, os.path.join(destination_folder, _file_name))
@@ -129,19 +129,21 @@ metas:
         microservice_executor_code = microservice_executor_boilerplate.replace('class GPTDeployExecutor(Executor):', f'class {microservice_name}(Executor):')
         persist_file(microservice_executor_code, os.path.join(MICROSERVICE_FOLDER_v1, 'microservice.py'))
 
+        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'apis.py'), 'r') as f:
+            persist_file(f.read(), os.path.join(MICROSERVICE_FOLDER_v1, 'apis.py'))
+
         microservice_content = self.generate_and_persist_file(
             section_title='Microservice',
             template=template_generate_function,
             destination_folder=MICROSERVICE_FOLDER_v1,
-            parse_result_fn='',
             # microservice_name=microservice_name,
             microservice_description=self.task_description,
             test_description=self.test_description,
             packages=packages,
-            file_name_purpose=EXECUTOR_FILE_NAME,
+            file_name_purpose=IMPLEMENTATION_FILE_NAME,
             tag_name=EXECUTOR_FILE_TAG,
-            file_name_s=EXECUTOR_FILE_NAME,
-        )['implementation.py']
+            file_name_s=IMPLEMENTATION_FILE_NAME,
+        )[IMPLEMENTATION_FILE_NAME]
 
         test_microservice_content = self.generate_and_persist_file(
             'Test Microservice',
@@ -161,7 +163,7 @@ metas:
             template_generate_requirements,
             MICROSERVICE_FOLDER_v1,
             code_files_wrapped=self.files_to_string({
-                EXECUTOR_FILE_NAME: microservice_content,
+                IMPLEMENTATION_FILE_NAME: microservice_content,
                 TEST_EXECUTOR_FILE_NAME: test_microservice_content,
             }),
             file_name_purpose=REQUIREMENTS_FILE_NAME,
@@ -198,10 +200,10 @@ metas:
         print_colored('', '\n\n############# Playground #############', 'blue')
 
         file_name_to_content = get_all_microservice_files_with_content(microservice_path)
-        conversation = self.gpt_session.get_conversation([])
+        conversation = self.gpt_session.get_conversation(None)
         conversation.chat(
             template_generate_playground.format(
-                code_files_wrapped=self.files_to_string(file_name_to_content, ['microservice.py', 'test_microservice.py']),
+                code_files_wrapped=self.files_to_string(file_name_to_content, ['test_microservice.py']),
                 microservice_name=microservice_name,
             )
         )
@@ -309,15 +311,11 @@ metas:
                     section_title='Debugging code issue',
                     template=template_solve_code_issue,
                     destination_folder=next_microservice_path,
-                    file_name_s=[EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, REQUIREMENTS_FILE_NAME],
+                    file_name_s=[IMPLEMENTATION_FILE_NAME, TEST_EXECUTOR_FILE_NAME, REQUIREMENTS_FILE_NAME],
                     summarized_error=summarized_error,
                     task_description=self.task_description,
                     test_description=self.test_description,
-                    all_files_string=self.files_to_string(file_name_to_content),
-                )
-                user_query = template_solve_code_issue.format(
-                    task_description=self.task_description, test_description=self.test_description,
-                    summarized_error=summarized_error, all_files_string=self.files_to_string(file_name_to_content),
+                    all_files_string=self.files_to_string({key: val for key, val in file_name_to_content.items() if key != EXECUTOR_FILE_NAME}),
                 )
 
     class MaxDebugTimeReachedException(BaseException):
@@ -355,7 +353,7 @@ metas:
             template=template_generate_possible_packages,
             destination_folder=self.microservice_root_path,
             file_name_s='packages.csv',
-            system_definition_examples=['gpt'],
+            system_definition_examples=[],
             description=self.task_description
         )['packages.csv']
         packages_list = [[pkg.strip() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]

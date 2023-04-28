@@ -121,7 +121,7 @@ template_generate_test = PromptTemplate.from_template(
 
 {code_files_wrapped}
 
-Write a single test case that tests the following scenario: '{test_description}'. In case the test scenario is not precise enough, test a general case without any assumptions.
+Write a single pytest case that tests the following scenario: '{test_description}'. In case the test scenario is not precise enough, test a general case without any assumptions.
 Start the test with an extensive comment about the test case. If gpt_3_5_turbo_api is used in the executor, then the test must not check the exact output of the executor as it is not deterministic. 
 
 Use the following import to import the executor:
@@ -144,10 +144,13 @@ template_generate_requirements = PromptTemplate.from_template(
 {code_files_wrapped}
     
 Write the content of the requirements.txt file.
-Make sure to include pytest.
-Make sure to include openai>=0.26.0.
-Make sure that jina==3.15.1.dev14.
-Make sure that docarray==0.21.0.
+The requirements.txt file must included the following lines:
+```
+jina==3.15.1.dev14
+docarray==0.21.0
+openai>=0.26.0
+pytest
+```
 You must not add gpt_3_5_turbo_api to the requirements.txt file.
 
 All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts.
@@ -258,7 +261,7 @@ To solve this error, you should:
 2. Decide for the best solution and explain it in detail.
 3. Write down the files that need to be changed, but not files that don't need to be changed.
 Obey the following rules:
-''' + f'{not_allowed_function_string}\n{not_allowed_docker_string}' + '''
+''' + f'{not_allowed_function_string}\n{not_allowed_docker_string}\n{gpt_35_turbo_usage_string}' + '''
 
 Output all the files that need change. You must not change the Dockerfile.
 Don't output files that don't need change. If you output a file, then write the complete file.
@@ -293,6 +296,7 @@ The playground uses the following code to send a request to the microservice:
 ```
 from jina import Client, Document, DocumentArray
 client = Client(host='http://localhost:8080')
+d = Document(text=json.dumps(INPUT_DICTIONARY)) # fill-in dictionary which takes input
 response = client.post('/', inputs=DocumentArray([d])) # always use '/'
 print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
 ```
