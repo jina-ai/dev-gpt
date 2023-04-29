@@ -25,7 +25,7 @@ def test_generation_level_0(tmpdir):
     )
     generator.generate()
 
-@pytest.mark.skip(reason="not possible")
+
 def test_generation_level_1(tmpdir):
     """
     Requirements:
@@ -53,7 +53,7 @@ Enjoy your day! #variety'
     )
     generator.generate()
 
-@pytest.mark.skip(reason="not possible")
+
 def test_generation_level_2(tmpdir):
     """
     Requirements:
