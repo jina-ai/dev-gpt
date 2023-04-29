@@ -126,13 +126,13 @@ curl "https://us-central1-causal-diffusion.cloudfunctions.net/describe" \\
   {{"image": "<image url here>", "features": []}}
   ]}}'
 Result format:
-{
+{{
     "result": [
-    {
+    {{
     "text": "<image description>"
-    }
+    }}
   ]
-}
+}}
 The description is then used to generate a joke.
 The joke is the put on the image.
 The output is the image with the joke on it.''',
