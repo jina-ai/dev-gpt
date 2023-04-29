@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group: [1, 2]
+        group: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.8
@@ -27,7 +27,9 @@ jobs:
       - name: Test
         id: test
         run: |
-          pytest -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration test/
-        timeout-minutes: 20
+          pytest -v -s -m "not gpu" --splits 5 --group ${{ matrix.group }} --splitting-algorithm least_duration test/
+        timeout-minutes: 10
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SCENEX_API_KEY: ${{ secrets.SCENEX_API_KEY }}
+          WHISPER_API_KEY: ${{ secrets.WHISPER_API_KEY }}

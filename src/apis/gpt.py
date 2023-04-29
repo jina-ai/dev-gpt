@@ -32,9 +32,8 @@ If you have updated it already, please restart your terminal.
     openai.api_key = os.environ['OPENAI_API_KEY']
 
 class GPTSession:
-    def __init__(self, task_description, test_description, model: str = 'gpt-4', ):
+    def __init__(self, task_description, model: str = 'gpt-4', ):
         self.task_description = task_description
-        self.test_description = test_description
         if model == 'gpt-4' and self.is_gpt4_available():
             self.pricing_prompt = PRICING_GPT4_PROMPT
             self.pricing_generation = PRICING_GPT4_GENERATION
