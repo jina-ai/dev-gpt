@@ -31,3 +31,5 @@ jobs:
         timeout-minutes: 10
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SCENEX_API_KEY: ${{ secrets.SCENEX_API_KEY }}
+          WHISPER_API_KEY: ${{ secrets.WHISPER_API_KEY }}
