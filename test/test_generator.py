@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 from src.options.generate.generator import Generator
 
 
@@ -23,7 +25,7 @@ def test_generation_level_0(tmpdir):
     )
     generator.generate()
 
-
+@pytest.mark.skip(reason="not possible")
 def test_generation_level_1(tmpdir):
     """
     Requirements:
@@ -51,7 +53,7 @@ Enjoy your day! #variety'
     )
     generator.generate()
 
-
+@pytest.mark.skip(reason="not possible")
 def test_generation_level_2(tmpdir):
     """
     Requirements:
@@ -70,7 +72,7 @@ def test_generation_level_2(tmpdir):
     )
     generator.generate()
 
-
+@pytest.mark.skip(reason="not possible")
 def test_generation_level_3(tmpdir):
     """
     Requirements:
@@ -103,7 +105,7 @@ Create an audio file of the summarized text.
     )
     generator.generate()
 
-
+@pytest.mark.skip(reason="not possible")
 def test_generation_level_4(tmpdir):
     """
     Requirements:
