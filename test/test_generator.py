@@ -83,7 +83,7 @@ def test_generation_level_3(tmpdir):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        F'''Given an audio file of speech like https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav, 
+        f'''Given an audio file of speech like https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav, 
 get convert it to text using the following api:
 import requests
 url = "https://transcribe.whisperapi.com"
@@ -97,7 +97,6 @@ response = requests.post(url, headers=headers, files=file, data=data)
 print(response.text)
 Summarize the text.
 Create an audio file of the summarized text.
-
 ''',
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'
@@ -120,9 +119,9 @@ def test_generation_level_4(tmpdir):
 The input is an image like this: https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/560px-PNG_transparency_demonstration_1.png.
 Use the following api to get the description of the image:
 Request:
-curl "https://us-central1-causal-diffusion.cloudfunctions.net/describe" \
-  -H "x-api-key: token {os.environ['SCENEX_API_KEY']}" \
-  -H "content-type: application/json" \
+curl "https://us-central1-causal-diffusion.cloudfunctions.net/describe" \\
+  -H "x-api-key: token {os.environ['SCENEX_API_KEY']}" \\
+  -H "content-type: application/json" \\
   --data '{{"data":[
   {{"image": "<image url here>", "features": []}}
   ]}}'
