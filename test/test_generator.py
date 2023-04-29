@@ -8,7 +8,7 @@ from src.options.generate.generator import Generator
 def test_generation_level_0(tmpdir):
     """
     Requirements:
-    coding: ❌
+    coding challenge: ❌
     pip packages: ❌
     environment: ❌
     GPT-3.5-turbo: ❌
@@ -27,16 +27,78 @@ def test_generation_level_0(tmpdir):
 def test_generation_level_1(tmpdir):
     """
     Requirements:
-    coding: ❌
-    pip packages: ✅ (pdf parser)
+    coding challenge: ❌
+    pip packages: ❌
     environment: ❌
-    GPT-3.5-turbo: ❌
+    GPT-3.5-turbo: ✅ (for summarizing the text)
     APIs: ❌
     Databases: ❌
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        "The input is a PDF like https://www.africau.edu/images/default/sample.pdf and the output the parsed text",
+        '''
+Input is a tweet that might contain passive aggressive language like: 
+'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 But hey, at least SOMEONE's enjoying their lunch. #officelife'
+The output is a tweet that is not passive aggressive like:
+'Hi coworker, 
+I hope you're having an amazing day! 
+Just a quick note: sometimes microwaving fish can create an interesting aroma in the break room. 
+If you're up for trying different lunch options, that could be a fun way to mix things up. 
+Enjoy your day! #variety'
+''',
+        str(tmpdir) + 'microservice',
+        'gpt-3.5-turbo'
+    )
+    generator.generate()
+
+
+def test_generation_level_2(tmpdir):
+    """
+    Requirements:
+    coding challenge: ❌
+    pip packages: ✅ (pdf parser)
+    environment: ❌
+    GPT-3.5-turbo: ✅ (for summarizing the text)
+    APIs: ❌
+    Databases: ❌
+    """
+    os.environ['VERBOSE'] = 'true'
+    generator = Generator(
+        "The input is a PDF like https://www.africau.edu/images/default/sample.pdf and the output the summarized text.",
+        str(tmpdir) + 'microservice',
+        'gpt-3.5-turbo'
+    )
+    generator.generate()
+
+
+def test_generation_level_3(tmpdir):
+    """
+    Requirements:
+    coding challenge: ❌
+    pip packages: ✅ (text to speech)
+    environment: ❌
+    GPT-3.5-turbo: ✅ (summarizing the text)
+    APIs: ✅ (whisper for speech to text)
+    Databases: ❌
+    """
+    os.environ['VERBOSE'] = 'true'
+    generator = Generator(
+        F'''Given an audio file of speech like https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav, 
+get convert it to text using the following api:
+import requests
+url = "https://transcribe.whisperapi.com"
+headers = {{
+'Authorization': 'Bearer {os.environ['WHISPER_API_KEY']}'
+}}
+data = {{
+  "url": "URL_OF_STORED_AUDIO_FILE"
+}}
+response = requests.post(url, headers=headers, files=file, data=data)
+print(response.text)
+Summarize the text.
+Create an audio file of the summarized text.
+
+''',
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'
     )
@@ -46,7 +108,7 @@ def test_generation_level_1(tmpdir):
 def test_generation_level_4(tmpdir):
     """
     Requirements:
-    coding: ✅ (putting text on the image)
+    coding challenge: ✅ (putting text on the image)
     pip packages: ✅ (Pillow for image processing)
     environment: ❌
     GPT-3.5-turbo: ✅ (for writing the joke)
