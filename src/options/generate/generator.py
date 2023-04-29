@@ -44,7 +44,7 @@ class Generator:
 
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False, can_contain_code_block=True):
         optional_line_break = '\n' if can_contain_code_block else '' # the \n at the end makes sure that ``` within the generated code is not matched because it is not right before a line break
-        pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?){optional_line_break}```"
+        pattern = fr"^\*?\*?{file_name}\*?\*?\n```(?:\w+\n)?([\s\S]*?){optional_line_break}```"
         match = re.search(pattern, plain_text, re.MULTILINE)
         if match:
             return match.group(1).strip()
@@ -422,8 +422,16 @@ gptdeploy deploy --path {self.microservice_root_path}
                 if not original_task:
                     self.microservice_specification.task = self.get_user_input(pm, 'What should your microservice do?')
 
-                self.refine_requirements(pm, system_task_iteration, 'task')
-                self.refine_requirements(pm, system_test_iteration, 'test')
+                messages = [SystemMessage(content=system_task_introduction + system_task_iteration)]
+                self.refine_requirements(pm, messages, 'task', '')
+                messages[0] = SystemMessage(content=system_task_introduction + system_test_iteration)
+                self.refine_requirements(
+                    pm,
+                    messages,
+                    'test',
+                    '''Note that the test scenario must not contain information that was already mentioned in the microservice description.
+Note that if the test scenario must contain the full description of the concrete example in case it was mentioned in the microservice description.'''
+                )
                 break
             except self.TaskRefinementException as e:
 
@@ -437,11 +445,8 @@ Test scenario:
 {self.microservice_specification.test}
 ''')
 
-    def refine_requirements(self, pm, template_init, refinement_type):
+    def refine_requirements(self, pm, messages, refinement_type, custom_suffix):
         user_input = self.microservice_specification.task
-        messages = [
-            SystemMessage(content=system_task_introduction + template_init),
-        ]
         num_parsing_tries = 0
         while True:
             conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
@@ -449,7 +454,8 @@ Test scenario:
             agent_response_raw = conversation.chat(
                 template_refinement.format(
                     user_input=user_input,
-                    _optional_test=' test' if refinement_type == 'test' else ''
+                    _optional_test=' test' if refinement_type == 'test' else '',
+                    custom_suffix=custom_suffix,
                 ),
                 role='user'
             )
@@ -457,6 +463,7 @@ Test scenario:
             agent_question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
             final = self.extract_content_from_result(agent_response_raw, 'final.txt', can_contain_code_block=False)
             if final:
+                messages.append(AIMessage(content=final))
                 setattr(self.microservice_specification, refinement_type, final)
                 break
             elif agent_question:

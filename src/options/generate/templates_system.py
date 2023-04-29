@@ -96,7 +96,7 @@ system_test_iteration = f'''
 The client gives you a description of the microservice (web service).
 Your task is to describe verbally a unit test for that microservice.
 There are two cases:
-a) If unit test requires an example input file as input:
+a) If the input of the unit test requires an example input file or e.g. a certain textual description that is not mentioned before:
 In this case you must ask the client to provide the example input file as URL.
 You must not accept files that are not URLs.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
@@ -107,60 +107,42 @@ Your response must exactly match the following block code format (double asteris
 ```
 
 If you did a, you must not do b.
-b) Any strings, ints, or bools can be used as input for the unit test.
+b) If the input can be determined from the previous messages:
 In this case you must describe the unit test verbally.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
 **final.txt**
 ```text
-<task here>
+input: "<input here>"
+assertion of output: "<assertion of output here>"
 ```
 
 If you did b, you must not do a.
 
-Example 1: 
-Client:
-**client-response.txt**
-```
-given a city, get the weather report for the next 5 days using OpenWeatherMap with the api key b6907d289e10d714a6e88b30761fae22
-```
-PM:
+Example for: "given a city, get the weather report for the next 5 days using OpenWeatherMap with the api key b6907d289e10d714a6e88b30761fae22":
 **final.txt**
 ```text
-The test takes the city "Berlin" as input and asserts that the weather report for the next 5 days exists in the response.
+input: "Berlin"
+assertion of output: "contains weather report for the next 5 days"
 ```
 
-Example 2:
-Client: 
-**client-response.txt**
-```
-The user inserts a png and gets an svg as response.
-```
-PM:
+Example for "The user inserts a png and gets an svg as response.":
 **prompt.txt**
 ```text
 Please provide a png example input file as url.
 ```
-Client:
-**client-response.txt**
-```
-https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png
-```
-PM:
+
+Example for "The user inserts a png like https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png and gets an svg as response.":
 **final.txt**
 ```text
-The test takes the png https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png as input and asserts the output is an svg.
+input: "https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png"
+assertion of output: "is an svg"
 ```
 
-Example 3:
-Client:
-**client-response.txt**
-```
-The microservice takes nothing as input and returns the current time.
-```
-PM:
+Example for "The microservice takes nothing as input and returns the current time.":
 **final.txt**
 ```text
-The test takes nothing as input and asserts that the output is a string.
+input: "nothing"
+assertion of output: "is a string"
 ```
 '''

@@ -368,10 +368,12 @@ Or write the summarized microservice{_optional_test} description like this:
 **final.txt**
 ```text
 <microservice{_optional_test} description here>
-```
+``` 
 Note that your response must be either prompt.txt or final.txt. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.
+Note that the last sequence of characters in your response must be ``` (triple backtick).
 Note that prompt.txt must not only contain one question.
 Note that if urls, secrets, database names, etc. are mentioned, they must be part of the summary.
+{custom_suffix}
 '''
 )

@@ -40,11 +40,12 @@ def test_generation_level_1(tmpdir):
     generator = Generator(
         '''
 Input is a tweet that might contain passive aggressive language like: 
-'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 But hey, at least SOMEONE's enjoying their lunch. #officelife'
+'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 
+But hey, at least SOMEONE's enjoying their lunch. #officelife'
 The output is a tweet that is not passive aggressive like:
 'Hi coworker, 
 I hope you're having an amazing day! 
-Just a quick note: sometimes microwaving fish can create an interesting aroma in the break room. 
+Just a quick note: sometimes microwaving fish can create an interesting aroma in the break room. 😜
 If you're up for trying different lunch options, that could be a fun way to mix things up. 
 Enjoy your day! #variety'
 ''',
