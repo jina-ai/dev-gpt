@@ -399,6 +399,7 @@ metas:
                     print_colored('',
                                   f'Could not debug the Microservice with any of the approaches: {packages} giving up.',
                                   'red')
+                    return -1
                 continue
             print(f'''
 You can now run or deploy your microservice:
@@ -406,7 +407,7 @@ gptdeploy run --path {self.microservice_root_path}
 gptdeploy deploy --path {self.microservice_root_path}
 '''
                   )
-            break
+            return 0
 
     def summarize_error(self, error):
         conversation = self.gpt_session.get_conversation()

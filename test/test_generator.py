@@ -23,7 +23,7 @@ def test_generation_level_0(tmpdir):
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'
     )
-    generator.generate()
+    assert generator.generate() == 0
 
 
 def test_generation_level_1(tmpdir):
@@ -44,7 +44,7 @@ But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'
     )
-    generator.generate()
+    assert generator.generate() == 0
 
 
 def test_generation_level_2(tmpdir):
@@ -63,7 +63,7 @@ def test_generation_level_2(tmpdir):
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'
     )
-    generator.generate()
+    assert generator.generate() == 0
 
 #Create a wrapper around google called Joogle. It modifies the page summary preview text of the search results to insert the word Jina as much as possible.
 
@@ -98,7 +98,7 @@ Create an audio file of the summarized text.
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'
     )
-    generator.generate()
+    assert generator.generate() == 0
 
 @pytest.mark.skip(reason="not possible")
 def test_generation_level_4(tmpdir):
@@ -136,4 +136,4 @@ The output is the image with the joke on it.''',
                           str(tmpdir) + 'microservice',
                           'gpt-3.5-turbo'
                           )
-    generator.generate()
+    assert generator.generate() == 0

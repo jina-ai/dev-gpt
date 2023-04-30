@@ -179,7 +179,7 @@ Name all packages which need to be installed via `apt-get install` in above Dock
 
 Note that you must not list apt-get packages that are already installed in the Dockerfile.
 Note that openai does not require any apt-get packages.
-Output the packages that need to me placed at {apt_get_packages} as a white space separated list:
+Output the packages that need to me placed at {{apt_get_packages}} as a white space separated list:
 '''
 )
 
