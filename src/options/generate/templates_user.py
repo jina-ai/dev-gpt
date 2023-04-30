@@ -24,8 +24,7 @@ The implemented function and the test must not contain prototype or placeholder 
 The implemented function and the test must run in a docker container based on debian.
 The implemented function and the test must not use libraries like Flask.
 The implemented function and the test must not have a __main__ function.
-The implemented function and the test must use gpt_3_5_turbo_api if the task requires understanding, generation or summrization of natural language or using any language model. Other language models are not allowed.
-The implemented function and the test must not use gpt_3_5_turbo_api or any other language model if the task does not require understanding or generation of natural language.'''
+The implemented function and the test must use gpt_3_5_turbo_api if the task requires understanding, generation, summarization, transformation, translation or classification of natural language or using any language model. Other language models are not allowed.'''
 
 
 template_generate_microservice_name = PromptTemplate.from_template(
@@ -400,7 +399,7 @@ Example for the case where the example input was already mentioned:
 **final.txt**
 ```text
 input: "<input here>"
-weak assertion of output: "<weak assertion of output here>"
+assertion: "the output must be of type <type here>"
 ``` 
 Note that your response must be either prompt.txt or final.txt. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.
