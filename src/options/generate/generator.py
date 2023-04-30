@@ -432,17 +432,27 @@ gptdeploy deploy --path {self.microservice_root_path}
                     'task',
                     '',
                     template_pm_task_iteration,
-                    micro_service_initial_description=f'Microservice description: {self.microservice_specification.task}'
+                    micro_service_initial_description=f'''Microservice description: 
+{self.microservice_specification.task}
+''',
                 )
-                # replacing the system message of the task with the system message of the test
-                messages[0] = SystemMessage(content=system_task_introduction + system_test_iteration)
+
+                messages = [
+                    SystemMessage(content=system_task_introduction + system_test_iteration),
+
+                ]
                 self.refine_requirements(
                     pm,
                     messages,
                     'test',
                     '''Note that the test scenario must not contain information that was already mentioned in the microservice description.
 Note that you must not ask for information that were already mentioned before.''',
-                    template_pm_test_iteration
+                    template_pm_test_iteration,
+                    micro_service_initial_description=f'''Microservice original description: 
+{original_task}
+Microservice refined description: 
+{self.microservice_specification.task}
+''',
                 )
                 break
             except self.TaskRefinementException as e:
@@ -465,7 +475,7 @@ Test scenario:
             agent_response_raw = conversation.chat(
                 template_pm_iteration.format(
                     custom_suffix=custom_suffix,
-                    **{'micro_service_initial_description': micro_service_initial_description} if refinement_type == 'task' and len(messages) == 1 else {}
+                    **{'micro_service_initial_description': micro_service_initial_description} if len(messages) == 1 else {}
                 ),
                 role='user'
             )

@@ -177,7 +177,9 @@ Name all packages which need to be installed via `apt-get install` in above Dock
 
 {requirements_file_wrapped}
 
-Output them as a white space separated list:'''
+Note that you must not list packages that are already installed in the Dockerfile.
+Output the packages as a white space separated list:
+'''
 )
 
 
@@ -374,7 +376,10 @@ Note that if urls, secrets, database names, etc. are mentioned, they must be par
 )
 
 template_pm_test_iteration = PromptTemplate.from_template(
-    '''If the example input for the microservice was mentioned already, then output final.txt.
+    '''{micro_service_initial_description}
+1. Look at the original description and the refined description.
+2. find out if the original description and the refined description contain an example input for the microservice.
+If the example input for the microservice is mentioned in the refined description or the original description, then output final.txt.
 Otherwise, output prompt.txt where you ask for the example input file as URL.
 Except for urls, you should come up with your own example input that makes sense for the microservice description.
 
