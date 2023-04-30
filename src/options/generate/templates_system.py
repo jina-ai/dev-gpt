@@ -110,20 +110,18 @@ If you did a, you must not do b.
 b) If the input can be determined from the previous messages:
 In this case you must describe the unit test verbally.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
-
 **final.txt**
 ```text
 input: "<input here>"
-assertion of output: "<assertion of output here>"
+weak assertion of output: "<weak assertion of output here>"
 ```
-
 If you did b, you must not do a.
 
 Example for: "given a city, get the weather report for the next 5 days using OpenWeatherMap with the api key b6907d289e10d714a6e88b30761fae22":
 **final.txt**
 ```text
 input: "Berlin"
-assertion of output: "contains weather report for the next 5 days"
+weak assertion of output: "contains weather report for the next 5 days"
 ```
 
 Example for "The user inserts a png and gets an svg as response.":
@@ -136,13 +134,13 @@ Example for "The user inserts a png like https://aquasecurity.github.io/kube-ben
 **final.txt**
 ```text
 input: "https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png"
-assertion of output: "is an svg"
+weak assertion of output: "is an svg"
 ```
 
 Example for "The microservice takes nothing as input and returns the current time.":
 **final.txt**
 ```text
 input: "nothing"
-assertion of output: "is a string"
+weak assertion of output: "is a string"
 ```
 '''
