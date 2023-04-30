@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import re
@@ -185,16 +186,22 @@ metas:
             tag_name=REQUIREMENTS_FILE_TAG,
         )[REQUIREMENTS_FILE_NAME]
 
-        self.generate_and_persist_file(
-            section_title='Generate Dockerfile',
-            template=template_generate_apt_get_install,
-            destination_folder=MICROSERVICE_FOLDER_v1,
-            file_name_s=None,
-            parse_result_fn=self.parse_result_fn_dockerfile,
-            docker_file_wrapped=self.read_docker_template(),
-            requirements_file_wrapped=self.files_to_string({
-                REQUIREMENTS_FILE_NAME: requirements_content,
-            })
+        # self.generate_and_persist_file(
+        #     section_title='Generate Dockerfile',
+        #     template=template_generate_apt_get_install,
+        #     destination_folder=MICROSERVICE_FOLDER_v1,
+        #     file_name_s=None,
+        #     parse_result_fn=self.parse_result_fn_dockerfile,
+        #     docker_file_wrapped=self.read_docker_template(),
+        #     requirements_file_wrapped=self.files_to_string({
+        #         REQUIREMENTS_FILE_NAME: requirements_content,
+        #     })
+        # )
+
+        # docker file from curdir
+        shutil.copy(
+            src=os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'),
+            dst=MICROSERVICE_FOLDER_v1 + '/Dockerfile'
         )
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
@@ -364,15 +371,15 @@ metas:
 
     def get_possible_packages(self):
         print_colored('', '\n\n############# What packages to use? #############', 'blue')
-        packages_csv_string = self.generate_and_persist_file(
+        packages_json_string = self.generate_and_persist_file(
             section_title='Generate possible packages',
             template=template_generate_possible_packages,
             destination_folder=self.microservice_root_path,
-            file_name_s=['packages.csv'],
+            file_name_s=['strategies.json'],
             system_definition_examples=[],
             description=self.microservice_specification.task
-        )['packages.csv']
-        packages_list = [[pkg.strip().lower() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]
+        )['strategies.json']
+        packages_list = [[pkg.strip().lower() for pkg in packages] for packages in json.loads(packages_json_string)]
         packages_list = [
             packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0
         ]

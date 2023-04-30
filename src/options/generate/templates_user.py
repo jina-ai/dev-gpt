@@ -45,15 +45,21 @@ PDFParserExecutor
 )
 
 
-template_generate_possible_packages_output_format_string = '''You must output the package combinations as a list of lists wrapped into ``` and name it **packages.csv**. Do not use quotation marks around packages names in the output. Separate packages in a combination by comma. The output looks this:
-**{file_name}**
+template_generate_possible_packages_output_format_string = '''You must output the package combinations as a \
+list of lists wrapped into ``` and name it **strategies.json**. \
+Do not use quotation marks around packages names in the output. \
+Separate packages in a combination by comma. \
+Note that you can also leave a line empty to indicate that one of the strategies does not require any package and can be done in plain python.
+The output looks like this:
+**strategies.json**
 ```
-package1a, package1b ...
-package2a, package2b, package2c
-package3a ...
-package4a ...
-package5a ...
-...
+[
+  ["package1", "package2", "package3"],
+  ["package4", "package5"],
+  ["package6", "package7", "package8", "package9"],
+  [],
+  ["package10"]
+]
 ```'''
 
 
