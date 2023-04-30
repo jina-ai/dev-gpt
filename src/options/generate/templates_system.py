@@ -96,9 +96,9 @@ system_test_iteration = f'''
 The client gives you a description of the microservice (web service).
 Your task is to describe verbally a unit test for that microservice.
 There are two cases:
-a) If the input of the unit test requires an example input file or e.g. a certain textual description that is not mentioned before:
-In this case you must ask the client to provide the example input file as URL.
+a) If no example input is provided in the description, then you must ask the client to provide an example input file URL or example string depending on the use-case.
 You must not accept files that are not URLs.
+You must not ask for an example input in case the input can be determined from the conversation with the client.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
 **prompt.txt**
