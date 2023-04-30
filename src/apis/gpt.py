@@ -108,6 +108,9 @@ class _GPTConversation:
         self.messages = messages
         self.print_stream = print_stream
         self.print_costs = print_costs
+
+
+    def print_messages(self, messages):
         for i, message in enumerate(messages):
             if os.environ['VERBOSE'].lower() == 'true':
                 if isinstance(message, SystemMessage):
@@ -121,9 +124,7 @@ class _GPTConversation:
         MassageClass = HumanMessage if role == 'user' else SystemMessage
         chat_message = MassageClass(content=prompt)
         self.messages.append(chat_message)
-        if os.environ['VERBOSE'].lower() == 'true':
-            color = 'blue' if role == 'user' else 'magenta'
-            print_colored(role, prompt, color)
+        self.print_messages(self.messages)
         if self.print_stream:
             print_colored('assistant', '', 'green', end='')
         print('thinking...')
