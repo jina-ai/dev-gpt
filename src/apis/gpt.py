@@ -108,14 +108,14 @@ class _GPTConversation:
         self.messages = messages
         self.print_stream = print_stream
         self.print_costs = print_costs
-        for message in messages:
+        for i, message in enumerate(messages):
             if os.environ['VERBOSE'].lower() == 'true':
                 if isinstance(message, SystemMessage):
-                    print_colored('system - prompt', message.content, 'magenta')
+                    print_colored(f'({i}) system - prompt', message.content, 'magenta')
                 elif isinstance(message, HumanMessage):
-                    print_colored('user - prompt', message.content, 'blue')
+                    print_colored(f'({i}) user - prompt', message.content, 'blue')
                 elif isinstance(message, AIMessage):
-                    print_colored('assistant - prompt', message.content, 'green')
+                    print_colored(f'({i}) assistant - prompt', message.content, 'green')
 
     def chat(self, prompt: str, role: str = 'user'):
         MassageClass = HumanMessage if role == 'user' else SystemMessage
@@ -126,6 +126,7 @@ class _GPTConversation:
             print_colored(role, prompt, color)
         if self.print_stream:
             print_colored('assistant', '', 'green', end='')
+        print('thinking...')
         for i in range(10):
             try:
                 response = self._chat(self.messages)

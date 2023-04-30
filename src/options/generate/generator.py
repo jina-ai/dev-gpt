@@ -430,7 +430,7 @@ gptdeploy deploy --path {self.microservice_root_path}
                     messages,
                     'test',
                     '''Note that the test scenario must not contain information that was already mentioned in the microservice description.
-Note that if the test scenario must contain the full description of the concrete example in case it was mentioned in the microservice description.'''
+Note that the test scenario must contain the full description of the concrete example in case it was mentioned in the microservice description.'''
                 )
                 break
             except self.TaskRefinementException as e:
@@ -450,7 +450,6 @@ Test scenario:
         num_parsing_tries = 0
         while True:
             conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
-            print('thinking...')
             agent_response_raw = conversation.chat(
                 template_refinement.format(
                     user_input=user_input,
