@@ -443,15 +443,6 @@ gptdeploy deploy --path {self.microservice_root_path}
 {self.microservice_specification.task}
 ''',
                 )
-
-                # while True:
-                #     example_input = get_example_input()
-                #     if example_input:
-                #         break
-                #     else:
-                #         user_input = ask_client_for_example()
-                #
-                # is example input already provided
                 self.refine_requirements(
                     pm,
                     [
