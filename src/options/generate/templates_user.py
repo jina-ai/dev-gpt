@@ -367,7 +367,7 @@ Either ask for clarification like this:
 Or write the summarized microservice{_optional_test} description like this:
 **final.txt**
 ```text
-<microservice{_optional_test} description here>
+{final_placeholder}
 ``` 
 Note that your response must be either prompt.txt or final.txt. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.

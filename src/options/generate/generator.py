@@ -430,7 +430,7 @@ gptdeploy deploy --path {self.microservice_root_path}
                     messages,
                     'test',
                     '''Note that the test scenario must not contain information that was already mentioned in the microservice description.
-Note that the test scenario must contain the full description of the concrete example in case it was mentioned in the microservice description.'''
+Note that you must not ask for information that were already mentioned before.'''
                 )
                 break
             except self.TaskRefinementException as e:
@@ -453,7 +453,8 @@ Test scenario:
             agent_response_raw = conversation.chat(
                 template_refinement.format(
                     user_input=user_input,
-                    _optional_test=' test' if refinement_type == 'test' else '',
+                    final_placeholder='''input: "<input here>"
+weak assertion of output: "<weak assertion of output here>"''' if refinement_type == 'test' else '<microservice description here>',
                     custom_suffix=custom_suffix,
                 ),
                 role='user'
