@@ -24,7 +24,8 @@ from src.options.generate.templates_user import template_generate_microservice_n
     template_solve_pip_dependency_issue, template_is_dependency_issue, template_generate_playground, \
     template_generate_function, template_generate_test, template_generate_requirements, \
     template_chain_of_thought, template_summarize_error, \
-    template_generate_apt_get_install, template_solve_apt_get_dependency_issue, template_refinement
+    template_generate_apt_get_install, template_solve_apt_get_dependency_issue, template_pm_task_iteration, \
+    template_pm_test_iteration
 
 from src.options.generate.ui import get_random_employee
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
@@ -422,15 +423,26 @@ gptdeploy deploy --path {self.microservice_root_path}
                 if not original_task:
                     self.microservice_specification.task = self.get_user_input(pm, 'What should your microservice do?')
 
-                messages = [SystemMessage(content=system_task_introduction + system_task_iteration)]
-                self.refine_requirements(pm, messages, 'task', '')
+                messages = [
+                    SystemMessage(content=system_task_introduction + system_task_iteration),
+                ]
+                self.refine_requirements(
+                    pm,
+                    messages,
+                    'task',
+                    '',
+                    template_pm_task_iteration,
+                    micro_service_initial_description=f'Microservice description: {self.microservice_specification.task}'
+                )
+                # replacing the system message of the task with the system message of the test
                 messages[0] = SystemMessage(content=system_task_introduction + system_test_iteration)
                 self.refine_requirements(
                     pm,
                     messages,
                     'test',
                     '''Note that the test scenario must not contain information that was already mentioned in the microservice description.
-Note that you must not ask for information that were already mentioned before.'''
+Note that you must not ask for information that were already mentioned before.''',
+                    template_pm_test_iteration
                 )
                 break
             except self.TaskRefinementException as e:
@@ -445,17 +457,15 @@ Test scenario:
 {self.microservice_specification.test}
 ''')
 
-    def refine_requirements(self, pm, messages, refinement_type, custom_suffix):
+    def refine_requirements(self, pm, messages, refinement_type, custom_suffix, template_pm_iteration, micro_service_initial_description=None):
         user_input = self.microservice_specification.task
         num_parsing_tries = 0
         while True:
             conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
             agent_response_raw = conversation.chat(
-                template_refinement.format(
-                    user_input=user_input,
-                    final_placeholder='''input: "<input here>"
-weak assertion of output: "<weak assertion of output here>"''' if refinement_type == 'test' else '<microservice description here>',
+                template_pm_iteration.format(
                     custom_suffix=custom_suffix,
+                    **{'micro_service_initial_description': micro_service_initial_description} if refinement_type == 'task' and len(messages) == 1 else {}
                 ),
                 role='user'
             )

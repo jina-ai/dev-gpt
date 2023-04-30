@@ -28,11 +28,11 @@ You must not output anything else than what you got told in the following steps.
 1. 
 You must create a check list for the requirements of the microservice.
 Input and output have to be accurately specified.
-You must use the following format (insert ✅, ❌ or n/a) depending on whether the requirement is fulfilled, not fulfilled or not applicable:
-input: <insert one of ✅, ❌ or n/a here>
-output: <insert one of ✅, ❌ or n/a here>
-api access: <insert one of ✅, ❌ or n/a here>
-database access: <insert one of ✅, ❌ or n/a here>
+You must use the following format (insert defined, not defined or n/a) depending on whether the requirement is fulfilled, not fulfilled or not applicable:
+input: <insert defined, not defined or n/a here>
+output: <insert defined, not defined or n/a here>
+api access: <insert defined, not defined or n/a here>
+database access: <insert defined, not defined or n/a here>
 
 2.
 You must do either a or b.
@@ -59,9 +59,9 @@ The character sequence ``` must always be at the beginning of the line.
 You must not add information that was not provided by the client.
 
 Example for the description "given a city, get the weather report for the next 5 days":
-input: ✅
-output: ✅
-api access: ❌
+input: defined
+output: defined
+api access: not defined
 database access: n/a
 
 **prompt.txt**
@@ -70,8 +70,8 @@ Please provide the url of the weather api and a valid api key or some other way 
 ```
 
 Example for the description "convert png to svg":
-input: ✅
-output: ✅
+input: defined
+output: defined
 api access: n/a
 database access: n/a
 
@@ -81,8 +81,8 @@ The user inserts a png and gets an svg as response.
 ```
 
 Example for the description "parser":
-input: ❌
-output: ❌
+input: not defined
+output: not defined
 api access: n/a
 database access: n/a
 

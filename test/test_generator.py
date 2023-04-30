@@ -65,6 +65,8 @@ def test_generation_level_2(tmpdir):
     )
     generator.generate()
 
+#Create a wrapper around google called Joogle. It modifies the page summary preview text of the search results to insert the word Jina as much as possible.
+
 @pytest.mark.skip(reason="not possible")
 def test_generation_level_3(tmpdir):
     """

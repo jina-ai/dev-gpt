@@ -349,14 +349,9 @@ The playground (app.py) must not import the executor.
 '''
 )
 
-# Create a wrapper around google called Joogle. It modifies the page summary preview text of the search results to insert the word Jina as much as possible.
-template_refinement = PromptTemplate.from_template(
-    '''
+template_pm_task_iteration = PromptTemplate.from_template(
+    '''{micro_service_initial_description}
 1.Quickly go through the checklist (input/output well defined? api or db access needed?)  and think about if you should ask something to the client or if you should write the final description.
-**client-response.txt**
-```text
-{user_input}
-```
 2.Either write the prompt.txt or the final.txt file.
 Either ask for clarification like this:
 **prompt.txt**
@@ -364,14 +359,41 @@ Either ask for clarification like this:
 <prompt to the client here (must be only one question)>
 ```
 
-Or write the summarized microservice{_optional_test} description like this:
+Or write the summarized microservice description like this:
 **final.txt**
 ```text
-{final_placeholder}
+<microservice description here>
 ``` 
 Note that your response must be either prompt.txt or final.txt. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.
 Note that the last sequence of characters in your response must be ``` (triple backtick).
+Note that prompt.txt must not only contain one question.
+Note that if urls, secrets, database names, etc. are mentioned, they must be part of the summary.
+{custom_suffix}
+'''
+)
+
+template_pm_test_iteration = PromptTemplate.from_template(
+    '''If the example input for the microservice was mentioned already, then output final.txt.
+Otherwise, output prompt.txt where you ask for the example input file as URL.
+Except for urls, you should come up with your own example input that makes sense for the microservice description.
+
+Example for the case where you have to ask for the example input file:
+**prompt.txt**
+```text
+Can you please provide an example input file as URL?
+```
+
+Example for the case where the example input was already mentioned:
+**final.txt**
+```text
+input: "<input here>"
+weak assertion of output: "<weak assertion of output here>"
+``` 
+Note that your response must be either prompt.txt or final.txt. You must not write both.
+Note that you must obey the double asterisk and tripple backtick syntax from above.
+Note that the last sequence of characters in your response must be ``` (triple backtick).
+Note that your response must start with the character sequence ** (double asterisk).
 Note that prompt.txt must not only contain one question.
 Note that if urls, secrets, database names, etc. are mentioned, they must be part of the summary.
 {custom_suffix}
