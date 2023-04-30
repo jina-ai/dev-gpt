@@ -27,7 +27,7 @@ jobs:
       - name: Test
         id: test
         run: |
-          pytest -vs test/test_generator::test_generation_level_${{ matrix.group }}
+          pytest -vs test/test_generator.py::test_generation_level_${{ matrix.group }}
         timeout-minutes: 10
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
