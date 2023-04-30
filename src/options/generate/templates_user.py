@@ -389,13 +389,19 @@ If the example input for the microservice is mentioned in the refined descriptio
 Otherwise, output prompt.txt where you ask for the example input file as URL.
 Except for urls, you should come up with your own example input that makes sense for the microservice description.
 
-Example for the case where you have to ask for the example input file:
+Example for the case where an example input file is required and was not mentioned before:
 **prompt.txt**
 ```text
 Can you please provide an example input file as URL?
 ```
 
-Example for the case where the example input was already mentioned:
+Example for the case where the example input string is required and was not mentioned before:
+**prompt.txt**
+```text
+Can you please provide an example input string?
+```
+
+Example for the case where the example input string or the example input file URL was already mentioned:
 **final.txt**
 ```text
 input: "<input here>"
