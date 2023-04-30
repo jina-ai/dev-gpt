@@ -46,7 +46,7 @@ class Generator:
 
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False, can_contain_code_block=True):
         optional_line_break = '\n' if can_contain_code_block else '' # the \n at the end makes sure that ``` within the generated code is not matched because it is not right before a line break
-        pattern = fr"^\*?\*?{file_name}\*?\*?\n```(?:\w+\n)?([\s\S]*?){optional_line_break}```"
+        pattern = fr"\*?\*?{file_name}\*?\*?\n```(?:\w+\n)?([\s\S]*?){optional_line_break}```"
         match = re.search(pattern, plain_text, re.MULTILINE)
         if match:
             return match.group(1).strip()
@@ -431,12 +431,11 @@ gptdeploy deploy --path {self.microservice_root_path}
                 if not original_task:
                     self.microservice_specification.task = self.get_user_input(pm, 'What should your microservice do?')
 
-                messages = [
-                    SystemMessage(content=system_task_introduction + system_task_iteration),
-                ]
                 self.refine_requirements(
                     pm,
-                    messages,
+                    [
+                        SystemMessage(content=system_task_introduction + system_task_iteration),
+                    ],
                     'task',
                     '',
                     template_pm_task_iteration,
@@ -445,20 +444,31 @@ gptdeploy deploy --path {self.microservice_root_path}
 ''',
                 )
 
-                messages = [
-                    SystemMessage(content=system_task_introduction + system_test_iteration),
-                ]
+                # while True:
+                #     example_input = get_example_input()
+                #     if example_input:
+                #         break
+                #     else:
+                #         user_input = ask_client_for_example()
+                #
+                # is example input already provided
                 self.refine_requirements(
                     pm,
-                    messages,
+                    [
+                        SystemMessage(content=system_task_introduction + system_test_iteration),
+                    ],
                     'test',
                     '''Note that the test scenario must not contain information that was already mentioned in the microservice description.
 Note that you must not ask for information that were already mentioned before.''',
                     template_pm_test_iteration,
                     micro_service_initial_description=f'''Microservice original description: 
+```
 {original_task}
+```
 Microservice refined description: 
+```
 {self.microservice_specification.task}
+```
 ''',
                 )
                 break

@@ -101,6 +101,9 @@ You must not accept files that are not URLs.
 You must not ask for an example input in case the input can be determined from the conversation with the client.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
+1.
+contains example: no
+2.
 **prompt.txt**
 ```text
 <prompt to the client here>
@@ -110,37 +113,53 @@ If you did a, you must not do b.
 b) If the input can be determined from the previous messages:
 In this case you must describe the unit test verbally.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
+
+1.
+contains example: yes (<insert example here>)
+2.
 **final.txt**
 ```text
 input: "<input here>"
-weak assertion of output: "<weak assertion of output here>"
+assertion: "<weak assertion of output here>"
 ```
+
 If you did b, you must not do a.
 
-Example for: "given a city, get the weather report for the next 5 days using OpenWeatherMap with the api key b6907d289e10d714a6e88b30761fae22":
+Example for: "given a city like "Berlin", get the weather report for the next 5 days using OpenWeatherMap with the api key b6907d289e10d714a6e88b30761fae22":
+1.
+contains example: yes (Berlin)
+2.
 **final.txt**
 ```text
 input: "Berlin"
-weak assertion of output: "contains weather report for the next 5 days"
+assertion: "contains weather report for the next 5 days"
 ```
 
 Example for "The user inserts a png and gets an svg as response.":
+1.
+contains example: no
+2.
 **prompt.txt**
 ```text
 Please provide a png example input file as url.
 ```
 
 Example for "The user inserts a png like https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png and gets an svg as response.":
+1.
+contains example: yes (https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png)
+2.
 **final.txt**
 ```text
 input: "https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png"
-weak assertion of output: "is an svg"
+assertion: "is an svg"
 ```
 
 Example for "The microservice takes nothing as input and returns the current time.":
+1.
+contains example: n/a
 **final.txt**
 ```text
 input: "nothing"
-weak assertion of output: "is a string"
+assertion: "is a string"
 ```
 '''

@@ -383,10 +383,10 @@ Note that if urls, secrets, database names, etc. are mentioned, they must be par
 
 template_pm_test_iteration = PromptTemplate.from_template(
     '''{micro_service_initial_description}
-1. Look at the original description and the refined description.
-2. find out if the original description and the refined description contain an example input for the microservice.
+1. write down if the original description and the refined description contain an example input for the microservice.
+2. write down either prompt.txt or final.txt.
 If the example input for the microservice is mentioned in the refined description or the original description, then output final.txt.
-Otherwise, output prompt.txt where you ask for the example input file as URL.
+Otherwise, output prompt.txt where you ask for the example input file as URL or the example string.
 Except for urls, you should come up with your own example input that makes sense for the microservice description.
 
 Example for the case where an example input file is required and was not mentioned before:
@@ -400,8 +400,9 @@ Example for the case where the example input string is required and was not ment
 ```text
 Can you please provide an example input string?
 ```
+Note that you must not ask for an example input in case the example input is already mentioned in the refined description or the original description.
 
-Example for the case where the example input string or the example input file URL was already mentioned:
+Example for the case where the example is already mentioned in the refined description or the original description:
 **final.txt**
 ```text
 input: "<input here>"
@@ -411,8 +412,7 @@ Note that your response must be either prompt.txt or final.txt. You must not wri
 Note that you must obey the double asterisk and tripple backtick syntax from above.
 Note that the last sequence of characters in your response must be ``` (triple backtick).
 Note that your response must start with the character sequence ** (double asterisk).
-Note that prompt.txt must not only contain one question.
-Note that if urls, secrets, database names, etc. are mentioned, they must be part of the summary.
+Note that prompt.txt must only contain one question.
 {custom_suffix}
 '''
 )
