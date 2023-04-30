@@ -60,7 +60,7 @@ package5a ...
 template_generate_possible_packages = PromptTemplate.from_template(
     '''Here is the task description of the problem you need to solve:
 "{description}"
-1. Write down the different strategies to solve the task. For each strategy write down all the non-trivial subtasks you need to solve. If there is a natural language understanding or generation stragegy, write it down.
+1. Write down ut to 3 different strategies to solve the task. For each strategy write down all the non-trivial subtasks you need to solve. If there is a natural language understanding or generation stragegy, write it down.
 2. Find out what is the core problem to solve.
 3. List up to 10 Python packages that are specifically designed or have functionalities to solve the complete core problem with one of the defined strategies. You must add gpt_3_5_turbo_api if the task involves generating or understanding natural language or using a (pre-trained) language model.
 4. Exclude any package that can generate or understand natural language or enables using any language model, but you must not exclude gpt_3_5_turbo_api. Print the cleaned list of packages and give a brief reason for keeping it after its name.
@@ -177,8 +177,9 @@ Name all packages which need to be installed via `apt-get install` in above Dock
 
 {requirements_file_wrapped}
 
-Note that you must not list packages that are already installed in the Dockerfile.
-Output the packages as a white space separated list:
+Note that you must not list apt-get packages that are already installed in the Dockerfile.
+Note that openai does not require any apt-get packages.
+Output the packages that need to me placed at {apt_get_packages} as a white space separated list:
 '''
 )
 
