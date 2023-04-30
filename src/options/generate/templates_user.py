@@ -24,7 +24,7 @@ The implemented function and the test must not contain prototype or placeholder 
 The implemented function and the test must run in a docker container based on debian.
 The implemented function and the test must not use libraries like Flask.
 The implemented function and the test must not have a __main__ function.
-The implemented function and the test must use gpt_3_5_turbo_api if the task requires understanding or generation of natural language or using any language model. Other language models are not allowed.
+The implemented function and the test must use gpt_3_5_turbo_api if the task requires understanding, generation or summrization of natural language or using any language model. Other language models are not allowed.
 The implemented function and the test must not use gpt_3_5_turbo_api or any other language model if the task does not require understanding or generation of natural language.'''
 
 
