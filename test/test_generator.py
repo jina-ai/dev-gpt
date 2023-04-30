@@ -38,7 +38,7 @@ def test_generation_level_1(tmpdir):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        '''Input is a tweet that might contain passive aggressive language.
+        '''Input is a tweet that might contain passive aggressive language. The output is the positive version of that tweet.
 Example tweet: 
 \'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 
 But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
