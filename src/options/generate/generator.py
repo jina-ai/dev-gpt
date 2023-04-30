@@ -439,7 +439,6 @@ gptdeploy deploy --path {self.microservice_root_path}
 
                 messages = [
                     SystemMessage(content=system_task_introduction + system_test_iteration),
-
                 ]
                 self.refine_requirements(
                     pm,
@@ -475,7 +474,7 @@ Test scenario:
             agent_response_raw = conversation.chat(
                 template_pm_iteration.format(
                     custom_suffix=custom_suffix,
-                    **{'micro_service_initial_description': micro_service_initial_description} if len(messages) == 1 else {}
+                    micro_service_initial_description=micro_service_initial_description if len(messages) == 1 else '',
                 ),
                 role='user'
             )
