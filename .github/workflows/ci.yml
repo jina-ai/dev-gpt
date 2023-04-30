@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  test level:
+  test_level:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
