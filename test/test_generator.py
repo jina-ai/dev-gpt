@@ -67,7 +67,7 @@ def test_generation_level_2(tmpdir):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        "The input is a PDF like https://www.africau.edu/images/default/sample.pdf and the output the summarized text.",
+        "The input is a PDF like https://www.africau.edu/images/default/sample.pdf and the output the summarized text (50 words).",
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'
     )
