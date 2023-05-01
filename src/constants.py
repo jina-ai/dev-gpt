@@ -39,9 +39,9 @@ MAX_DEBUGGING_ITERATIONS = 10
 
 DEMO_TOKEN = '45372338e04f5a41af949024db929d46'
 
-PROBLEMATIC_PACKAGES = [
+BLACKLISTED_PACKAGES = [
     # 'Pyrender', 'Trimesh',
     'moderngl', 'pyopengl', 'pyglet', 'pythreejs', 'panda3d', # because they need a screen,
+    'fastapi', 'uvicorn', 'starlette', # because we use jina executors
 ]
 
-UNNECESSARY_PACKAGES = ['fastapi']

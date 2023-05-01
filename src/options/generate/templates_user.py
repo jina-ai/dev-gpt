@@ -221,7 +221,17 @@ You are given the following files:
 
 {all_files_string}
 
-Is this a PACKAGE_MANAGER dependency installation failure? Answer with "yes" or "no".'''
+Is this a PACKAGE_MANAGER dependency installation failure? 
+1. Write down one bullet point on why it could be a PACKAGE_MANAGER dependency installation failure.
+2. Write down one bullet point on why it is unlikely that it is a PACKAGE_MANAGER dependency installation failure.
+3. Write down your final answer.
+4. Write down your final answer as json in the following format:
+**response.json**
+```json
+{{"dependency_installation_failure": "<yes/no>"}}
+```
+Note that you must obey the double asterisk and tripple backtick syntax from above.
+'''
 )
 
 

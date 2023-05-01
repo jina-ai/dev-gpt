@@ -14,9 +14,10 @@ from pydantic.dataclasses import dataclass
 from src.apis import gpt
 from src.apis.gpt import _GPTConversation
 from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
+from src.apis.pypi import is_package_on_pypi
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
-    PROBLEMATIC_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
-    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, UNNECESSARY_PACKAGES, IMPLEMENTATION_FILE_NAME, \
+    BLACKLISTED_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
+    REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
     IMPLEMENTATION_FILE_TAG
 from src.options.generate.templates_system import  system_task_iteration, system_task_introduction, system_test_iteration
 from src.options.generate.templates_user import template_generate_microservice_name, \
@@ -52,7 +53,7 @@ class Generator:
             return match.group(1).strip()
         elif match_single_block:
             # Check for a single code block
-            single_code_block_pattern = r"^```(?:\w+\n)?([\s\S]*?)```"
+            single_code_block_pattern = r"```(?:\w+\n)?([\s\S]*?)```"
             single_code_block_match = re.findall(single_code_block_pattern, plain_text, re.MULTILINE)
             if len(single_code_block_match) == 1:
                 return single_code_block_match[0].strip()
@@ -374,9 +375,11 @@ pytest
 
         print_colored('', f'Is it a {package_manager} dependency issue?', 'blue')
         conversation = self.gpt_session.get_conversation()
-        answer = conversation.chat(
+        answer_raw = conversation.chat(
             template_is_dependency_issue.format(summarized_error=summarized_error, all_files_string=dock_req_string).replace('PACKAGE_MANAGER', package_manager)
         )
+        answer_json_string = self.extract_content_from_result(answer_raw, 'response.json', match_single_block=True, )
+        answer = json.loads(answer_json_string)['dependency_installation_failure']
         return 'yes' in answer.lower()
 
     def generate_microservice_name(self, description):
@@ -402,12 +405,7 @@ pytest
         packages_list = [[pkg.strip().lower() for pkg in packages] for packages in json.loads(packages_json_string)]
         packages_list = [[self.replace_with_gpt_3_5_turbo_if_possible(pkg) for pkg in packages] for packages in packages_list]
 
-        packages_list = [
-            packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0
-        ]
-        packages_list = [
-            [package for package in packages if package not in UNNECESSARY_PACKAGES] for packages in packages_list
-        ]
+        packages_list = self.filter_packages_list(packages_list)
         packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
         return packages_list
 
@@ -542,7 +540,14 @@ Test scenario:
     def replace_with_gpt_3_5_turbo_if_possible(pkg):
         if pkg in ['allennlp', 'bertopic', 'fasttext', 'flair', 'gensim', 'nltk',
                    'pattern', 'polyglot', 'pytorch-transformers', 'rasa', 'sentence-transformers',
-                   'spacy', 'stanza', 'summarizer', 'textblob', 'textstat', 'transformers']:
+                   'spacy', 'stanza', 'summarizer', 'sumy', 'textblob', 'textstat', 'transformers']:
 
             return 'gpt_3_5_turbo_api'
         return pkg
+
+    @staticmethod
+    def filter_packages_list(packages_list):
+        packages_list = [
+            [package for package in packages if package not in BLACKLISTED_PACKAGES and is_package_on_pypi(package)] for packages in packages_list
+        ]
+        return packages_list

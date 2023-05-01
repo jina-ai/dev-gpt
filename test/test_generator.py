@@ -96,7 +96,7 @@ headers = {{
 data = {{
   "url": "URL_OF_STORED_AUDIO_FILE"
 }}
-response = requests.post(url, headers=headers, files=file, data=data)
+response = requests.post(url, headers=headers, data=data)
 print(response.text)
 2. Summarize the text (~50 words) while still maintaining the key facts.
 3. Create an audio file of the summarized text using a tts library.
