@@ -5,12 +5,12 @@ on:
   pull_request:
 
 jobs:
-  test_level:
+  test_cognitive_level:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        group: [0, 1, 2]
+        group: [0, 1, 2, 3]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.8

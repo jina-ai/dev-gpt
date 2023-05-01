@@ -31,6 +31,7 @@ def test_generation_level_0(tmpdir):
 def tmpdir():
     return 'microservice'
 
+
 def test_generation_level_1(tmpdir):
     """
     Requirements:
@@ -72,7 +73,6 @@ def test_generation_level_2(tmpdir):
     assert generator.generate() == 0
 
 
-@pytest.mark.skip(reason="not possible")
 def test_generation_level_3(tmpdir):
     """
     Requirements:
@@ -105,7 +105,7 @@ Create an audio file of the summarized text.
     )
     assert generator.generate() == 0
 
-@pytest.mark.skip(reason="not possible")
+
 def test_generation_level_4(tmpdir):
     """
     Requirements:
@@ -142,7 +142,6 @@ The output is the image with the joke on it.''',
                           'gpt-3.5-turbo'
                           )
     assert generator.generate() == 0
-
 
 # further ideas:
 # Create a wrapper around google called Joogle. It modifies the page summary preview text of the search results to insert the word Jina as much as possible.
