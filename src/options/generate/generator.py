@@ -183,6 +183,7 @@ metas:
             }),
             file_name_purpose=REQUIREMENTS_FILE_NAME,
             file_name_s=[REQUIREMENTS_FILE_NAME],
+            parse_result_fn=self.parse_result_fn_requirements,
             tag_name=REQUIREMENTS_FILE_TAG,
         )[REQUIREMENTS_FILE_NAME]
 
@@ -216,6 +217,16 @@ metas:
     def parse_result_fn_dockerfile(self, content_raw: str):
         docker_file_template = self.read_docker_template()
         return {DOCKER_FILE_NAME: docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=content_raw)}
+
+    def parse_result_fn_requirements(self, content_raw: str):
+        lines = content_raw.split('\n')
+        lines = [line for line in lines if not any([pkg in line for pkg in ['jina', 'docarray', 'openai', 'pytest']])]
+        content_modified = f'''jina==3.15.1.dev14
+docarray==0.21.0
+openai>=0.26.0
+pytest
+{os.linesep.join(lines)}'''
+        return {REQUIREMENTS_FILE_NAME: content_modified}
 
     def generate_playground(self, microservice_name, microservice_path):
         print_colored('', '\n\n############# Playground #############', 'blue')
