@@ -181,16 +181,23 @@ Name all packages which need to be installed via `apt-get install` in above Dock
 
 Note that you must not list apt-get packages that are already installed in the Dockerfile.
 Note that openai does not require any apt-get packages.
-Note that you only list packages where you are highly confident that they are really needed.
+Note that you are only allowed to list packages where you are highly confident that they are really needed.
+Note that you can assume that the standard python packages are already installed.
 Output the packages that need to me placed at {{apt_get_packages}} as json in the following format:
 **apt-get-packages.json**
 ```json
 {{"packages": ["<package1>", "<package2>"]}}
 ```
-Have in mind that the packages list can be empty like this:
+Example for the following requirements.txt file:
+**requirements.txt**
+```
+numpy==1.19.5
+fitz
+```
+The output would be:
 **apt-get-packages.json**
 ```json
-{{"packages": []}}
+{"packages": []}
 ```
 '''
 )

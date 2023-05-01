@@ -216,7 +216,7 @@ metas:
 
     def parse_result_fn_dockerfile(self, content_raw: str):
         json_string = self.extract_content_from_result(content_raw, 'apt-get-packages.json', match_single_block=True)
-        packages = json.loads(json_string)['packages']
+        packages = ' '.join(json.loads(json_string)['packages'])
 
         docker_file_template = self.read_docker_template()
         return {DOCKER_FILE_NAME: docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=packages)}
