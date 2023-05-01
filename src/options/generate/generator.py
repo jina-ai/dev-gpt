@@ -219,7 +219,9 @@ metas:
         return {DOCKER_FILE_NAME: docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=content_raw)}
 
     def parse_result_fn_requirements(self, content_raw: str):
-        lines = content_raw.split('\n')
+        content_parsed = self.extract_content_from_result(content_raw, 'requirements.txt', match_single_block=True)
+
+        lines = content_parsed.split('\n')
         lines = [line for line in lines if not any([pkg in line for pkg in ['jina', 'docarray', 'openai', 'pytest']])]
         content_modified = f'''jina==3.15.1.dev14
 docarray==0.21.0
