@@ -5,4 +5,4 @@ openai>=0.26.0
 psutil
 jcloud
 jina-hubble-sdk
-langchain
+langchain==0.0.153
