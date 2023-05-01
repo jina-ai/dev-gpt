@@ -157,13 +157,10 @@ template_generate_requirements = PromptTemplate.from_template(
 
 {code_files_wrapped}
     
-Write the content of the requirements.txt file.
-The requirements.txt file must include the following packages in that specified version:
+Write the content of the requirements.txt file like this:
+**requirements.txt**
 ```
-jina==3.15.1.dev14
-docarray==0.21.0
-openai>=0.26.0
-pytest
+...
 ```
 Add any more packages that are needed to run the code.
 You must not add gpt_3_5_turbo_api to the requirements.txt file. 
@@ -184,7 +181,17 @@ Name all packages which need to be installed via `apt-get install` in above Dock
 
 Note that you must not list apt-get packages that are already installed in the Dockerfile.
 Note that openai does not require any apt-get packages.
-Output the packages that need to me placed at {{apt_get_packages}} as a white space separated list:
+Note that you only list packages where you are highly confident that they are really needed.
+Output the packages that need to me placed at {{apt_get_packages}} as json in the following format:
+**apt-get-packages.json**
+```json
+{{"packages": ["<package1>", "<package2>"]}}
+```
+Have in mind that the packages list can be empty like this:
+**apt-get-packages.json**
+```json
+{{"packages": []}}
+```
 '''
 )
 

@@ -187,23 +187,23 @@ metas:
             tag_name=REQUIREMENTS_FILE_TAG,
         )[REQUIREMENTS_FILE_NAME]
 
-        # self.generate_and_persist_file(
-        #     section_title='Generate Dockerfile',
-        #     template=template_generate_apt_get_install,
-        #     destination_folder=MICROSERVICE_FOLDER_v1,
-        #     file_name_s=None,
-        #     parse_result_fn=self.parse_result_fn_dockerfile,
-        #     docker_file_wrapped=self.read_docker_template(),
-        #     requirements_file_wrapped=self.files_to_string({
-        #         REQUIREMENTS_FILE_NAME: requirements_content,
-        #     })
-        # )
-
-        # docker file from curdir
-        shutil.copy(
-            src=os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'),
-            dst=MICROSERVICE_FOLDER_v1 + '/Dockerfile'
+        self.generate_and_persist_file(
+            section_title='Generate Dockerfile',
+            template=template_generate_apt_get_install,
+            destination_folder=MICROSERVICE_FOLDER_v1,
+            file_name_s=None,
+            parse_result_fn=self.parse_result_fn_dockerfile,
+            docker_file_wrapped=self.read_docker_template(),
+            requirements_file_wrapped=self.files_to_string({
+                REQUIREMENTS_FILE_NAME: requirements_content,
+            })
         )
+
+        # # docker file from curdir
+        # shutil.copy(
+        #     src=os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'),
+        #     dst=MICROSERVICE_FOLDER_v1 + '/Dockerfile'
+        # )
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
 
@@ -215,14 +215,17 @@ metas:
             return f.read()
 
     def parse_result_fn_dockerfile(self, content_raw: str):
+        json_string = self.extract_content_from_result(content_raw, 'apt-get-packages.json', match_single_block=True)
+        packages = json.loads(json_string)['packages']
+
         docker_file_template = self.read_docker_template()
-        return {DOCKER_FILE_NAME: docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=content_raw)}
+        return {DOCKER_FILE_NAME: docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=packages)}
 
     def parse_result_fn_requirements(self, content_raw: str):
         content_parsed = self.extract_content_from_result(content_raw, 'requirements.txt', match_single_block=True)
 
         lines = content_parsed.split('\n')
-        lines = [line for line in lines if not any([pkg in line for pkg in ['jina', 'docarray', 'openai', 'pytest']])]
+        lines = [line for line in lines if not any([pkg in line for pkg in ['jina', 'docarray', 'openai', 'pytest', 'gpt_3_5_turbo_api']])]
         content_modified = f'''jina==3.15.1.dev14
 docarray==0.21.0
 openai>=0.26.0
@@ -322,7 +325,7 @@ pytest
                 section_title='Debugging apt-get dependency issue',
                 template=template_solve_apt_get_dependency_issue,
                 destination_folder=next_microservice_path,
-                file_name_s=None,
+                file_name_s=['apt-get-packages.json'],
                 parse_result_fn=self.parse_result_fn_dockerfile,
                 system_definition_examples=[],
                 summarized_error=summarized_error,

@@ -26,6 +26,11 @@ def test_generation_level_0(tmpdir):
     assert generator.generate() == 0
 
 
+# fixture
+@pytest.fixture
+def tmpdir():
+    return 'microservice'
+
 def test_generation_level_1(tmpdir):
     """
     Requirements:
