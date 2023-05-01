@@ -405,8 +405,8 @@ Note that you must not ask for an example input in case the example input is alr
 Example for the case where the example is already mentioned in the refined description or the original description:
 **final.txt**
 ```text
-input: "<input here>"
-assertion: "the output must be of type <type here>"
+input: <input here>
+assertion: the output is of type <type here>
 ``` 
 Note that your response must be either prompt.txt or final.txt. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.

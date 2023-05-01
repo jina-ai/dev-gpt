@@ -380,6 +380,8 @@ metas:
             description=self.microservice_specification.task
         )['strategies.json']
         packages_list = [[pkg.strip().lower() for pkg in packages] for packages in json.loads(packages_json_string)]
+        packages_list = [[self.replace_with_gpt_3_5_turbo_if_possible(pkg) for pkg in packages] for packages in packages_list]
+
         packages_list = [
             packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0
         ]
@@ -512,3 +514,8 @@ Test scenario:
         while not val:
             val = input('you: ')
         return val
+
+    @staticmethod
+    def replace_with_gpt_3_5_turbo_if_possible(pkg):
+        if pkg in ['nltk', 'textblob', 'spacy', 'transformers']:
+            return 'gpt_3_5_turbo_api'

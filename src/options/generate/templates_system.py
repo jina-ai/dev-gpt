@@ -120,7 +120,7 @@ contains example: yes (<insert example here>)
 **final.txt**
 ```text
 input: "<input here>"
-assertion: "<weak assertion of output here>"
+assertion: the output is of type <type here>
 ```
 
 If you did b, you must not do a.
@@ -132,7 +132,7 @@ contains example: yes (Berlin)
 **final.txt**
 ```text
 input: "Berlin"
-assertion: "contains weather report for the next 5 days"
+assertion: the output is of type string
 ```
 
 Example for "The user inserts a png and gets an svg as response.":
@@ -151,7 +151,7 @@ contains example: yes (https://aquasecurity.github.io/kube-bench/v0.6.5/images/k
 **final.txt**
 ```text
 input: "https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png"
-assertion: "is an svg"
+assertion: the output is of type svg
 ```
 
 Example for "The microservice takes nothing as input and returns the current time.":
@@ -160,6 +160,6 @@ contains example: n/a
 **final.txt**
 ```text
 input: "nothing"
-assertion: "is a string"
+assertion: the output is of type string
 ```
 '''
