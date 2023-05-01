@@ -530,6 +530,6 @@ Test scenario:
 
     @staticmethod
     def replace_with_gpt_3_5_turbo_if_possible(pkg):
-        if pkg in ['nltk', 'textblob', 'spacy', 'transformers']:
+        if pkg in ['nltk', 'textblob', 'spacy', 'transformers', 'textstat']:
             return 'gpt_3_5_turbo_api'
         return pkg
