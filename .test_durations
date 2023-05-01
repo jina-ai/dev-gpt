@@ -1,9 +1,0 @@
-{
-    "test/test_generator.py::test_generation_level_0": 100,
-    "test/test_generator.py::test_generation_level_1": 100,
-    "test/test_generator.py::test_generation_level_2": 100,
-    "test/test_generator.py::test_generation_level_3": 100,
-    "test/test_generator.py::test_generation_level_4": 100,
-    "test/test_hub.py::test_is_microservice_in_hub": 1,
-    "test/test_strings.py::test_clean_color_codes": 1
-}

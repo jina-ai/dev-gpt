@@ -1,4 +1,6 @@
 FROM jinaai/jina:3.14.1-py39-standard
+# update pip
+RUN pip install --upgrade pip
 
 RUN apt-get update && apt-get install --no-install-recommends -y {{apt_get_packages}} && apt-get clean && rm -rf /var/lib/apt/lists/*
 

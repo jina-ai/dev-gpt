@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import re
@@ -24,7 +25,8 @@ from src.options.generate.templates_user import template_generate_microservice_n
     template_solve_pip_dependency_issue, template_is_dependency_issue, template_generate_playground, \
     template_generate_function, template_generate_test, template_generate_requirements, \
     template_chain_of_thought, template_summarize_error, \
-    template_generate_apt_get_install, template_solve_apt_get_dependency_issue, template_refinement
+    template_generate_apt_get_install, template_solve_apt_get_dependency_issue, template_pm_task_iteration, \
+    template_pm_test_iteration
 
 from src.options.generate.ui import get_random_employee
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
@@ -44,7 +46,7 @@ class Generator:
 
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False, can_contain_code_block=True):
         optional_line_break = '\n' if can_contain_code_block else '' # the \n at the end makes sure that ``` within the generated code is not matched because it is not right before a line break
-        pattern = fr"^\*\*{file_name}\*\*\n```(?:\w+\n)?([\s\S]*?){optional_line_break}```"
+        pattern = fr"\*?\*?{file_name}\*?\*?\n```(?:\w+\n)?([\s\S]*?){optional_line_break}```"
         match = re.search(pattern, plain_text, re.MULTILINE)
         if match:
             return match.group(1).strip()
@@ -181,20 +183,31 @@ metas:
             }),
             file_name_purpose=REQUIREMENTS_FILE_NAME,
             file_name_s=[REQUIREMENTS_FILE_NAME],
+            parse_result_fn=self.parse_result_fn_requirements,
             tag_name=REQUIREMENTS_FILE_TAG,
         )[REQUIREMENTS_FILE_NAME]
 
-        self.generate_and_persist_file(
-            section_title='Generate Dockerfile',
-            template=template_generate_apt_get_install,
-            destination_folder=MICROSERVICE_FOLDER_v1,
-            file_name_s=None,
-            parse_result_fn=self.parse_result_fn_dockerfile,
-            docker_file_wrapped=self.read_docker_template(),
-            requirements_file_wrapped=self.files_to_string({
-                REQUIREMENTS_FILE_NAME: requirements_content,
-            })
-        )
+        # I deactivated this because 3.5-turbo was halucinating packages that were not needed
+        # now, in the first iteration the default dockerfile is used
+        # self.generate_and_persist_file(
+        #     section_title='Generate Dockerfile',
+        #     template=template_generate_apt_get_install,
+        #     destination_folder=MICROSERVICE_FOLDER_v1,
+        #     file_name_s=None,
+        #     parse_result_fn=self.parse_result_fn_dockerfile,
+        #     docker_file_wrapped=self.read_docker_template(),
+        #     requirements_file_wrapped=self.files_to_string({
+        #         REQUIREMENTS_FILE_NAME: requirements_content,
+        #     })
+        # )
+
+
+        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r', encoding='utf-8') as f:
+            docker_file_template_lines = f.readlines()
+        docker_file_template_lines = [line for line in docker_file_template_lines if not line.startswith('RUN apt-get update')]
+        docker_file_content = '\n'.join(docker_file_template_lines)
+        persist_file(docker_file_content, os.path.join(MICROSERVICE_FOLDER_v1, 'Dockerfile'))
+
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
 
@@ -206,8 +219,23 @@ metas:
             return f.read()
 
     def parse_result_fn_dockerfile(self, content_raw: str):
+        json_string = self.extract_content_from_result(content_raw, 'apt-get-packages.json', match_single_block=True)
+        packages = ' '.join(json.loads(json_string)['packages'])
+
         docker_file_template = self.read_docker_template()
-        return {DOCKER_FILE_NAME: docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=content_raw)}
+        return {DOCKER_FILE_NAME: docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=packages)}
+
+    def parse_result_fn_requirements(self, content_raw: str):
+        content_parsed = self.extract_content_from_result(content_raw, 'requirements.txt', match_single_block=True)
+
+        lines = content_parsed.split('\n')
+        lines = [line for line in lines if not any([pkg in line for pkg in ['jina', 'docarray', 'openai', 'pytest', 'gpt_3_5_turbo_api']])]
+        content_modified = f'''jina==3.15.1.dev14
+docarray==0.21.0
+openai==0.27.5
+pytest
+{os.linesep.join(lines)}'''
+        return {REQUIREMENTS_FILE_NAME: content_modified}
 
     def generate_playground(self, microservice_name, microservice_path):
         print_colored('', '\n\n############# Playground #############', 'blue')
@@ -301,7 +329,7 @@ metas:
                 section_title='Debugging apt-get dependency issue',
                 template=template_solve_apt_get_dependency_issue,
                 destination_folder=next_microservice_path,
-                file_name_s=None,
+                file_name_s=['apt-get-packages.json'],
                 parse_result_fn=self.parse_result_fn_dockerfile,
                 system_definition_examples=[],
                 summarized_error=summarized_error,
@@ -363,15 +391,17 @@ metas:
 
     def get_possible_packages(self):
         print_colored('', '\n\n############# What packages to use? #############', 'blue')
-        packages_csv_string = self.generate_and_persist_file(
+        packages_json_string = self.generate_and_persist_file(
             section_title='Generate possible packages',
             template=template_generate_possible_packages,
             destination_folder=self.microservice_root_path,
-            file_name_s=['packages.csv'],
+            file_name_s=['strategies.json'],
             system_definition_examples=[],
             description=self.microservice_specification.task
-        )['packages.csv']
-        packages_list = [[pkg.strip().lower() for pkg in packages_string.split(',')] for packages_string in packages_csv_string.split('\n')]
+        )['strategies.json']
+        packages_list = [[pkg.strip().lower() for pkg in packages] for packages in json.loads(packages_json_string)]
+        packages_list = [[self.replace_with_gpt_3_5_turbo_if_possible(pkg) for pkg in packages] for packages in packages_list]
+
         packages_list = [
             packages for packages in packages_list if len(set(packages).intersection(set(PROBLEMATIC_PACKAGES))) == 0
         ]
@@ -398,6 +428,7 @@ metas:
                     print_colored('',
                                   f'Could not debug the Microservice with any of the approaches: {packages} giving up.',
                                   'red')
+                    return -1
                 continue
             print(f'''
 You can now run or deploy your microservice:
@@ -405,7 +436,7 @@ gptdeploy run --path {self.microservice_root_path}
 gptdeploy deploy --path {self.microservice_root_path}
 '''
                   )
-            break
+            return 0
 
     def summarize_error(self, error):
         conversation = self.gpt_session.get_conversation()
@@ -422,8 +453,37 @@ gptdeploy deploy --path {self.microservice_root_path}
                 if not original_task:
                     self.microservice_specification.task = self.get_user_input(pm, 'What should your microservice do?')
 
-                self.refine_requirements(pm, system_task_iteration, 'task')
-                self.refine_requirements(pm, system_test_iteration, 'test')
+                self.refine_requirements(
+                    pm,
+                    [
+                        SystemMessage(content=system_task_introduction + system_task_iteration),
+                    ],
+                    'task',
+                    '',
+                    template_pm_task_iteration,
+                    micro_service_initial_description=f'''Microservice description: 
+{self.microservice_specification.task}
+''',
+                )
+                self.refine_requirements(
+                    pm,
+                    [
+                        SystemMessage(content=system_task_introduction + system_test_iteration),
+                    ],
+                    'test',
+                    '''Note that the test scenario must not contain information that was already mentioned in the microservice description.
+Note that you must not ask for information that were already mentioned before.''',
+                    template_pm_test_iteration,
+                    micro_service_initial_description=f'''Microservice original description: 
+```
+{original_task}
+```
+Microservice refined description: 
+```
+{self.microservice_specification.task}
+```
+''',
+                )
                 break
             except self.TaskRefinementException as e:
 
@@ -437,19 +497,15 @@ Test scenario:
 {self.microservice_specification.test}
 ''')
 
-    def refine_requirements(self, pm, template_init, refinement_type):
+    def refine_requirements(self, pm, messages, refinement_type, custom_suffix, template_pm_iteration, micro_service_initial_description=None):
         user_input = self.microservice_specification.task
-        messages = [
-            SystemMessage(content=system_task_introduction + template_init),
-        ]
         num_parsing_tries = 0
         while True:
             conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
-            print('thinking...')
             agent_response_raw = conversation.chat(
-                template_refinement.format(
-                    user_input=user_input,
-                    _optional_test=' test' if refinement_type == 'test' else ''
+                template_pm_iteration.format(
+                    custom_suffix=custom_suffix,
+                    micro_service_initial_description=micro_service_initial_description if len(messages) == 1 else '',
                 ),
                 role='user'
             )
@@ -457,6 +513,7 @@ Test scenario:
             agent_question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
             final = self.extract_content_from_result(agent_response_raw, 'final.txt', can_contain_code_block=False)
             if final:
+                messages.append(AIMessage(content=final))
                 setattr(self.microservice_specification, refinement_type, final)
                 break
             elif agent_question:
@@ -477,3 +534,12 @@ Test scenario:
         while not val:
             val = input('you: ')
         return val
+
+    @staticmethod
+    def replace_with_gpt_3_5_turbo_if_possible(pkg):
+        if pkg in ['allennlp', 'bertopic', 'fasttext', 'flair', 'gensim', 'nltk',
+                   'pattern', 'polyglot', 'pytorch-transformers', 'rasa', 'sentence-transformers',
+                   'spacy', 'stanza', 'textblob', 'textstat', 'transformers']:
+
+            return 'gpt_3_5_turbo_api'
+        return pkg

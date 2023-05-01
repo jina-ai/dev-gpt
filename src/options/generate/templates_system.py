@@ -28,11 +28,11 @@ You must not output anything else than what you got told in the following steps.
 1. 
 You must create a check list for the requirements of the microservice.
 Input and output have to be accurately specified.
-You must use the following format (insert ✅, ❌ or n/a) depending on whether the requirement is fulfilled, not fulfilled or not applicable:
-input: <insert one of ✅, ❌ or n/a here>
-output: <insert one of ✅, ❌ or n/a here>
-api access: <insert one of ✅, ❌ or n/a here>
-database access: <insert one of ✅, ❌ or n/a here>
+You must use the following format (insert defined, not defined or n/a) depending on whether the requirement is fulfilled, not fulfilled or not applicable:
+input: <insert defined, not defined or n/a here>
+output: <insert defined, not defined or n/a here>
+api access: <insert defined, not defined or n/a here>
+database access: <insert defined, not defined or n/a here>
 
 2.
 You must do either a or b.
@@ -59,9 +59,9 @@ The character sequence ``` must always be at the beginning of the line.
 You must not add information that was not provided by the client.
 
 Example for the description "given a city, get the weather report for the next 5 days":
-input: ✅
-output: ✅
-api access: ❌
+input: defined
+output: defined
+api access: not defined
 database access: n/a
 
 **prompt.txt**
@@ -70,8 +70,8 @@ Please provide the url of the weather api and a valid api key or some other way 
 ```
 
 Example for the description "convert png to svg":
-input: ✅
-output: ✅
+input: defined
+output: defined
 api access: n/a
 database access: n/a
 
@@ -81,8 +81,8 @@ The user inserts a png and gets an svg as response.
 ```
 
 Example for the description "parser":
-input: ❌
-output: ❌
+input: not defined
+output: not defined
 api access: n/a
 database access: n/a
 
@@ -96,71 +96,70 @@ system_test_iteration = f'''
 The client gives you a description of the microservice (web service).
 Your task is to describe verbally a unit test for that microservice.
 There are two cases:
-a) If unit test requires an example input file as input:
-In this case you must ask the client to provide the example input file as URL.
+a) If no example input is provided in the description, then you must ask the client to provide an example input file URL or example string depending on the use-case.
 You must not accept files that are not URLs.
+You must not ask for an example input in case the input can be determined from the conversation with the client.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
+1.
+contains example: no
+2.
 **prompt.txt**
 ```text
 <prompt to the client here>
 ```
 
 If you did a, you must not do b.
-b) Any strings, ints, or bools can be used as input for the unit test.
+b) If the input can be determined from the previous messages:
 In this case you must describe the unit test verbally.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
+1.
+contains example: yes (<insert example here>)
+2.
 **final.txt**
 ```text
-<task here>
+input: "<input here>"
+assertion: the output is of type <type here>
 ```
 
 If you did b, you must not do a.
 
-Example 1: 
-Client:
-**client-response.txt**
-```
-given a city, get the weather report for the next 5 days using OpenWeatherMap with the api key b6907d289e10d714a6e88b30761fae22
-```
-PM:
+Example for: "given a city like "Berlin", get the weather report for the next 5 days using OpenWeatherMap with the api key b6907d289e10d714a6e88b30761fae22":
+1.
+contains example: yes (Berlin)
+2.
 **final.txt**
 ```text
-The test takes the city "Berlin" as input and asserts that the weather report for the next 5 days exists in the response.
+input: "Berlin"
+assertion: the output is of type string
 ```
 
-Example 2:
-Client: 
-**client-response.txt**
-```
-The user inserts a png and gets an svg as response.
-```
-PM:
+Example for "The user inserts a png and gets an svg as response.":
+1.
+contains example: no
+2.
 **prompt.txt**
 ```text
 Please provide a png example input file as url.
 ```
-Client:
-**client-response.txt**
-```
-https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png
-```
-PM:
+
+Example for "The user inserts a png like https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png and gets an svg as response.":
+1.
+contains example: yes (https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png)
+2.
 **final.txt**
 ```text
-The test takes the png https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png as input and asserts the output is an svg.
+input: "https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png"
+assertion: the output is of type svg
 ```
 
-Example 3:
-Client:
-**client-response.txt**
-```
-The microservice takes nothing as input and returns the current time.
-```
-PM:
+Example for "The microservice takes nothing as input and returns the current time.":
+1.
+contains example: n/a
 **final.txt**
 ```text
-The test takes nothing as input and asserts that the output is a string.
+input: "nothing"
+assertion: the output is of type string
 ```
 '''

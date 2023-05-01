@@ -23,9 +23,14 @@ def test_generation_level_0(tmpdir):
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'
     )
-    generator.generate()
+    assert generator.generate() == 0
 
-@pytest.mark.skip(reason="not possible")
+
+# fixture
+@pytest.fixture
+def tmpdir():
+    return 'microservice'
+
 def test_generation_level_1(tmpdir):
     """
     Requirements:
@@ -38,22 +43,16 @@ def test_generation_level_1(tmpdir):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        '''
-Input is a tweet that might contain passive aggressive language like: 
-'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 But hey, at least SOMEONE's enjoying their lunch. #officelife'
-The output is a tweet that is not passive aggressive like:
-'Hi coworker, 
-I hope you're having an amazing day! 
-Just a quick note: sometimes microwaving fish can create an interesting aroma in the break room. 
-If you're up for trying different lunch options, that could be a fun way to mix things up. 
-Enjoy your day! #variety'
-''',
+        '''Input is a tweet that might contain passive aggressive language. The output is the positive version of that tweet.
+Example tweet: 
+\'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 
+But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'
     )
-    generator.generate()
+    assert generator.generate() == 0
 
-@pytest.mark.skip(reason="not possible")
+
 def test_generation_level_2(tmpdir):
     """
     Requirements:
@@ -66,11 +65,12 @@ def test_generation_level_2(tmpdir):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        "The input is a PDF like https://www.africau.edu/images/default/sample.pdf and the output the summarized text.",
+        "The input is a PDF like https://www.africau.edu/images/default/sample.pdf and the output the summarized text (50 words).",
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'
     )
-    generator.generate()
+    assert generator.generate() == 0
+
 
 @pytest.mark.skip(reason="not possible")
 def test_generation_level_3(tmpdir):
@@ -103,7 +103,7 @@ Create an audio file of the summarized text.
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'
     )
-    generator.generate()
+    assert generator.generate() == 0
 
 @pytest.mark.skip(reason="not possible")
 def test_generation_level_4(tmpdir):
@@ -141,4 +141,8 @@ The output is the image with the joke on it.''',
                           str(tmpdir) + 'microservice',
                           'gpt-3.5-turbo'
                           )
-    generator.generate()
+    assert generator.generate() == 0
+
+
+# further ideas:
+# Create a wrapper around google called Joogle. It modifies the page summary preview text of the search results to insert the word Jina as much as possible.

@@ -24,8 +24,7 @@ The implemented function and the test must not contain prototype or placeholder 
 The implemented function and the test must run in a docker container based on debian.
 The implemented function and the test must not use libraries like Flask.
 The implemented function and the test must not have a __main__ function.
-The implemented function and the test must use gpt_3_5_turbo_api if the task requires understanding or generation of natural language or using any language model. Other language models are not allowed.
-The implemented function and the test must not use gpt_3_5_turbo_api or any other language model if the task does not require understanding or generation of natural language.'''
+The implemented function and the test must use gpt_3_5_turbo_api if the task requires understanding, generation, summarization, transformation, translation or classification of natural language or using any language model. Other language models are not allowed.'''
 
 
 template_generate_microservice_name = PromptTemplate.from_template(
@@ -45,24 +44,30 @@ PDFParserExecutor
 )
 
 
-template_generate_possible_packages_output_format_string = '''You must output the package combinations as a list of lists wrapped into ``` and name it **packages.csv**. Do not use quotation marks around packages names in the output. Separate packages in a combination by comma. The output looks this:
-**{file_name}**
+template_generate_possible_packages_output_format_string = '''You must output the package combinations as a \
+list of lists wrapped into ``` and name it **strategies.json**. \
+Do not use quotation marks around packages names in the output. \
+Separate packages in a combination by comma. \
+Note that you can also leave a line empty to indicate that one of the strategies does not require any package and can be done in plain python.
+The output looks like this:
+**strategies.json**
 ```
-package1a, package1b ...
-package2a, package2b, package2c
-package3a ...
-package4a ...
-package5a ...
-...
+[
+  ["package1", "package2", "package3"],
+  ["package4", "package5"],
+  ["package6", "package7", "package8", "package9"],
+  [],
+  ["package10"]
+]
 ```'''
 
 
 template_generate_possible_packages = PromptTemplate.from_template(
     '''Here is the task description of the problem you need to solve:
 "{description}"
-1. Write down the different strategies to solve the task. For each strategy write down all the non-trivial subtasks you need to solve. If there is a natural language understanding or generation stragegy, write it down.
+1. Write down ut to 3 different strategies to solve the task. For each strategy write down all the non-trivial subtasks you need to solve. If there is a natural language understanding or generation stragegy, write it down.
 2. Find out what is the core problem to solve.
-3. List up to 15 Python packages that are specifically designed or have functionalities to solve the complete core problem with one of the defined strategies. You must add gpt_3_5_turbo_api if the task involves generating or understanding natural language or using a (pre-trained) language model.
+3. List up to 10 Python packages that are specifically designed or have functionalities to solve the complete core problem with one of the defined strategies. You must add gpt_3_5_turbo_api if the task involves generating or understanding natural language or using a (pre-trained) language model.
 4. Exclude any package that can generate or understand natural language or enables using any language model, but you must not exclude gpt_3_5_turbo_api. Print the cleaned list of packages and give a brief reason for keeping it after its name.
 5. For each cleaned package think if it fulfills the following requirements:
 a) specifically designed or have functionalities to solve the complete core problem.
@@ -152,13 +157,10 @@ template_generate_requirements = PromptTemplate.from_template(
 
 {code_files_wrapped}
     
-Write the content of the requirements.txt file.
-The requirements.txt file must include the following packages in that specified version:
+Write the content of the requirements.txt file like this:
+**requirements.txt**
 ```
-jina==3.15.1.dev14
-docarray==0.21.0
-openai>=0.26.0
-pytest
+...
 ```
 Add any more packages that are needed to run the code.
 You must not add gpt_3_5_turbo_api to the requirements.txt file. 
@@ -177,7 +179,27 @@ Name all packages which need to be installed via `apt-get install` in above Dock
 
 {requirements_file_wrapped}
 
-Output them as a white space separated list:'''
+Note that you must not list apt-get packages that are already installed in the Dockerfile.
+Note that openai does not require any apt-get packages.
+Note that you are only allowed to list packages where you are highly confident that they are really needed.
+Note that you can assume that the standard python packages are already installed.
+Output the packages that need to me placed at {{apt_get_packages}} as json in the following format:
+**apt-get-packages.json**
+```json
+{{"packages": ["<package1>", "<package2>"]}}
+```
+Example for the following requirements.txt file:
+**requirements.txt**
+```
+numpy==1.19.5
+fitz
+```
+The output would be:
+**apt-get-packages.json**
+```json
+{{"packages": []}}
+```
+'''
 )
 
 
@@ -349,14 +371,9 @@ The playground (app.py) must not import the executor.
 '''
 )
 
-# Create a wrapper around google called Joogle. It modifies the page summary preview text of the search results to insert the word Jina as much as possible.
-template_refinement = PromptTemplate.from_template(
-    '''
+template_pm_task_iteration = PromptTemplate.from_template(
+    '''{micro_service_initial_description}
 1.Quickly go through the checklist (input/output well defined? api or db access needed?)  and think about if you should ask something to the client or if you should write the final description.
-**client-response.txt**
-```text
-{user_input}
-```
 2.Either write the prompt.txt or the final.txt file.
 Either ask for clarification like this:
 **prompt.txt**
@@ -364,14 +381,52 @@ Either ask for clarification like this:
 <prompt to the client here (must be only one question)>
 ```
 
-Or write the summarized microservice{_optional_test} description like this:
+Or write the summarized microservice description like this:
 **final.txt**
 ```text
-<microservice{_optional_test} description here>
-```
+<microservice description here>
+``` 
 Note that your response must be either prompt.txt or final.txt. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.
+Note that the last sequence of characters in your response must be ``` (triple backtick).
 Note that prompt.txt must not only contain one question.
 Note that if urls, secrets, database names, etc. are mentioned, they must be part of the summary.
+{custom_suffix}
+'''
+)
+
+template_pm_test_iteration = PromptTemplate.from_template(
+    '''{micro_service_initial_description}
+1. write down if the original description and the refined description contain an example input for the microservice.
+2. write down either prompt.txt or final.txt.
+If the example input for the microservice is mentioned in the refined description or the original description, then output final.txt.
+Otherwise, output prompt.txt where you ask for the example input file as URL or the example string.
+Except for urls, you should come up with your own example input that makes sense for the microservice description.
+
+Example for the case where an example input file is required and was not mentioned before:
+**prompt.txt**
+```text
+Can you please provide an example input file as URL?
+```
+
+Example for the case where the example input string is required and was not mentioned before:
+**prompt.txt**
+```text
+Can you please provide an example input string?
+```
+Note that you must not ask for an example input in case the example input is already mentioned in the refined description or the original description.
+
+Example for the case where the example is already mentioned in the refined description or the original description:
+**final.txt**
+```text
+input: <input here>
+assertion: the output is of type <type here>
+``` 
+Note that your response must be either prompt.txt or final.txt. You must not write both.
+Note that you must obey the double asterisk and tripple backtick syntax from above.
+Note that the last sequence of characters in your response must be ``` (triple backtick).
+Note that your response must start with the character sequence ** (double asterisk).
+Note that prompt.txt must only contain one question.
+{custom_suffix}
 '''
 )
