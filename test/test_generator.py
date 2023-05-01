@@ -85,8 +85,9 @@ def test_generation_level_3(tmpdir):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        f'''Given an audio file (1min) of speech like https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav, 
-get convert it to text using the following api:
+        f'''Given an audio file (1min wav) of speech, 
+1. convert it to text using the Whisper API.
+Here is the documentation on how to use the API:
 import requests
 url = "https://transcribe.whisperapi.com"
 headers = {{
@@ -97,8 +98,9 @@ data = {{
 }}
 response = requests.post(url, headers=headers, files=file, data=data)
 print(response.text)
-Summarize the text (50 words).
-Create an audio file of the summarized text.
+2. Summarize the text (~50 words) while still maintaining the key facts.
+3. Create an audio file of the summarized text using a tts library.
+Example input file: https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav
 ''',
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'

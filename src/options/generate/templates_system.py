@@ -48,15 +48,16 @@ Your response must exactly match the following block code format (double asteris
 ```
 
 b)
-Otherwise you respond with the summarized description.
-The summarized description must contain all the information mentioned by the client.
+Otherwise you respond with the detailed description.
+The detailed description must contain all the information mentioned by the client.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
 **final.json**
 ```json
 {{
     "description": "<microservice description here>",
-    "implementation_details": "<additional implementation details here>",
+    "code_samples": "<code samples from the client here>",
+    "documentation_info": "<documentation info here>",
     "credentials: "<credentials here>"
 }}
 ```
@@ -87,7 +88,8 @@ database access: n/a
 ```json
 {{
     "description": "The user inserts a png and gets an svg as response.",
-    "implementation_details": "n/a",
+    "code_samples": "n/a",
+    "documentation_info": "n/a",
     "credentials: "n/a"
 }}
 ```

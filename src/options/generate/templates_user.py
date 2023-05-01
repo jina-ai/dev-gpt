@@ -383,12 +383,14 @@ Either ask for clarification like this:
 }}
 ```
 
-Or write the summarized microservice description and additional implementation details like this:
+Or write the detailed microservice description all mentioned code samples, documentation info and credentials like this:
 **final.json**
 ```json
 {{
     "description": "<microservice description here>",
-    "implementation_details": "<additional implementation details here>",
+    "example_input_file": "<example input file here if mentioned before otherwise n/a>",
+    "code_samples": "<code samples from the client here>",
+    "documentation_info": "<documentation info here>",
     "credentials: "<credentials here>"
 }}
 ``` 
