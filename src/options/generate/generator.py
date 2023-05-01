@@ -232,7 +232,7 @@ metas:
         lines = [line for line in lines if not any([pkg in line for pkg in ['jina', 'docarray', 'openai', 'pytest', 'gpt_3_5_turbo_api']])]
         content_modified = f'''jina==3.15.1.dev14
 docarray==0.21.0
-openai==0.26.0
+openai==0.27.5
 pytest
 {os.linesep.join(lines)}'''
         return {REQUIREMENTS_FILE_NAME: content_modified}
