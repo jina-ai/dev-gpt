@@ -197,7 +197,7 @@ fitz
 The output would be:
 **apt-get-packages.json**
 ```json
-{"packages": []}
+{{"packages": []}}
 ```
 '''
 )
