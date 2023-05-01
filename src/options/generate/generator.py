@@ -519,8 +519,9 @@ Test scenario:
                 setattr(self.microservice_specification, refinement_type, final)
                 break
             elif agent_question:
-                messages.append(AIMessage(content=agent_question))
-                user_input = self.get_user_input(pm, agent_question)
+                question_parsed = json.loads(agent_question)['question']
+                messages.append(AIMessage(content=question_parsed))
+                user_input = self.get_user_input(pm, question_parsed)
             else:
                 if num_parsing_tries > 2:
                     raise self.TaskRefinementException()

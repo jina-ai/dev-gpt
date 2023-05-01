@@ -85,7 +85,7 @@ def test_generation_level_3(tmpdir):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        f'''Given an audio file of speech like https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav, 
+        f'''Given an audio file (1min) of speech like https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav, 
 get convert it to text using the following api:
 import requests
 url = "https://transcribe.whisperapi.com"
