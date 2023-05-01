@@ -187,6 +187,8 @@ metas:
             tag_name=REQUIREMENTS_FILE_TAG,
         )[REQUIREMENTS_FILE_NAME]
 
+        # I deactivated this because 3.5-turbo was halucinating packages that were not needed
+        # now, in the first iteration the default dockerfile is used
         # self.generate_and_persist_file(
         #     section_title='Generate Dockerfile',
         #     template=template_generate_apt_get_install,
@@ -535,6 +537,6 @@ Test scenario:
 
     @staticmethod
     def replace_with_gpt_3_5_turbo_if_possible(pkg):
-        if pkg in ['nltk', 'textblob', 'spacy', 'transformers', 'textstat']:
+        if pkg in ['nltk', 'textblob', 'spacy', 'transformers', 'textstat', 'gensim']:
             return 'gpt_3_5_turbo_api'
         return pkg
