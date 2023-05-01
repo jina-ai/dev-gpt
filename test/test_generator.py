@@ -97,7 +97,7 @@ data = {{
 }}
 response = requests.post(url, headers=headers, files=file, data=data)
 print(response.text)
-Summarize the text.
+Summarize the text (50 words).
 Create an audio file of the summarized text.
 ''',
         str(tmpdir) + 'microservice',
@@ -118,7 +118,7 @@ def test_generation_level_4(tmpdir):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(f'''
-The input is an image like this: https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/560px-PNG_transparency_demonstration_1.png.
+The input is an image.
 Use the following api to get the description of the image:
 Request:
 curl "https://us-central1-causal-diffusion.cloudfunctions.net/describe" \\
@@ -137,7 +137,9 @@ Result format:
 }}
 The description is then used to generate a joke.
 The joke is the put on the image.
-The output is the image with the joke on it.''',
+The output is the image with the joke on it.
+Example input image: https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/560px-PNG_transparency_demonstration_1.png
+''',
                           str(tmpdir) + 'microservice',
                           'gpt-3.5-turbo'
                           )

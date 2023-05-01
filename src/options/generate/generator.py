@@ -461,8 +461,10 @@ gptdeploy deploy --path {self.microservice_root_path}
                     'task',
                     '',
                     template_pm_task_iteration,
-                    micro_service_initial_description=f'''Microservice description: 
+                    micro_service_initial_description=f'''Microservice description:
+```
 {self.microservice_specification.task}
+```
 ''',
                 )
                 self.refine_requirements(
@@ -510,8 +512,8 @@ Test scenario:
                 role='user'
             )
             messages.append(HumanMessage(content=user_input))
-            agent_question = self.extract_content_from_result(agent_response_raw, 'prompt.txt', can_contain_code_block=False)
-            final = self.extract_content_from_result(agent_response_raw, 'final.txt', can_contain_code_block=False)
+            agent_question = self.extract_content_from_result(agent_response_raw, 'prompt.json', can_contain_code_block=False)
+            final = self.extract_content_from_result(agent_response_raw, 'final.json', can_contain_code_block=False)
             if final:
                 messages.append(AIMessage(content=final))
                 setattr(self.microservice_specification, refinement_type, final)

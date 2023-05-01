@@ -374,22 +374,28 @@ The playground (app.py) must not import the executor.
 template_pm_task_iteration = PromptTemplate.from_template(
     '''{micro_service_initial_description}
 1.Quickly go through the checklist (input/output well defined? api or db access needed?)  and think about if you should ask something to the client or if you should write the final description.
-2.Either write the prompt.txt or the final.txt file.
+2.Either write the prompt.json or the final.json file.
 Either ask for clarification like this:
-**prompt.txt**
-```text
-<prompt to the client here (must be only one question)>
+**prompt.json**
+```json
+{{
+    "question": "<prompt to the client here (must be only one question)>"
+}}
 ```
 
-Or write the summarized microservice description like this:
-**final.txt**
-```text
-<microservice description here>
+Or write the summarized microservice description and additional implementation details like this:
+**final.json**
+```json
+{{
+    "description": "<microservice description here>",
+    "implementation_details": "<additional implementation details here>",
+    "credentials: "<credentials here>"
+}}
 ``` 
-Note that your response must be either prompt.txt or final.txt. You must not write both.
+Note that your response must be either prompt.json or final.json. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.
 Note that the last sequence of characters in your response must be ``` (triple backtick).
-Note that prompt.txt must not only contain one question.
+Note that prompt.json must not only contain one question.
 Note that if urls, secrets, database names, etc. are mentioned, they must be part of the summary.
 {custom_suffix}
 '''
@@ -398,35 +404,41 @@ Note that if urls, secrets, database names, etc. are mentioned, they must be par
 template_pm_test_iteration = PromptTemplate.from_template(
     '''{micro_service_initial_description}
 1. write down if the original description and the refined description contain an example input for the microservice.
-2. write down either prompt.txt or final.txt.
-If the example input for the microservice is mentioned in the refined description or the original description, then output final.txt.
-Otherwise, output prompt.txt where you ask for the example input file as URL or the example string.
+2. write down either prompt.json or final.json.
+If the example input for the microservice is mentioned in the refined description or the original description, then output final.json.
+Otherwise, output prompt.json where you ask for the example input file as URL or the example string.
 Except for urls, you should come up with your own example input that makes sense for the microservice description.
 
 Example for the case where an example input file is required and was not mentioned before:
-**prompt.txt**
-```text
-Can you please provide an example input file as URL?
+**prompt.json**
+```json
+{{
+    "question": "Can you please provide an example input file as URL?"
+}}
 ```
 
 Example for the case where the example input string is required and was not mentioned before:
-**prompt.txt**
-```text
-Can you please provide an example input string?
+**prompt.json**
+```json
+{{
+    "question": "Can you please provide an example input string?"
+}}
 ```
 Note that you must not ask for an example input in case the example input is already mentioned in the refined description or the original description.
 
 Example for the case where the example is already mentioned in the refined description or the original description:
-**final.txt**
-```text
-input: <input here>
-assertion: the output is of type <type here>
-``` 
-Note that your response must be either prompt.txt or final.txt. You must not write both.
+**final.json**
+```json
+{{
+    "input": "<input here>",
+    "assertion": "the output is of type <type here>"
+}}
+```
+Note that your response must be either prompt.json or final.json. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.
 Note that the last sequence of characters in your response must be ``` (triple backtick).
 Note that your response must start with the character sequence ** (double asterisk).
-Note that prompt.txt must only contain one question.
+Note that prompt.json must only contain one question.
 {custom_suffix}
 '''
 )

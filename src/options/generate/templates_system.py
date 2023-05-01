@@ -40,9 +40,11 @@ a)
 If the description is not sufficiently specified, then ask for the missing information.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
-**prompt.txt**
-```text
-<prompt to the client here>
+**prompt.json**
+```json
+{{
+    "question": "<prompt to the client here>"
+}}
 ```
 
 b)
@@ -50,9 +52,13 @@ Otherwise you respond with the summarized description.
 The summarized description must contain all the information mentioned by the client.
 Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 
-**final.txt**
-```text
-<task here>
+**final.json**
+```json
+{{
+    "description": "<microservice description here>",
+    "implementation_details": "<additional implementation details here>",
+    "credentials: "<credentials here>"
+}}
 ```
 
 The character sequence ``` must always be at the beginning of the line.
@@ -64,9 +70,11 @@ output: defined
 api access: not defined
 database access: n/a
 
-**prompt.txt**
-```text
-Please provide the url of the weather api and a valid api key or some other way accessing the api. Or let our engineers try to find a free api.
+**prompt.json**
+```json
+{{
+    "question": "Please provide the url of the weather api and a valid api key or some other way accessing the api. Or let our engineers try to find a free api."
+}}
 ```
 
 Example for the description "convert png to svg":
@@ -75,9 +83,13 @@ output: defined
 api access: n/a
 database access: n/a
 
-**final.txt**
-```text
-The user inserts a png and gets an svg as response.
+**final.json**
+```json
+{{
+    "description": "The user inserts a png and gets an svg as response.",
+    "implementation_details": "n/a",
+    "credentials: "n/a"
+}}
 ```
 
 Example for the description "parser":
@@ -86,9 +98,11 @@ output: not defined
 api access: n/a
 database access: n/a
 
-**prompt.txt**
-```text
-Please provide the input and output format.
+**prompt.json**
+```json
+{{
+    "question": "Please provide the input and output format."
+}}
 ```
 '''
 
@@ -104,9 +118,11 @@ Your response must exactly match the following block code format (double asteris
 1.
 contains example: no
 2.
-**prompt.txt**
-```text
-<prompt to the client here>
+**prompt.json**
+```json
+{{
+    "question": "<prompt to the client here>"
+}}
 ```
 
 If you did a, you must not do b.
@@ -117,10 +133,12 @@ Your response must exactly match the following block code format (double asteris
 1.
 contains example: yes (<insert example here>)
 2.
-**final.txt**
-```text
-input: "<input here>"
-assertion: the output is of type <type here>
+**final.json**
+```json
+{{
+    "input": "<input here>",
+    "assertion": "the output is of type <type here>"
+}}
 ```
 
 If you did b, you must not do a.
@@ -129,37 +147,46 @@ Example for: "given a city like "Berlin", get the weather report for the next 5 
 1.
 contains example: yes (Berlin)
 2.
-**final.txt**
-```text
-input: "Berlin"
-assertion: the output is of type string
+**final.json**
+```json
+{{
+    "input": "Berlin",
+    "assertion": "the output is of type string"
+}}
 ```
 
 Example for "The user inserts a png and gets an svg as response.":
 1.
 contains example: no
 2.
-**prompt.txt**
-```text
-Please provide a png example input file as url.
+**prompt.json**
+```json
+{{
+    "question": "Please provide a png example input file as url."
+}}
 ```
+
 
 Example for "The user inserts a png like https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png and gets an svg as response.":
 1.
 contains example: yes (https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png)
 2.
-**final.txt**
-```text
-input: "https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png"
-assertion: the output is of type svg
+**final.json**
+```json
+{{
+    "input": "https://aquasecurity.github.io/kube-bench/v0.6.5/images/kube-bench-logo-only.png",
+    "assertion": "the output is of type svg"
+}}
 ```
 
 Example for "The microservice takes nothing as input and returns the current time.":
 1.
 contains example: n/a
-**final.txt**
-```text
-input: "nothing"
-assertion: the output is of type string
+**final.json**
+```json
+{{
+    "input": "nothing",
+    "assertion": "the output is of type string"
+}}
 ```
 '''
