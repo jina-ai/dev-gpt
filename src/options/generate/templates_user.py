@@ -268,7 +268,22 @@ You are given the following files:
 {all_files_string}
 
 To solve this error, you should determine the list of packages that need to be installed via `apt-get install` in the Dockerfile.
-Output them as a white space separated list:'''
+Output the apt-get packages that need to me placed at {{apt_get_packages}} as json in the following format:
+**apt-get-packages.json**
+```json
+{{"packages": ["<package1>", "<package2>"]}}
+```
+Example for the following requirements.txt file:
+**requirements.txt**
+```
+numpy==1.19.5
+fitz
+```
+The output would be:
+**apt-get-packages.json**
+```json
+{{"packages": []}}
+```'''
 )
 
 
@@ -433,7 +448,7 @@ Example for the case where the example is already mentioned in the refined descr
 ```json
 {{
     "input": "<input here>",
-    "assertion": "the output is of type <type here>"
+    "assertion": "the output contains the result that is of type <type here>"
 }}
 ```
 Note that your response must be either prompt.json or final.json. You must not write both.

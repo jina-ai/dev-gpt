@@ -139,7 +139,7 @@ contains example: yes (<insert example here>)
 ```json
 {{
     "input": "<input here>",
-    "assertion": "the output is of type <type here>"
+    "assertion": "the output contains the result that is of type <type here>"
 }}
 ```
 

@@ -542,7 +542,7 @@ Test scenario:
     def replace_with_gpt_3_5_turbo_if_possible(pkg):
         if pkg in ['allennlp', 'bertopic', 'fasttext', 'flair', 'gensim', 'nltk',
                    'pattern', 'polyglot', 'pytorch-transformers', 'rasa', 'sentence-transformers',
-                   'spacy', 'stanza', 'textblob', 'textstat', 'transformers']:
+                   'spacy', 'stanza', 'summarizer', 'textblob', 'textstat', 'transformers']:
 
             return 'gpt_3_5_turbo_api'
         return pkg
