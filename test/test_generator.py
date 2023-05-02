@@ -26,10 +26,6 @@ def test_generation_level_0(tmpdir):
     assert generator.generate() == 0
 
 
-# fixture
-@pytest.fixture
-def tmpdir():
-    return 'microservice'
 
 
 def test_generation_level_1(tmpdir):
@@ -97,9 +93,11 @@ data = {{
   "url": "URL_OF_STORED_AUDIO_FILE"
 }}
 response = requests.post(url, headers=headers, data=data)
-print(response.text)
+assert response.status_code == 200
+print('This is the text from the audio file:', response.json()['text'])
 2. Summarize the text (~50 words) while still maintaining the key facts.
 3. Create an audio file of the summarized text using a tts library.
+4. Return the the audio file.
 Example input file: https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav
 ''',
         str(tmpdir) + 'microservice',
@@ -146,6 +144,11 @@ Example input image: https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/P
                           'gpt-3.5-turbo'
                           )
     assert generator.generate() == 0
+
+@pytest.fixture
+def tmpdir():
+    return 'microservice'
+
 
 # further ideas:
 # Create a wrapper around google called Joogle. It modifies the page summary preview text of the search results to insert the word Jina as much as possible.

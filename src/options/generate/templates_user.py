@@ -138,7 +138,7 @@ template_generate_test = PromptTemplate.from_template(
 Write a single pytest case that tests the following scenario: '{test_description}'. In case the test scenario is not precise enough, test a general case without any assumptions.
 Start the test with an extensive comment about the test case. If gpt_3_5_turbo_api is used in the executor, then the test must not check the exact output of the executor as it is not deterministic. 
 
-Use the following import to import the function:
+You must use the following import to import the function:
 ```
 from .implementation import func
 ```
@@ -221,9 +221,9 @@ You are given the following files:
 
 {all_files_string}
 
-Is this a PACKAGE_MANAGER dependency installation failure? 
-1. Write down one bullet point on why it could be a PACKAGE_MANAGER dependency installation failure.
-2. Write down one bullet point on why it is unlikely that it is a PACKAGE_MANAGER dependency installation failure.
+Is this error happening because a PACKAGE_MANAGER package is missing or failed to install? 
+1. Write down one bullet point on why the error might happen because a PACKAGE_MANAGER package is missing or failed to install.
+2. Write down one bullet point on why it is unlikely that the error happens because a PACKAGE_MANAGER package is missing or failed to install.
 3. Write down your final answer.
 4. Write down your final answer as json in the following format:
 **response.json**
