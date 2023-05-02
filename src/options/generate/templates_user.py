@@ -272,7 +272,7 @@ Output them as a white space separated list:'''
 )
 
 
-template_solve_code_issue = PromptTemplate.from_template(
+template_suggest_solutions_code_issue = PromptTemplate.from_template(
     '''General rules:
 ''' + not_allowed_function_string + '''
 
@@ -288,13 +288,34 @@ Here are all the files I use:
 Here is the summary of the error that occurred:
 {summarized_error}
 
-To solve this error, you should:
-1. Suggest 3 to 5 possible solutions on how to solve it. You have no access to the documentation of the package.
-2. Decide for the best solution and explain it in detail.
-3. Write down the files that need to be changed, but not files that don't need to be changed.
-Note that any changes needed to make the test pass must be written under the constraint that ''' + IMPLEMENTATION_FILE_NAME +  ''' will be used in a different file as well.
+You should suggest 3 to 5 possible solutions on how to solve it.
 Obey the following rules:
+You have no access to the documentation of the package.
+Note that any changes needed to make the test pass must be written under the constraint that ''' + IMPLEMENTATION_FILE_NAME +  ''' will be used in a different file as well.
 ''' + f'{not_allowed_function_string}\n{not_allowed_docker_string}\n{gpt_35_turbo_usage_string}' + '''
+
+
+After thinking about the possible solutions, output them as JSON ranked from best to worst. Like this:
+**solutions.json**
+```json
+{{
+    "1": "<best solution>",
+    "2": "<2nd best solution>"
+}}
+```'''
+)
+
+
+template_implement_solution_code_issue = PromptTemplate.from_template(
+    '''Here is the description of the task the function must solve:
+{task_description}
+
+Here is the test scenario the function must pass:
+{test_description}
+Here are all the files I use:
+{all_files_string}
+
+Implemented the suggested solution: {suggested_solution}
 
 Output all the files that need change. You must not change the Dockerfile. 
 Don't output files that don't need change. If you output a file, then write the complete file.
@@ -307,7 +328,7 @@ Use the exact following syntax to wrap the code:
 
 Example:
 
-**microservice.py**
+**implementation.py**
 ```python
 print('hello world')
 ```'''

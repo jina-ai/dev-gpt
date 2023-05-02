@@ -21,12 +21,12 @@ from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX
 from src.options.generate.templates_system import  system_task_iteration, system_task_introduction, system_test_iteration
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
-    template_solve_code_issue, \
+    template_implement_solution_code_issue, \
     template_solve_pip_dependency_issue, template_is_dependency_issue, template_generate_playground, \
     template_generate_function, template_generate_test, template_generate_requirements, \
     template_chain_of_thought, template_summarize_error, \
     template_generate_apt_get_install, template_solve_apt_get_dependency_issue, template_pm_task_iteration, \
-    template_pm_test_iteration
+    template_pm_test_iteration, template_suggest_solutions_code_issue
 
 from src.options.generate.ui import get_random_employee
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
@@ -201,7 +201,6 @@ metas:
         #     })
         # )
 
-
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r', encoding='utf-8') as f:
             docker_file_template_lines = f.readlines()
         docker_file_template_lines = [line for line in docker_file_template_lines if not line.startswith('RUN apt-get update')]
@@ -348,15 +347,32 @@ pytest
                     all_files_string=dock_req_string,
                 )
             else:
+                all_files_string = self.files_to_string(
+                    {key: val for key, val in file_name_to_content.items() if key != EXECUTOR_FILE_NAME}
+                )
+                suggested_solutions = json.loads(
+                    self.generate_and_persist_file(
+                        section_title='Suggest solution for code issue',
+                        template=template_suggest_solutions_code_issue,
+                        destination_folder=next_microservice_path,
+                        file_name_s=['solutions.json'],
+                        summarized_error=summarized_error,
+                        task_description=self.microservice_specification.task,
+                        test_description=self.microservice_specification.test,
+                        all_files_string=all_files_string,
+                    )['solutions.json']
+                )
+
                 self.generate_and_persist_file(
-                    section_title='Debugging code issue',
-                    template=template_solve_code_issue,
+                    section_title='Implementing suggestion solution for code issue',
+                    template=template_implement_solution_code_issue,
                     destination_folder=next_microservice_path,
                     file_name_s=[IMPLEMENTATION_FILE_NAME, TEST_EXECUTOR_FILE_NAME, REQUIREMENTS_FILE_NAME],
                     summarized_error=summarized_error,
                     task_description=self.microservice_specification.task,
                     test_description=self.microservice_specification.test,
-                    all_files_string=self.files_to_string({key: val for key, val in file_name_to_content.items() if key != EXECUTOR_FILE_NAME}),
+                    all_files_string=all_files_string,
+                    suggested_solution=suggested_solutions["1"],
                 )
 
     class MaxDebugTimeReachedException(BaseException):
