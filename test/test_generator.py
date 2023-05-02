@@ -68,13 +68,43 @@ def test_generation_level_2(tmpdir):
     )
     assert generator.generate() == 0
 
-
 def test_generation_level_3(tmpdir):
     """
     Requirements:
     coding challenge: ❌
-    pip packages: ✅ (text to speech)
+    pip packages: ✅ (csv parser)
     environment: ❌
+    GPT-3.5-turbo: ✅ (for processing the text)
+    APIs: ✅ (financial data API)
+    Databases: ❌
+    """
+    os.environ['VERBOSE'] = 'true'
+    generator = Generator(
+        f'''The input is a stock symbol (e.g., AAPL for Apple Inc.). 
+1. Fetch stock data (open, high, low, close, volume) for the past 30 days using a financial data API (e.g., Alpha Vantage, Yahoo Finance, or any other API). 
+2. Calculate the average closing price over the 30 days.
+3. Read a CSV file containing a list of stock symbols and their company names.
+4. Find the input stock symbol in the CSV file and get the corresponding company name.
+5. Generate a brief summary of the company's stock performance over the past 30 days, including the average closing price and the company name.
+6. Return the summary as a string.
+Example input: 'AAPL'
+Example CSV file format:
+symbol,company_name
+AAPL,Apple Inc.
+GOOGL,Alphabet Inc.
+AMZN,Amazon.com, Inc.
+''',
+        str(tmpdir) + 'microservice',
+        'gpt-3.5-turbo'
+    )
+    assert generator.generate() == 0
+
+def test_generation_level_4(tmpdir):
+    """
+    Requirements:
+    coding challenge: ❌
+    pip packages: ✅ (text to speech)
+    environment: ✅ (tts library)
     GPT-3.5-turbo: ✅ (summarizing the text)
     APIs: ✅ (whisper for speech to text)
     Databases: ❌
@@ -101,17 +131,17 @@ print('This is the text from the audio file:', response.json()['text'])
 Example input file: https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav
 ''',
         str(tmpdir) + 'microservice',
-        'gpt-3.5-turbo'
+        'gpt-4'
     )
     assert generator.generate() == 0
 
 
-def test_generation_level_4(tmpdir):
+def test_generation_level_5(tmpdir):
     """
     Requirements:
     coding challenge: ✅ (putting text on the image)
     pip packages: ✅ (Pillow for image processing)
-    environment: ❌
+    environment: ✅ (image library)
     GPT-3.5-turbo: ✅ (for writing the joke)
     APIs: ✅ (scenex for image description)
     Databases: ❌

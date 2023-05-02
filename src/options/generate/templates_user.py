@@ -118,6 +118,10 @@ The function must full-fill: '{microservice_description}'.
 It will be tested with the following scenario: '{test_description}'.
 For the implementation use the following package(s): '{packages}'.
 
+The code must start with the following import:
+```
+from .apis import GPT_3_5_Turbo_API
+```
 Obey the following rules:
 ''' + not_allowed_function_string + '''
 
@@ -138,11 +142,10 @@ template_generate_test = PromptTemplate.from_template(
 Write a single pytest case that tests the following scenario: '{test_description}'. In case the test scenario is not precise enough, test a general case without any assumptions.
 Start the test with an extensive comment about the test case. If gpt_3_5_turbo_api is used in the executor, then the test must not check the exact output of the executor as it is not deterministic. 
 
-You must use the following import to import the function:
+The test must start with the following import:
 ```
 from .implementation import func
 ```
-
 ''' + not_allowed_function_string + '''
 The test must not open local files.
 The test must not mock a function of the executor.
