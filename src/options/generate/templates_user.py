@@ -24,7 +24,7 @@ The implemented function and the test must not contain prototype or placeholder 
 The implemented function and the test must run in a docker container based on debian.
 The implemented function and the test must not use libraries like Flask.
 The implemented function and the test must not have a __main__ function.
-The implemented function and the test must use gpt_3_5_turbo_api if the task requires the processing of language (e.g., understanding, generation, summarization, transformation, translation, modification or classification). Other language models are not allowed.
+The implemented function and the test must use gpt_3_5_turbo if the task requires the processing of language (e.g., understanding, generation, summarization, transformation, translation, modification or classification). Other language models are not allowed.
 The implemented function must follow a clean and elegant coding style.'''
 
 
@@ -68,8 +68,8 @@ template_generate_possible_packages = PromptTemplate.from_template(
 "{description}"
 1. Write down ut to 3 different strategies to solve the task. For each strategy write down all the non-trivial subtasks you need to solve. If there is a natural language understanding or generation stragegy, write it down.
 2. Find out what is the core problem to solve.
-3. List up to 10 Python packages that are specifically designed or have functionalities to solve the complete core problem with one of the defined strategies. You must add gpt_3_5_turbo_api if the task involves generating or understanding natural language or using a (pre-trained) language model.
-4. Exclude any package that can generate or understand natural language or enables using any language model, but you must not exclude gpt_3_5_turbo_api. Print the cleaned list of packages and give a brief reason for keeping it after its name.
+3. List up to 10 Python packages that are specifically designed or have functionalities to solve the complete core problem with one of the defined strategies. You must add gpt_3_5_turbo if the task involves generating or understanding natural language or using a (pre-trained) language model.
+4. Exclude any package that can generate or understand natural language or enables using any language model, but you must not exclude gpt_3_5_turbo. Print the cleaned list of packages and give a brief reason for keeping it after its name.
 5. For each cleaned package think if it fulfills the following requirements:
 a) specifically designed or have functionalities to solve the complete core problem.
 b) has a stable api among different versions
@@ -82,7 +82,7 @@ When answering, just write "yes" or "no".
 
 6. Determine the 5 most suitable python package combinations, ordered from the best to the least suitable. Combine the packages to achieve a comprehensive solution.
 If the package is mentioned in the description, then it is automatically the best one.
-If you listed gpt_3_5_turbo_api earlier, you must use it. gpt_3_5_turbo_api is the best package for handling text-based tasks. Also, gpt_3_5_turbo_api doesn't need any other packages processing text or using language models. It can handle any text-based task alone.
+If you listed gpt_3_5_turbo earlier, you must use it. gpt_3_5_turbo is the best package for handling text-based tasks. Also, gpt_3_5_turbo doesn't need any other packages processing text or using language models. It can handle any text-based task alone.
 
 ''' + template_generate_possible_packages_output_format_string)
 
@@ -95,11 +95,11 @@ template_code_wrapping_string = '''The code will go into {file_name_purpose}. Ma
 You must provide the complete file with the exact same syntax to wrap the code.'''
 
 
-gpt_35_turbo_usage_string = """If need to use gpt_3_5_turbo_api, then this is an example on how to use it:
+gpt_35_turbo_usage_string = """If need to use gpt_3_5_turbo, then this is an example on how to use it:
 ```
-from .apis import GPT_3_5_Turbo_API
+from .apis import GPT_3_5_Turbo
 
-gpt_3_5_turbo_api = GPT_3_5_Turbo_API(
+gpt_3_5_turbo = GPT_3_5_Turbo(
     system=\'\'\'
 You are a tv-reporter who is specialized in C-list celebrities.
 When you get asked something like 'Who was having a date with <X>?', then you answer with a json like '{{"dates": ["<Y>", "<Z>"]}}'. 
@@ -121,14 +121,14 @@ For the implementation use the following package(s): '{packages}'.
 
 The code must start with the following import:
 ```
-from .apis import GPT_3_5_Turbo_API
+from .apis import GPT_3_5_Turbo
 ```
 Obey the following rules:
 ''' + not_allowed_function_string + '''
 
 Your approach:
 1. Identify the core challenge when implementing the function.
-2. Think about solutions for these challenges. If gpt_3_5_turbo_api is mentioned in the above list of packages, then you must use it.
+2. Think about solutions for these challenges. If gpt_3_5_turbo is mentioned in the above list of packages, then you must use it.
 3. Decide for one of the solutions.
 4. Write the code for the function. Don't write code for the test.
 ''' + gpt_35_turbo_usage_string + '\n' + template_code_wrapping_string
@@ -141,7 +141,7 @@ template_generate_test = PromptTemplate.from_template(
 {code_files_wrapped}
 
 Write a single pytest case that tests the following scenario: '{test_description}'. In case the test scenario is not precise enough, test a general case without any assumptions.
-Start the test with an extensive comment about the test case. If gpt_3_5_turbo_api is used in the executor, then the test must not check the exact output of the executor as it is not deterministic. 
+Start the test with an extensive comment about the test case. If gpt_3_5_turbo is used in the executor, then the test must not check the exact output of the executor as it is not deterministic. 
 
 The test must start with the following import:
 ```
@@ -167,7 +167,7 @@ Write the content of the requirements.txt file like this:
 ...
 ```
 Add any more packages that are needed to run the code.
-You must not add gpt_3_5_turbo_api to the requirements.txt file. 
+You must not add gpt_3_5_turbo to the requirements.txt file. 
 
 All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts. Output only the requirements.txt file.
 ''' + '\n' + template_code_wrapping_string
