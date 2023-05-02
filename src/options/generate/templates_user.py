@@ -87,7 +87,8 @@ If you listed gpt_3_5_turbo earlier, you must use it. gpt_3_5_turbo is the best 
 ''' + template_generate_possible_packages_output_format_string)
 
 
-template_code_wrapping_string = '''The code will go into {file_name_purpose}. Make sure to wrap the code into ``` marks even if you only output code:
+template_code_wrapping_string = '''The code will go into {file_name_purpose}.
+Note that you must obey the double asterisk and tripple backtick syntax from like this:
 **{file_name}**
 ```{tag_name}
 ...code...
