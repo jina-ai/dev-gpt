@@ -71,8 +71,8 @@ def test_generation_level_2(tmpdir):
 def test_generation_level_3(tmpdir):
     """
     Requirements:
-    coding challenge: ❌
-    pip packages: ✅ (csv parser)
+    coding challenge: ✅ (calculate the average closing price)
+    pip packages: ❌
     environment: ❌
     GPT-3.5-turbo: ✅ (for processing the text)
     APIs: ✅ (financial data API)
@@ -83,8 +83,8 @@ def test_generation_level_3(tmpdir):
         f'''The input is a stock symbol (e.g., AAPL for Apple Inc.). 
 1. Fetch stock data (open, high, low, close, volume) for the past 30 days using a financial data API Yahoo Finance.
 2. Calculate the average closing price over the 30 days.
-5. Generate a brief summary of the company's stock performance over the past 30 days, including the average closing price and the company name.
-6. Return the summary as a string.
+3. Generate a brief summary of the company's stock performance over the past 30 days, including the average closing price and the company name.
+4. Return the summary as a string.
 Example input: 'AAPL'
 ''',
         str(tmpdir),

@@ -547,8 +547,11 @@ Test scenario:
         # filter out complete package lists
         packages_list = [
             packages for packages in packages_list if all([
-                is_package_on_pypi(pkg)  # all packages must be on pypi
-                and pkg not in BLACKLISTED_PACKAGES  # no package is allowed to be blacklisted
+                pkg == 'gpt_3_5_turbo'
+                or (
+                    is_package_on_pypi(pkg)  # all packages must be on pypi or it is gpt_3_5_turbo
+                    and pkg not in BLACKLISTED_PACKAGES  # no package is allowed to be blacklisted
+                )
                 for pkg in packages
             ])
         ]
