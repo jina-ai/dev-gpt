@@ -50,7 +50,7 @@ list of lists wrapped into ``` and name it **strategies.json**. \
 Do not use quotation marks around packages names in the output. \
 Separate packages in a combination by comma. \
 Note that you can also leave a line empty to indicate that one of the strategies does not require any package and can be done in plain python.
-The output looks like this:
+Write the output using double asterisks and triple backticks like this:
 **strategies.json**
 ```
 [
