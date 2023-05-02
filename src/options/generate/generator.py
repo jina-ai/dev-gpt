@@ -4,7 +4,6 @@ import random
 import re
 import shutil
 from typing import Callable
-
 from typing import List, Text, Optional
 
 from langchain import PromptTemplate
@@ -19,16 +18,15 @@ from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX
     BLACKLISTED_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
     IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES
-from src.options.generate.templates_system import  system_task_iteration, system_task_introduction, system_test_iteration
+from src.options.generate.templates_system import system_task_iteration, system_task_introduction, system_test_iteration
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
     template_solve_code_issue, \
     template_solve_pip_dependency_issue, template_is_dependency_issue, template_generate_playground, \
     template_generate_function, template_generate_test, template_generate_requirements, \
     template_chain_of_thought, template_summarize_error, \
-    template_generate_apt_get_install, template_solve_apt_get_dependency_issue, template_pm_task_iteration, \
+    template_solve_apt_get_dependency_issue, template_pm_task_iteration, \
     template_pm_test_iteration
-
 from src.options.generate.ui import get_random_employee
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from src.utils.string_tools import print_colored
@@ -39,6 +37,7 @@ class TaskSpecification:
     task: Optional[Text]
     test: Optional[Text]
 
+
 class Generator:
     def __init__(self, task_description, path, model='gpt-4'):
         self.gpt_session = gpt.GPTSession(task_description, model=model)
@@ -46,7 +45,7 @@ class Generator:
         self.microservice_root_path = path
 
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False, can_contain_code_block=True):
-        optional_line_break = '\n' if can_contain_code_block else '' # the \n at the end makes sure that ``` within the generated code is not matched because it is not right before a line break
+        optional_line_break = '\n' if can_contain_code_block else ''  # the \n at the end makes sure that ``` within the generated code is not matched because it is not right before a line break
         pattern = fr"\*?\*?{file_name}\*?\*?\n```(?:\w+\n)?([\s\S]*?){optional_line_break}```"
         match = re.search(pattern, plain_text, re.MULTILINE)
         if match:
@@ -80,10 +79,11 @@ metas:
         def _default_parse_result_fn(x):
             _parsed_results = {}
             for _file_name in files_names:
-                _content = self.extract_content_from_result(x, _file_name, match_single_block=len(files_names)==1)
+                _content = self.extract_content_from_result(x, _file_name, match_single_block=len(files_names) == 1)
                 if _content != '':
                     _parsed_results[_file_name] = _content
             return _parsed_results
+
         return _default_parse_result_fn
 
     def generate_and_persist_file(
@@ -114,7 +114,9 @@ metas:
             parse_result_fn = self.get_default_parse_result_fn(file_name_s)
 
         print_colored('', f'\n\n############# {section_title} #############', 'blue')
-        system_introduction_message = _GPTConversation._create_system_message(self.microservice_specification.task, self.microservice_specification.test, system_definition_examples)
+        system_introduction_message = _GPTConversation._create_system_message(self.microservice_specification.task,
+                                                                              self.microservice_specification.test,
+                                                                              system_definition_examples)
         conversation = self.gpt_session.get_conversation(messages=[system_introduction_message])
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         if 'file_name' in template.input_variables and len(file_name_s) == 1:
@@ -126,7 +128,8 @@ metas:
         )
         content = parse_result_fn(content_raw)
         if content == {}:
-            content_raw = conversation.chat('You must add the content' + (f' for {file_name_s[0]}' if len(file_name_s) == 1 else ''))
+            content_raw = conversation.chat(
+                'You must add the content' + (f' for {file_name_s[0]}' if len(file_name_s) == 1 else ''))
             content = parse_result_fn(content_raw)
         for _file_name, _file_content in content.items():
             persist_file(_file_content, os.path.join(destination_folder, _file_name))
@@ -138,12 +141,14 @@ metas:
             packages,
             num_approach,
     ):
-        MICROSERVICE_FOLDER_v1 = get_microservice_path(self.microservice_root_path, microservice_name, packages, num_approach, 1)
+        MICROSERVICE_FOLDER_v1 = get_microservice_path(self.microservice_root_path, microservice_name, packages,
+                                                       num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'microservice.py'), 'r') as f:
             microservice_executor_boilerplate = f.read()
-        microservice_executor_code = microservice_executor_boilerplate.replace('class GPTDeployExecutor(Executor):', f'class {microservice_name}(Executor):')
+        microservice_executor_code = microservice_executor_boilerplate.replace('class GPTDeployExecutor(Executor):',
+                                                                               f'class {microservice_name}(Executor):')
         persist_file(microservice_executor_code, os.path.join(MICROSERVICE_FOLDER_v1, EXECUTOR_FILE_NAME))
 
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'apis.py'), 'r') as f:
@@ -202,13 +207,13 @@ metas:
         #     })
         # )
 
-
-        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r',
+                  encoding='utf-8') as f:
             docker_file_template_lines = f.readlines()
-        docker_file_template_lines = [line for line in docker_file_template_lines if not line.startswith('RUN apt-get update')]
+        docker_file_template_lines = [line for line in docker_file_template_lines if
+                                      not line.startswith('RUN apt-get update')]
         docker_file_content = '\n'.join(docker_file_template_lines)
         persist_file(docker_file_content, os.path.join(MICROSERVICE_FOLDER_v1, 'Dockerfile'))
-
 
         self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
 
@@ -224,13 +229,15 @@ metas:
         packages = ' '.join(json.loads(json_string)['packages'])
 
         docker_file_template = self.read_docker_template()
-        return {DOCKER_FILE_NAME: docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(apt_get_packages=packages)}
+        return {DOCKER_FILE_NAME: docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(
+            apt_get_packages=packages)}
 
     def parse_result_fn_requirements(self, content_raw: str):
         content_parsed = self.extract_content_from_result(content_raw, 'requirements.txt', match_single_block=True)
 
         lines = content_parsed.split('\n')
-        lines = [line for line in lines if not any([pkg in line for pkg in ['jina', 'docarray', 'openai', 'pytest', 'gpt_3_5_turbo']])]
+        lines = [line for line in lines if
+                 not any([pkg in line for pkg in ['jina', 'docarray', 'openai', 'pytest', 'gpt_3_5_turbo']])]
         content_modified = f'''jina==3.15.1.dev14
 docarray==0.21.0
 openai==0.27.5
@@ -292,8 +299,10 @@ pytest
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
             print('Trying to debug the microservice. Might take a while...')
-            previous_microservice_path = get_microservice_path(self.microservice_root_path, microservice_name, packages, num_approach, i)
-            next_microservice_path = get_microservice_path(self.microservice_root_path, microservice_name, packages, num_approach, i + 1)
+            previous_microservice_path = get_microservice_path(self.microservice_root_path, microservice_name, packages,
+                                                               num_approach, i)
+            next_microservice_path = get_microservice_path(self.microservice_root_path, microservice_name, packages,
+                                                           num_approach, i + 1)
             log_hubble = push_executor(previous_microservice_path)
             error = process_error_message(log_hubble)
             if error:
@@ -357,7 +366,8 @@ pytest
                     summarized_error=summarized_error,
                     task_description=self.microservice_specification.task,
                     test_description=self.microservice_specification.test,
-                    all_files_string=self.files_to_string({key: val for key, val in file_name_to_content.items() if key != EXECUTOR_FILE_NAME}),
+                    all_files_string=self.files_to_string(
+                        {key: val for key, val in file_name_to_content.items() if key != EXECUTOR_FILE_NAME}),
                 )
 
     class MaxDebugTimeReachedException(BaseException):
@@ -368,15 +378,19 @@ pytest
 
     def is_dependency_issue(self, summarized_error, dock_req_string: str, package_manager: str):
         # a few heuristics to quickly jump ahead
-        if any([error_message in summarized_error for error_message in ['AttributeError', 'NameError', 'AssertionError']]):
+        if any([error_message in summarized_error for error_message in
+                ['AttributeError', 'NameError', 'AssertionError']]):
             return False
-        if package_manager.lower() == 'pip' and any([em in summarized_error for em in ['ModuleNotFoundError', 'ImportError']]):
+        if package_manager.lower() == 'pip' and any(
+                [em in summarized_error for em in ['ModuleNotFoundError', 'ImportError']]):
             return True
 
         print_colored('', f'Is it a {package_manager} dependency issue?', 'blue')
         conversation = self.gpt_session.get_conversation()
         answer_raw = conversation.chat(
-            template_is_dependency_issue.format(summarized_error=summarized_error, all_files_string=dock_req_string).replace('PACKAGE_MANAGER', package_manager)
+            template_is_dependency_issue.format(summarized_error=summarized_error,
+                                                all_files_string=dock_req_string).replace('PACKAGE_MANAGER',
+                                                                                          package_manager)
         )
         answer_json_string = self.extract_content_from_result(answer_raw, 'response.json', match_single_block=True, )
         answer = json.loads(answer_json_string)['dependency_installation_failure']
@@ -403,7 +417,8 @@ pytest
             description=self.microservice_specification.task
         )['strategies.json']
         packages_list = [[pkg.strip().lower() for pkg in packages] for packages in json.loads(packages_json_string)]
-        packages_list = [[self.replace_with_gpt_3_5_turbo_if_possible(pkg) for pkg in packages] for packages in packages_list]
+        packages_list = [[self.replace_with_gpt_3_5_turbo_if_possible(pkg) for pkg in packages] for packages in
+                         packages_list]
 
         packages_list = self.filter_packages_list(packages_list)
         packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
@@ -497,11 +512,14 @@ Test scenario:
 {self.microservice_specification.test}
 ''')
 
-    def refine_requirements(self, pm, messages, refinement_type, custom_suffix, template_pm_iteration, micro_service_initial_description=None):
+    def refine_requirements(self, pm, messages, refinement_type, custom_suffix, template_pm_iteration,
+                            micro_service_initial_description=None):
         user_input = self.microservice_specification.task
         num_parsing_tries = 0
         while True:
-            conversation = self.gpt_session.get_conversation(messages, print_stream=os.environ['VERBOSE'].lower() == 'true', print_costs=False)
+            conversation = self.gpt_session.get_conversation(messages,
+                                                             print_stream=os.environ['VERBOSE'].lower() == 'true',
+                                                             print_costs=False)
             agent_response_raw = conversation.chat(
                 template_pm_iteration.format(
                     custom_suffix=custom_suffix,
@@ -510,7 +528,8 @@ Test scenario:
                 role='user'
             )
             messages.append(HumanMessage(content=user_input))
-            agent_question = self.extract_content_from_result(agent_response_raw, 'prompt.json', can_contain_code_block=False)
+            agent_question = self.extract_content_from_result(agent_response_raw, 'prompt.json',
+                                                              can_contain_code_block=False)
             final = self.extract_content_from_result(agent_response_raw, 'final.json', can_contain_code_block=False)
             if final:
                 messages.append(AIMessage(content=final))
@@ -525,8 +544,8 @@ Test scenario:
                     raise self.TaskRefinementException()
                 num_parsing_tries += 1
                 messages.append(AIMessage(content=agent_response_raw))
-                messages.append(SystemMessage(content='You did not put your answer into the right format using *** and ```.'))
-
+                messages.append(
+                    SystemMessage(content='You did not put your answer into the right format using *** and ```.'))
 
     @staticmethod
     def get_user_input(employee, prompt_to_user):
@@ -547,16 +566,19 @@ Test scenario:
         # filter out complete package lists
         packages_list = [
             packages for packages in packages_list if all([
-                pkg == 'gpt_3_5_turbo'
-                or (
-                    is_package_on_pypi(pkg)  # all packages must be on pypi or it is gpt_3_5_turbo
-                    and pkg not in BLACKLISTED_PACKAGES  # no package is allowed to be blacklisted
-                )
+                pkg not in BLACKLISTED_PACKAGES  # no package is allowed to be blacklisted
                 for pkg in packages
             ])
         ]
         # filter out single packages
         packages_list = [
-            [package for package in packages if package not in UNNECESSARY_PACKAGES] for packages in packages_list
+            [
+                package for package in packages
+                if (package not in UNNECESSARY_PACKAGES)
+                   and (  # all packages must be on pypi or it is gpt_3_5_turbo
+                           is_package_on_pypi(package)
+                           or package == 'gpt_3_5_turbo'
+                   )
+            ] for packages in packages_list
         ]
         return packages_list

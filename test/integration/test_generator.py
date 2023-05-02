@@ -20,7 +20,7 @@ def test_generation_level_0(tmpdir):
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
         "The microservice is very simple, it does not take anything as input and only outputs the word 'test'",
-        str(tmpdir) + 'microservice',
+        str(tmpdir),
         'gpt-3.5-turbo'
     )
     assert generator.generate() == 0
@@ -44,7 +44,7 @@ def test_generation_level_1(tmpdir):
 Example tweet: 
 \'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 
 But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
-        str(tmpdir) + 'microservice',
+        str(tmpdir),
         'gpt-3.5-turbo'
     )
     assert generator.generate() == 0
@@ -63,7 +63,7 @@ def test_generation_level_2(tmpdir):
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
         "The input is a PDF like https://www.africau.edu/images/default/sample.pdf and the output the summarized text (50 words).",
-        str(tmpdir) + 'microservice',
+        str(tmpdir),
         'gpt-3.5-turbo'
     )
     assert generator.generate() == 0
@@ -123,7 +123,7 @@ print('This is the text from the audio file:', response.json()['text'])
 4. Return the the audio file as base64 encoded binary.
 Example input file: https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav
 ''',
-        str(tmpdir) + 'microservice',
+        str(tmpdir),
         'gpt-4'
     )
     assert generator.generate() == 0
@@ -163,7 +163,7 @@ The joke is the put on the image.
 The output is the image with the joke on it.
 Example input image: https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/560px-PNG_transparency_demonstration_1.png
 ''',
-                          str(tmpdir) + 'microservice',
+                          str(tmpdir),
                           'gpt-3.5-turbo'
                           )
     assert generator.generate() == 0
