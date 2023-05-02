@@ -41,6 +41,7 @@ DEMO_TOKEN = '45372338e04f5a41af949024db929d46'
 BLACKLISTED_PACKAGES = [
     # 'Pyrender', 'Trimesh',
     'moderngl', 'pyopengl', 'pyglet', 'pythreejs', 'panda3d',  # because they need a screen,
+    'tika'  # because it needs java
     'fastapi', 'uvicorn', 'starlette',  # because we use jina executors
 ]
 
