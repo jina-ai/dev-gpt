@@ -81,18 +81,11 @@ def test_generation_level_3(tmpdir):
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
         f'''The input is a stock symbol (e.g., AAPL for Apple Inc.). 
-1. Fetch stock data (open, high, low, close, volume) for the past 30 days using a financial data API (e.g., Alpha Vantage, Yahoo Finance, or any other API). 
+1. Fetch stock data (open, high, low, close, volume) for the past 30 days using a financial data API Yahoo Finance.
 2. Calculate the average closing price over the 30 days.
-3. Read a CSV file containing a list of stock symbols and their company names.
-4. Find the input stock symbol in the CSV file and get the corresponding company name.
 5. Generate a brief summary of the company's stock performance over the past 30 days, including the average closing price and the company name.
 6. Return the summary as a string.
 Example input: 'AAPL'
-Example CSV file format:
-symbol,company_name
-AAPL,Apple Inc.
-GOOGL,Alphabet Inc.
-AMZN,Amazon.com, Inc.
 ''',
         str(tmpdir) + 'microservice',
         'gpt-3.5-turbo'

@@ -24,7 +24,7 @@ The implemented function and the test must not contain prototype or placeholder 
 The implemented function and the test must run in a docker container based on debian.
 The implemented function and the test must not use libraries like Flask.
 The implemented function and the test must not have a __main__ function.
-The implemented function and the test must use gpt_3_5_turbo_api if the task requires understanding, generation, summarization, transformation, translation or classification of natural language or using any language model. Other language models are not allowed.'''
+The implemented function and the test must use gpt_3_5_turbo_api if the task requires the processing of language (e.g., understanding, generation, summarization, transformation, translation, modification or classification). Other language models are not allowed.'''
 
 
 template_generate_microservice_name = PromptTemplate.from_template(
