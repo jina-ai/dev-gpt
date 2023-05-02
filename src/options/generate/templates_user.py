@@ -273,16 +273,16 @@ jina==2.0.0
 
 
 template_solve_apt_get_dependency_issue = PromptTemplate.from_template(
-    '''Your task is to provide guidance on how to solve an error that occurred during the Docker build process. 
-Here is the summary of the error that occurred:
-{summarized_error}
-
+    '''Your task is to provide guidance on how to solve an error that occurred during the Docker build process.
 You are given the following files:
 
 {all_files_string}
 
+Here is the summary of the error that occurred:
+{summarized_error}
+
 To solve this error, you should determine the list of packages that need to be installed via `apt-get install` in the Dockerfile.
-Output the apt-get packages that need to me placed at {{apt_get_packages}} as json in the following format:
+Output the apt-get packages that need to be placed at {{apt_get_packages}} as json in the following format:
 **apt-get-packages.json**
 ```json
 {{"packages": ["<package1>", "<package2>"]}}
@@ -297,7 +297,9 @@ The output would be:
 **apt-get-packages.json**
 ```json
 {{"packages": []}}
-```'''
+```
+Note that you must not output any other files. Only output the apt-get-packages.json file.
+'''
 )
 
 
