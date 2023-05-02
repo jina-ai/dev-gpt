@@ -5,7 +5,7 @@ import openai
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-class GPT_3_5_Turbo_API:
+class GPT_3_5_Turbo:
     def __init__(self, system: str = ''):
         self.system = system
 

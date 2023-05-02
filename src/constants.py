@@ -14,7 +14,6 @@ DOCKER_FILE_TAG = 'dockerfile'
 CLIENT_FILE_TAG = 'python'
 STREAMLIT_FILE_TAG = 'python'
 
-
 FILE_AND_TAG_PAIRS = [
     (EXECUTOR_FILE_NAME, EXECUTOR_FILE_TAG),
     (IMPLEMENTATION_FILE_NAME, IMPLEMENTATION_FILE_TAG),
@@ -39,9 +38,16 @@ MAX_DEBUGGING_ITERATIONS = 10
 
 DEMO_TOKEN = '45372338e04f5a41af949024db929d46'
 
-PROBLEMATIC_PACKAGES = [
-    # 'Pyrender', 'Trimesh',
-    'moderngl', 'pyopengl', 'pyglet', 'pythreejs', 'panda3d', # because they need a screen,
+BLACKLISTED_PACKAGES = [
+    'moderngl', 'pyopengl', 'pyglet', 'pythreejs', 'panda3d',  # because they need a screen,
+    'tika',  # because it needs java
+]
+UNNECESSARY_PACKAGES = [
+    'fastapi', 'uvicorn', 'starlette'  # because the wrappers are used instead
 ]
 
-UNNECESSARY_PACKAGES = ['fastapi']
+LANGUAGE_PACKAGES = [
+    'allennlp', 'bertopic', 'fasttext', 'flair', 'gensim', 'nltk',
+    'pattern', 'polyglot', 'pytorch-transformers', 'rasa', 'sentence-transformers',
+    'spacy', 'stanza', 'summarizer', 'sumy', 'textblob', 'textstat', 'transformers'
+]

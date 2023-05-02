@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y {{apt_get_packa
 
 ## install requirements for the executor
 COPY requirements.txt .
-RUN pip install --compile -r requirements.txt
+RUN pip -v install --compile -r requirements.txt
 
 # setup the workspace
 COPY . /workdir/

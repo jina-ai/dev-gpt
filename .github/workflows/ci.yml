@@ -5,12 +5,12 @@ on:
   pull_request:
 
 jobs:
-  test_level:
+  test_cognitive_level:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        group: [0, 1, 2]
+        group: [0, 1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.8
@@ -27,9 +27,35 @@ jobs:
       - name: Test
         id: test
         run: |
-          pytest -vs test/test_generator.py::test_generation_level_${{ matrix.group }}
-        timeout-minutes: 10
+          pytest -vs test/integration/test_generator.py::test_generation_level_${{ matrix.group }}
+        timeout-minutes: 15
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SCENEX_API_KEY: ${{ secrets.SCENEX_API_KEY }}
           WHISPER_API_KEY: ${{ secrets.WHISPER_API_KEY }}
+
+  test_unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Prepare environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+          pip install --no-cache-dir ".[full,test]"
+          pip install pytest
+          pip install pytest-split
+      - name: Test
+        id: test
+        run: |
+          pytest -vs test/unit
+        timeout-minutes: 15
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SCENEX_API_KEY: ${{ secrets.SCENEX_API_KEY }}
+          WHISPER_API_KEY: ${{ secrets.WHISPER_API_KEY }}
+

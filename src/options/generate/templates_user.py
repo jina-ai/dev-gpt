@@ -24,7 +24,8 @@ The implemented function and the test must not contain prototype or placeholder 
 The implemented function and the test must run in a docker container based on debian.
 The implemented function and the test must not use libraries like Flask.
 The implemented function and the test must not have a __main__ function.
-The implemented function and the test must use gpt_3_5_turbo_api if the task requires understanding, generation, summarization, transformation, translation or classification of natural language or using any language model. Other language models are not allowed.'''
+The implemented function and the test must use gpt_3_5_turbo if the task requires the processing of language (e.g., understanding, generation, summarization, transformation, translation, modification or classification). Other language models are not allowed.
+The implemented function must follow a clean and elegant coding style.'''
 
 
 template_generate_microservice_name = PromptTemplate.from_template(
@@ -49,7 +50,7 @@ list of lists wrapped into ``` and name it **strategies.json**. \
 Do not use quotation marks around packages names in the output. \
 Separate packages in a combination by comma. \
 Note that you can also leave a line empty to indicate that one of the strategies does not require any package and can be done in plain python.
-The output looks like this:
+Write the output using double asterisks and triple backticks like this:
 **strategies.json**
 ```
 [
@@ -67,8 +68,8 @@ template_generate_possible_packages = PromptTemplate.from_template(
 "{description}"
 1. Write down ut to 3 different strategies to solve the task. For each strategy write down all the non-trivial subtasks you need to solve. If there is a natural language understanding or generation stragegy, write it down.
 2. Find out what is the core problem to solve.
-3. List up to 10 Python packages that are specifically designed or have functionalities to solve the complete core problem with one of the defined strategies. You must add gpt_3_5_turbo_api if the task involves generating or understanding natural language or using a (pre-trained) language model.
-4. Exclude any package that can generate or understand natural language or enables using any language model, but you must not exclude gpt_3_5_turbo_api. Print the cleaned list of packages and give a brief reason for keeping it after its name.
+3. List up to 10 Python packages that are specifically designed or have functionalities to solve the complete core problem with one of the defined strategies. You must add gpt_3_5_turbo if the task involves generating or understanding natural language or using a (pre-trained) language model.
+4. Exclude any package that can generate or understand natural language or enables using any language model, but you must not exclude gpt_3_5_turbo. Print the cleaned list of packages and give a brief reason for keeping it after its name.
 5. For each cleaned package think if it fulfills the following requirements:
 a) specifically designed or have functionalities to solve the complete core problem.
 b) has a stable api among different versions
@@ -81,7 +82,7 @@ When answering, just write "yes" or "no".
 
 6. Determine the 5 most suitable python package combinations, ordered from the best to the least suitable. Combine the packages to achieve a comprehensive solution.
 If the package is mentioned in the description, then it is automatically the best one.
-If you listed gpt_3_5_turbo_api earlier, you must use it. gpt_3_5_turbo_api is the best package for handling text-based tasks. Also, gpt_3_5_turbo_api doesn't need any other packages processing text or using language models. It can handle any text-based task alone.
+If you listed gpt_3_5_turbo earlier, you must use it. gpt_3_5_turbo is the best package for handling text-based tasks. Also, gpt_3_5_turbo doesn't need any other packages processing text or using language models. It can handle any text-based task alone.
 
 ''' + template_generate_possible_packages_output_format_string)
 
@@ -94,11 +95,11 @@ template_code_wrapping_string = '''The code will go into {file_name_purpose}. Ma
 You must provide the complete file with the exact same syntax to wrap the code.'''
 
 
-gpt_35_turbo_usage_string = """If need to use gpt_3_5_turbo_api, then this is an example on how to use it:
+gpt_35_turbo_usage_string = """If need to use gpt_3_5_turbo, then this is an example on how to use it:
 ```
-from .apis import GPT_3_5_Turbo_API
+from .apis import GPT_3_5_Turbo
 
-gpt_3_5_turbo_api = GPT_3_5_Turbo_API(
+gpt_3_5_turbo = GPT_3_5_Turbo(
     system=\'\'\'
 You are a tv-reporter who is specialized in C-list celebrities.
 When you get asked something like 'Who was having a date with <X>?', then you answer with a json like '{{"dates": ["<Y>", "<Z>"]}}'. 
@@ -118,12 +119,16 @@ The function must full-fill: '{microservice_description}'.
 It will be tested with the following scenario: '{test_description}'.
 For the implementation use the following package(s): '{packages}'.
 
+The code must start with the following import:
+```
+from .apis import GPT_3_5_Turbo
+```
 Obey the following rules:
 ''' + not_allowed_function_string + '''
 
 Your approach:
 1. Identify the core challenge when implementing the function.
-2. Think about solutions for these challenges. If gpt_3_5_turbo_api is mentioned in the above list of packages, then you must use it.
+2. Think about solutions for these challenges. If gpt_3_5_turbo is mentioned in the above list of packages, then you must use it.
 3. Decide for one of the solutions.
 4. Write the code for the function. Don't write code for the test.
 ''' + gpt_35_turbo_usage_string + '\n' + template_code_wrapping_string
@@ -136,13 +141,12 @@ template_generate_test = PromptTemplate.from_template(
 {code_files_wrapped}
 
 Write a single pytest case that tests the following scenario: '{test_description}'. In case the test scenario is not precise enough, test a general case without any assumptions.
-Start the test with an extensive comment about the test case. If gpt_3_5_turbo_api is used in the executor, then the test must not check the exact output of the executor as it is not deterministic. 
+Start the test with an extensive comment about the test case. If gpt_3_5_turbo is used in the executor, then the test must not check the exact output of the executor as it is not deterministic. 
 
-Use the following import to import the function:
+The test must start with the following import:
 ```
 from .implementation import func
 ```
-
 ''' + not_allowed_function_string + '''
 The test must not open local files.
 The test must not mock a function of the executor.
@@ -163,7 +167,7 @@ Write the content of the requirements.txt file like this:
 ...
 ```
 Add any more packages that are needed to run the code.
-You must not add gpt_3_5_turbo_api to the requirements.txt file. 
+You must not add gpt_3_5_turbo to the requirements.txt file. 
 
 All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts. Output only the requirements.txt file.
 ''' + '\n' + template_code_wrapping_string
@@ -221,7 +225,17 @@ You are given the following files:
 
 {all_files_string}
 
-Is this a PACKAGE_MANAGER dependency installation failure? Answer with "yes" or "no".'''
+Is this error happening because a PACKAGE_MANAGER package is missing or failed to install? 
+1. Write down one bullet point on why the error might happen because a PACKAGE_MANAGER package is missing or failed to install.
+2. Write down one bullet point on why it is unlikely that the error happens because a PACKAGE_MANAGER package is missing or failed to install.
+3. Write down your final answer.
+4. Write down your final answer as json in the following format:
+**response.json**
+```json
+{{"dependency_installation_failure": "<yes/no>"}}
+```
+Note that you must obey the double asterisk and tripple backtick syntax from above.
+'''
 )
 
 
@@ -259,16 +273,33 @@ jina==2.0.0
 
 
 template_solve_apt_get_dependency_issue = PromptTemplate.from_template(
-    '''Your task is to provide guidance on how to solve an error that occurred during the Docker build process. 
-Here is the summary of the error that occurred:
-{summarized_error}
-
+    '''Your task is to provide guidance on how to solve an error that occurred during the Docker build process.
 You are given the following files:
 
 {all_files_string}
 
+Here is the summary of the error that occurred:
+{summarized_error}
+
 To solve this error, you should determine the list of packages that need to be installed via `apt-get install` in the Dockerfile.
-Output them as a white space separated list:'''
+Output the apt-get packages that need to be placed at {{apt_get_packages}} as json in the following format:
+**apt-get-packages.json**
+```json
+{{"packages": ["<package1>", "<package2>"]}}
+```
+Example for the following requirements.txt file:
+**requirements.txt**
+```
+numpy==1.19.5
+fitz
+```
+The output would be:
+**apt-get-packages.json**
+```json
+{{"packages": []}}
+```
+Note that you must not output any other files. Only output the apt-get-packages.json file.
+'''
 )
 
 
@@ -374,22 +405,30 @@ The playground (app.py) must not import the executor.
 template_pm_task_iteration = PromptTemplate.from_template(
     '''{micro_service_initial_description}
 1.Quickly go through the checklist (input/output well defined? api or db access needed?)  and think about if you should ask something to the client or if you should write the final description.
-2.Either write the prompt.txt or the final.txt file.
+2.Either write the prompt.json or the final.json file.
 Either ask for clarification like this:
-**prompt.txt**
-```text
-<prompt to the client here (must be only one question)>
+**prompt.json**
+```json
+{{
+    "question": "<prompt to the client here (must be only one question)>"
+}}
 ```
 
-Or write the summarized microservice description like this:
-**final.txt**
-```text
-<microservice description here>
+Or write the detailed microservice description all mentioned code samples, documentation info and credentials like this:
+**final.json**
+```json
+{{
+    "description": "<microservice description here>",
+    "example_input": "<example input file or string here if mentioned before otherwise n/a>",
+    "code_samples": "<code samples from the client here>",
+    "documentation_info": "<documentation info here>",
+    "credentials: "<credentials here>"
+}}
 ``` 
-Note that your response must be either prompt.txt or final.txt. You must not write both.
+Note that your response must be either prompt.json or final.json. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.
 Note that the last sequence of characters in your response must be ``` (triple backtick).
-Note that prompt.txt must not only contain one question.
+Note that prompt.json must not only contain one question.
 Note that if urls, secrets, database names, etc. are mentioned, they must be part of the summary.
 {custom_suffix}
 '''
@@ -397,36 +436,44 @@ Note that if urls, secrets, database names, etc. are mentioned, they must be par
 
 template_pm_test_iteration = PromptTemplate.from_template(
     '''{micro_service_initial_description}
-1. write down if the original description and the refined description contain an example input for the microservice.
-2. write down either prompt.txt or final.txt.
-If the example input for the microservice is mentioned in the refined description or the original description, then output final.txt.
-Otherwise, output prompt.txt where you ask for the example input file as URL or the example string.
+1. write down if the microservice requires input.
+2. if it requires input, then write down if the original description or the refined description contain an example input for the microservice.
+3. write down either prompt.json or final.json.
+If the example input for the microservice is mentioned in the refined description or the original description, then output final.json.
+Otherwise, output prompt.json where you ask for the example input file as URL or the example string.
 Except for urls, you should come up with your own example input that makes sense for the microservice description.
 
 Example for the case where an example input file is required and was not mentioned before:
-**prompt.txt**
-```text
-Can you please provide an example input file as URL?
+**prompt.json**
+```json
+{{
+    "question": "Can you please provide an example input file as URL?"
+}}
 ```
 
 Example for the case where the example input string is required and was not mentioned before:
-**prompt.txt**
-```text
-Can you please provide an example input string?
+**prompt.json**
+```json
+{{
+    "question": "Can you please provide an example input string?"
+}}
 ```
 Note that you must not ask for an example input in case the example input is already mentioned in the refined description or the original description.
+Note that you must not ask for an example input in case the microservice does not require input.
 
 Example for the case where the example is already mentioned in the refined description or the original description:
-**final.txt**
-```text
-input: <input here>
-assertion: the output is of type <type here>
-``` 
-Note that your response must be either prompt.txt or final.txt. You must not write both.
+**final.json**
+```json
+{{
+    "input": "<input here>",
+    "assertion": "the output contains the result that is of type <type here>"
+}}
+```
+Note that your response must be either prompt.json or final.json. You must not write both.
 Note that you must obey the double asterisk and tripple backtick syntax from above.
 Note that the last sequence of characters in your response must be ``` (triple backtick).
 Note that your response must start with the character sequence ** (double asterisk).
-Note that prompt.txt must only contain one question.
+Note that prompt.json must only contain one question.
 {custom_suffix}
 '''
 )
