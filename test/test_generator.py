@@ -127,7 +127,7 @@ assert response.status_code == 200
 print('This is the text from the audio file:', response.json()['text'])
 2. Summarize the text (~50 words) while still maintaining the key facts.
 3. Create an audio file of the summarized text using a tts library.
-4. Return the the audio file.
+4. Return the the audio file as base64 encoded binary.
 Example input file: https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav
 ''',
         str(tmpdir) + 'microservice',
