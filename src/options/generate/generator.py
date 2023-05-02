@@ -18,7 +18,7 @@ from src.apis.pypi import is_package_on_pypi
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     BLACKLISTED_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
-    IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES
+    IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES
 from src.options.generate.templates_system import  system_task_iteration, system_task_introduction, system_test_iteration
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
@@ -297,7 +297,7 @@ pytest
             log_hubble = push_executor(previous_microservice_path)
             error = process_error_message(log_hubble)
             if error:
-                print('An error occurred during the build process. Feeding the error back to the assistent...')
+                print('An error occurred during the build process. Feeding the error back to the assistant...')
                 self.do_debug_iteration(error, next_microservice_path, previous_microservice_path)
                 if i == MAX_DEBUGGING_ITERATIONS - 1:
                     raise self.MaxDebugTimeReachedException('Could not debug the microservice.')
@@ -544,7 +544,16 @@ Test scenario:
 
     @staticmethod
     def filter_packages_list(packages_list):
+        # filter out complete package lists
         packages_list = [
-            [package for package in packages if package not in BLACKLISTED_PACKAGES and is_package_on_pypi(package)] for packages in packages_list
+            packages for packages in packages_list if all([
+                is_package_on_pypi(pkg)  # all packages must be on pypi
+                and pkg not in BLACKLISTED_PACKAGES  # no package is allowed to be blacklisted
+                for pkg in packages
+            ])
+        ]
+        # filter out single packages
+        packages_list = [
+            [package for package in packages if package not in UNNECESSARY_PACKAGES] for packages in packages_list
         ]
         return packages_list

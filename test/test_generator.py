@@ -87,7 +87,7 @@ def test_generation_level_3(tmpdir):
 6. Return the summary as a string.
 Example input: 'AAPL'
 ''',
-        str(tmpdir) + 'microservice',
+        str(tmpdir),
         'gpt-3.5-turbo'
     )
     assert generator.generate() == 0
