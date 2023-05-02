@@ -145,7 +145,7 @@ metas:
                                                        num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
-        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'microservice.py'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'jina_wrapper.py'), 'r') as f:
             microservice_executor_boilerplate = f.read()
         microservice_executor_code = microservice_executor_boilerplate.replace('class GPTDeployExecutor(Executor):',
                                                                                f'class {microservice_name}(Executor):')

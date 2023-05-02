@@ -145,7 +145,7 @@ Start the test with an extensive comment about the test case. If gpt_3_5_turbo i
 
 The test must start with the following import:
 ```
-from .implementation import func
+from .microservice import func
 ```
 ''' + not_allowed_function_string + '''
 The test must not open local files.
