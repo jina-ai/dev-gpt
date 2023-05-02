@@ -18,7 +18,7 @@ from src.apis.pypi import is_package_on_pypi
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     BLACKLISTED_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
-    IMPLEMENTATION_FILE_TAG
+    IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES
 from src.options.generate.templates_system import  system_task_iteration, system_task_introduction, system_test_iteration
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
@@ -538,10 +538,7 @@ Test scenario:
 
     @staticmethod
     def replace_with_gpt_3_5_turbo_if_possible(pkg):
-        if pkg in ['allennlp', 'bertopic', 'fasttext', 'flair', 'gensim', 'nltk',
-                   'pattern', 'polyglot', 'pytorch-transformers', 'rasa', 'sentence-transformers',
-                   'spacy', 'stanza', 'summarizer', 'sumy', 'textblob', 'textstat', 'transformers']:
-
+        if pkg in LANGUAGE_PACKAGES:
             return 'gpt_3_5_turbo_api'
         return pkg
 

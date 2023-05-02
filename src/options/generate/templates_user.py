@@ -413,7 +413,7 @@ Or write the detailed microservice description all mentioned code samples, docum
 ```json
 {{
     "description": "<microservice description here>",
-    "example_input_file": "<example input file here if mentioned before otherwise n/a>",
+    "example_input": "<example input file or string here if mentioned before otherwise n/a>",
     "code_samples": "<code samples from the client here>",
     "documentation_info": "<documentation info here>",
     "credentials: "<credentials here>"
@@ -430,8 +430,9 @@ Note that if urls, secrets, database names, etc. are mentioned, they must be par
 
 template_pm_test_iteration = PromptTemplate.from_template(
     '''{micro_service_initial_description}
-1. write down if the original description and the refined description contain an example input for the microservice.
-2. write down either prompt.json or final.json.
+1. write down if the microservice requires input.
+2. if it requires input, then write down if the original description or the refined description contain an example input for the microservice.
+3. write down either prompt.json or final.json.
 If the example input for the microservice is mentioned in the refined description or the original description, then output final.json.
 Otherwise, output prompt.json where you ask for the example input file as URL or the example string.
 Except for urls, you should come up with your own example input that makes sense for the microservice description.
@@ -452,6 +453,7 @@ Example for the case where the example input string is required and was not ment
 }}
 ```
 Note that you must not ask for an example input in case the example input is already mentioned in the refined description or the original description.
+Note that you must not ask for an example input in case the microservice does not require input.
 
 Example for the case where the example is already mentioned in the refined description or the original description:
 **final.json**
