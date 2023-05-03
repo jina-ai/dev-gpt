@@ -323,6 +323,7 @@ Here is the summary of the error that occurred:
 You should suggest 3 to 5 possible solutions on how to solve it.
 Obey the following rules:
 You have no access to the documentation of the package.
+You must not change the Dockerfile.
 Note that any changes needed to make the test pass must be written under the constraint that ''' + IMPLEMENTATION_FILE_NAME +  ''' will be used in a different file as well.
 ''' + f'{not_allowed_function_string}\n{not_allowed_docker_string}\n{gpt_35_turbo_usage_string}' + '''
 
