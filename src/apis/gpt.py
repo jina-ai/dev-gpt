@@ -11,7 +11,7 @@ from langchain.chat_models import ChatOpenAI
 from openai.error import RateLimitError
 from langchain.schema import HumanMessage, SystemMessage, BaseMessage, AIMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, ChunkedEncodingError
 from urllib3.exceptions import InvalidChunkLength
 
 from src.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
@@ -132,7 +132,7 @@ class _GPTConversation:
             try:
                 response = self._chat(self.messages)
                 break
-            except (ConnectionError, InvalidChunkLength) as e:
+            except (ConnectionError, InvalidChunkLength, ChunkedEncodingError) as e:
                 print('There was a connection error. Retrying...')
                 if i == 9:
                     raise e
