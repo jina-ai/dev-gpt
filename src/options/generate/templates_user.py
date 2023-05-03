@@ -44,14 +44,14 @@ PDFParserExecutor
 ```'''
 )
 
+# todo split into multiple calls. One for brainstorming - one for the final answer
 template_generate_possible_packages = PromptTemplate.from_template(
     '''Here is the task description of the problem you need to solve:
 "{description}"
-1. Write down ut to 3 different strategies to solve the task. For each strategy write down all the non-trivial subtasks you need to solve. If there is a natural language understanding or generation stragegy, write it down.
-2. Find out what is the core problem to solve.
-3. List up to 10 Python packages that are specifically designed or have functionalities to solve the complete core problem with one of the defined strategies. You must add gpt_3_5_turbo if the task involves generating or understanding natural language or using a (pre-trained) language model.
-4. Exclude any package that can generate or understand natural language or enables using any language model, but you must not exclude gpt_3_5_turbo. Print the cleaned list of packages and give a brief reason for keeping it after its name.
-5. For each cleaned package think if it fulfills the following requirements:
+1. Write down up to 3 different strategies to solve the task. For each strategy write down how it solves the core problems.
+Note that packages are preferred over external apis except if it is mentioned in the description.
+2. For each strategy list up to 3 Python packages that are specifically designed or have functionalities to solve the complete core problems.
+3. For each package think if it fulfills the following requirements:
 a) specifically designed or have functionalities to solve the complete core problem.
 b) has a stable api among different versions
 c) does not have system requirements
@@ -61,9 +61,7 @@ e) the implementation of the core problem using the package would obey the follo
 
 When answering, just write "yes" or "no".
 
-6. Determine the 5 most suitable python package combinations, ordered from the best to the least suitable. Combine the packages to achieve a comprehensive solution.
-If the package is mentioned in the description, then it is automatically the best one.
-
+4. For each approach, list the required python package combinations as discibed in the following.
 You must output the package combinations as json wrapped into tripple backticks ``` and name it **strategies.json**. \
 Note that you can also leave a list empty to indicate that one of the strategies does not require any package and can be done in plain python.
 Write the output using double asterisks and triple backticks like this:
