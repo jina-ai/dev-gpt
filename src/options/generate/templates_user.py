@@ -63,7 +63,6 @@ When answering, just write "yes" or "no".
 
 6. Determine the 5 most suitable python package combinations, ordered from the best to the least suitable. Combine the packages to achieve a comprehensive solution.
 If the package is mentioned in the description, then it is automatically the best one.
-If you listed gpt_3_5_turbo earlier, you must use it. gpt_3_5_turbo is the best package for handling text-based tasks. Also, gpt_3_5_turbo doesn't need any other packages processing text or using language models. It can handle any text-based task alone.
 
 You must output the package combinations as json wrapped into tripple backticks ``` and name it **strategies.json**. \
 Note that you can also leave a list empty to indicate that one of the strategies does not require any package and can be done in plain python.
@@ -122,7 +121,7 @@ Obey the following rules:
 
 Your approach:
 1. Identify the core challenge when implementing the function.
-2. Think about solutions for these challenges. If gpt_3_5_turbo is mentioned in the above list of packages, then you must use it.
+2. Think about solutions for these challenges.
 3. Decide for one of the solutions.
 4. Write the code for the function. Don't write code for the test.
 ''' + gpt_35_turbo_usage_string + '\n' + template_code_wrapping_string
