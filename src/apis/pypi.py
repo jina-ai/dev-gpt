@@ -7,6 +7,9 @@ from packaging import version
 
 
 def is_package_on_pypi(package_name, version=None):
+    """
+    Returns True if the package is on PyPI, False if it is not, and None if the status code is not 200 or 404.
+    """
     optional_version = f"/{version}" if version else ""
     url = f"https://pypi.org/pypi/{package_name}{optional_version}/json"
     response = requests.get(url)
@@ -19,6 +22,9 @@ def is_package_on_pypi(package_name, version=None):
 
 
 def get_latest_package_version(package_name):
+    """
+    Returns the latest version of a package that is not older than 2021.
+    """
     url = f'https://pypi.org/pypi/{package_name}/json'
     response = requests.get(url)
     if response.status_code != 200:
@@ -38,6 +44,11 @@ def get_latest_package_version(package_name):
 
 
 def clean_requirements_txt(previous_microservice_path):
+    """
+    It can happen that the generated requirements.txt contains packages that are not on PyPI (like base64).
+    In this case, we remove the requirement from requirements.txt.
+    In case the package is on PyPI, but the version is not, we update the version to the latest version that is still not older than 2021.
+    """
     requirements_txt_path = os.path.join(previous_microservice_path, 'requirements.txt')
     with open(requirements_txt_path, 'r', encoding='utf-8') as f:
         requirements_txt = f.read()
