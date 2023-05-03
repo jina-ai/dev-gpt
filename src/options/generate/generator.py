@@ -210,8 +210,10 @@ metas:
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r',
                   encoding='utf-8') as f:
             docker_file_template_lines = f.readlines()
-        docker_file_template_lines = [line for line in docker_file_template_lines if
-                                      not line.startswith('RUN apt-get update')]
+        docker_file_template_lines = [
+            line.replace('{{apt_get_packages}}', '')
+            for line in docker_file_template_lines
+        ]
         docker_file_content = '\n'.join(docker_file_template_lines)
         persist_file(docker_file_content, os.path.join(MICROSERVICE_FOLDER_v1, 'Dockerfile'))
 
