@@ -62,10 +62,10 @@ gptdeploy generate \
 --path </path/to/local/folder>
 ```
 To generate your personal microservice two things are required:
-- A `description` of the task you want to accomplish.
+- A `description` of the task you want to accomplish. (optional)
 - The `model` you want to use - either `gpt-3.5` or `gpt-4`. `gpt-3.5` is ~10x cheaper, 
-but will not be able to generate as complex microservices.
-- A `path` on the local drive where the microservice will be generated.
+but will not be able to generate as complex microservices. (default: largest you have access to)
+- A `path` on the local drive where the microservice will be generated. (default: ./microservice)
 
 The creation process should take between 5 and 15 minutes.
 During this time, GPT iteratively builds your microservice until it finds a strategy that make your test scenario pass.
