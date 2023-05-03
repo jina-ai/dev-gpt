@@ -209,10 +209,9 @@ The output would be:
 
 
 template_summarize_error = PromptTemplate.from_template(
-    '''Here is an error message I encountered during the docker build process:
+    '''Your task is to condense an error encountered during the docker build process. The error message is as follows:
 "{error}"
-Your task is to summarize the error message as compact and informative as possible while maintaining all information necessary to debug the core issue.
-Warnings are not worth mentioning.'''
+Your response should be concise and informative, highlighting the core issue while omitting any warnings. It should also provide some additional context regarding the specific file and line number where the error occurred. The actual core error message should also be included.'''
 )
 
 
