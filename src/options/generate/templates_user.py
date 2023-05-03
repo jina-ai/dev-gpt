@@ -203,9 +203,9 @@ template_summarize_error = PromptTemplate.from_template(
 "{error}"
 Your task is to summarize the error message as compact and informative as possible \
 while maintaining all information necessary to debug the core issue (100 words).
+It should also provide some additional context regarding the specific file and line number where the error occurred. \
 Note that you must not suggest a solution to the error.
-Warnings are not worth mentioning.
-Your response should be concise and informative, highlighting the core issue while omitting any warnings. It should also provide some additional context regarding the specific file and line number where the error occurred. The actual core error message should also be included.'''
+Warnings are not worth mentioning.'''
 )
 
 
