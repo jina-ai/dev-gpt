@@ -44,25 +44,6 @@ PDFParserExecutor
 ```'''
 )
 
-
-template_generate_possible_packages_output_format_string = '''You must output the package combinations as a \
-list of lists wrapped into ``` and name it **strategies.json**. \
-Do not use quotation marks around packages names in the output. \
-Separate packages in a combination by comma. \
-Note that you can also leave a line empty to indicate that one of the strategies does not require any package and can be done in plain python.
-Write the output using double asterisks and triple backticks like this:
-**strategies.json**
-```
-[
-  ["package1", "package2", "package3"],
-  ["package4", "package5"],
-  ["package6", "package7", "package8", "package9"],
-  [],
-  ["package10"]
-]
-```'''
-
-
 template_generate_possible_packages = PromptTemplate.from_template(
     '''Here is the task description of the problem you need to solve:
 "{description}"
@@ -84,7 +65,19 @@ When answering, just write "yes" or "no".
 If the package is mentioned in the description, then it is automatically the best one.
 If you listed gpt_3_5_turbo earlier, you must use it. gpt_3_5_turbo is the best package for handling text-based tasks. Also, gpt_3_5_turbo doesn't need any other packages processing text or using language models. It can handle any text-based task alone.
 
-''' + template_generate_possible_packages_output_format_string)
+You must output the package combinations as json wrapped into tripple backticks ``` and name it **strategies.json**. \
+Note that you can also leave a list empty to indicate that one of the strategies does not require any package and can be done in plain python.
+Write the output using double asterisks and triple backticks like this:
+**strategies.json**
+```
+[
+  ["package1", "package2", "package3"],
+  ["package4", "package5"],
+  ["package6", "package7", "package8", "package9"],
+  [],
+  ["package10"]
+]
+```''')
 
 
 template_code_wrapping_string = '''The code will go into {file_name_purpose}.
@@ -211,7 +204,7 @@ The output would be:
 template_summarize_error = PromptTemplate.from_template(
     '''Here is an error message I encountered during the docker build process:
 "{error}"
-Your task is to summarize the error message as compact and informative as possible while maintaining all information necessary to debug the core issue.
+Your task is to summarize the error message as compact and informative as possible while maintaining all information necessary to debug the core issue (100 words).
 Warnings are not worth mentioning.'''
 )
 
