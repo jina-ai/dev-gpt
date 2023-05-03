@@ -1,5 +1,5 @@
 EXECUTOR_FILE_NAME = '__init__.py'
-IMPLEMENTATION_FILE_NAME = 'implementation.py'
+IMPLEMENTATION_FILE_NAME = 'microservice.py'
 TEST_EXECUTOR_FILE_NAME = 'test_microservice.py'
 REQUIREMENTS_FILE_NAME = 'requirements.txt'
 DOCKER_FILE_NAME = 'Dockerfile'

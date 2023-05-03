@@ -145,13 +145,13 @@ metas:
                                                        num_approach, 1)
         os.makedirs(MICROSERVICE_FOLDER_v1)
 
-        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'microservice.py'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'jina_wrapper.py'), 'r', encoding='utf-8') as f:
             microservice_executor_boilerplate = f.read()
         microservice_executor_code = microservice_executor_boilerplate.replace('class GPTDeployExecutor(Executor):',
                                                                                f'class {microservice_name}(Executor):')
         persist_file(microservice_executor_code, os.path.join(MICROSERVICE_FOLDER_v1, EXECUTOR_FILE_NAME))
 
-        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'apis.py'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'apis.py'), 'r', encoding='utf-8') as f:
             persist_file(f.read(), os.path.join(MICROSERVICE_FOLDER_v1, 'apis.py'))
 
         microservice_content = self.generate_and_persist_file(
@@ -221,7 +221,7 @@ metas:
 
     @staticmethod
     def read_docker_template():
-        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r', encoding='utf-8') as f:
             return f.read()
 
     def parse_result_fn_dockerfile(self, content_raw: str):
