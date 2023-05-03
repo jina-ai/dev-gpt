@@ -26,9 +26,8 @@ from src.options.generate.templates_user import template_generate_microservice_n
     template_generate_function, template_generate_test, template_generate_requirements, \
     template_chain_of_thought, template_summarize_error, \
     template_solve_apt_get_dependency_issue, template_pm_task_iteration, \
-    template_pm_test_iteration
-    template_generate_apt_get_install, template_solve_apt_get_dependency_issue, template_pm_task_iteration, \
-    template_pm_test_iteration, template_suggest_solutions_code_issue
+    template_pm_test_iteration, template_generate_apt_get_install, template_solve_apt_get_dependency_issue,\
+    template_pm_task_iteration, template_pm_test_iteration, template_suggest_solutions_code_issue
 
 from src.options.generate.ui import get_random_employee
 from src.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
