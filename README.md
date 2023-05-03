@@ -58,13 +58,11 @@ We are working on a way to use gpt-3.5-turbo as well.
 ```bash
 gptdeploy generate \
 --description "<description of the microservice>" \
---test "<specification of a test scenario>" \
 --model <gpt-3.5 or gpt-4> \
 --path </path/to/local/folder>
 ```
 To generate your personal microservice two things are required:
 - A `description` of the task you want to accomplish.
-- A `test` scenario that ensures the microservice works as expected.
 - The `model` you want to use - either `gpt-3.5` or `gpt-4`. `gpt-3.5` is ~10x cheaper, 
 but will not be able to generate as complex microservices.
 - A `path` on the local drive where the microservice will be generated.
@@ -105,7 +103,7 @@ In this section you can get a feeling for the kind of microservices that can be 
 ```bash
 gptdeploy generate \
 --description "The user writes something and gets a related deep compliment." \
---test "Given the word test a deep compliment is generated" \
+--test "" \
 --model gpt-4 \
 --path microservice
 ```
@@ -115,8 +113,7 @@ gptdeploy generate \
 ### Extract and summarize news articles given a URL
 ```bash
 gptdeploy generate \
---description "Extract text from a news article URL using Newspaper3k library and generate a summary using gpt." \
---test "input: 'http://fox13now.com/2013/12/30/new-year-new-laws-obamacare-pot-guns-and-drones/' output: assert a summarized version of the article exists" \
+--description "Extract text from a news article URL using Newspaper3k library and generate a summary using gpt. Example input: http://fox13now.com/2013/12/30/new-year-new-laws-obamacare-pot-guns-and-drones/" \
 --model gpt-4 \
 --path microservice
 ```
@@ -125,8 +122,7 @@ gptdeploy generate \
 ### Chemical Formula Visualization
 ```bash
 gptdeploy generate \
---description "Convert a chemical formula into a 2D chemical structure diagram" \
---test "C=C, CN=C=O, CCC(=O)O" \
+--description "Convert a chemical formula into a 2D chemical structure diagram. Example inputs: C=C, CN=C=O, CCC(=O)O" \
 --model gpt-4 \
 --path microservice
 ```
@@ -135,8 +131,7 @@ gptdeploy generate \
 ### 2d rendering of 3d model
 ```bash
 gptdeploy generate \
---description "create a 2d rendering of a whole 3d object and x,y,z object rotation using trimesh and pyrender.OffscreenRenderer with os.environ['PYOPENGL_PLATFORM'] = 'egl' and freeglut3-dev library" \
---test "input: https://graphics.stanford.edu/courses/cs148-10-summer/as3/code/as3/teapot.obj output: assert the image is not completely white or black" \
+--description "create a 2d rendering of a whole 3d object and x,y,z object rotation using trimesh and pyrender.OffscreenRenderer with os.environ['PYOPENGL_PLATFORM'] = 'egl' and freeglut3-dev library - example input: https://graphics.stanford.edu/courses/cs148-10-summer/as3/code/as3/teapot.obj" \
 --model gpt-4 \
 --path microservice
 ```
@@ -145,8 +140,7 @@ gptdeploy generate \
 ### Product Recommendation
 ```bash
 gptdeploy generate \
---description "Generate personalized product recommendations based on user product browsing history and the product categories fashion, electronics and sport" \
---test "Test that a user how visited p1(electronics),p2(fashion),p3(fashion) is more likely to buy p4(fashion) than p5(sports)" \
+--description "Generate personalized product recommendations based on user product browsing history and the product categories fashion, electronics and sport. Example: Input: browsing history: prod1(electronics),prod2(fashion),prod3(fashion), output: p4(fashion)" \
 --model gpt-4 \
 --path microservice
 ```
@@ -156,7 +150,6 @@ gptdeploy generate \
 ```bash
 gptdeploy generate \
 --description "Given a search query, find articles on hacker news using the hacker news api and return a list of (title, author, website_link, first_image_on_the_website)" \
---test "searching for GPT gives results" \
 --model gpt-4 \
 --path microservice
 ````
@@ -166,8 +159,7 @@ gptdeploy generate \
 ```bash
 
 gptdeploy generate \
---description "Given an image, return the image with bounding boxes of all animals (https://pjreddie.com/media/files/yolov3.weights, https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg)" \
---test "https://images.unsplash.com/photo-1444212477490-ca407925329e contains animals" \
+--description "Given an image, return the image with bounding boxes of all animals (https://pjreddie.com/media/files/yolov3.weights, https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg), Example input: https://images.unsplash.com/photo-1444212477490-ca407925329e" \
 --model gpt-4 \
 --path microservice
 ```
@@ -176,8 +168,7 @@ gptdeploy generate \
 ### Meme Generator
 ```bash
 gptdeploy generate \
---description "Generate a meme from an image and a caption" \
---test "Surprised Pikachu: https://media.wired.com/photos/5f87340d114b38fa1f8339f9/master/w_1600%2Cc_limit/Ideas_Surprised_Pikachu_HD.jpg, TOP:When you discovered GPTDeploy" \
+--description "Generate a meme from an image and a caption. Example input: https://media.wired.com/photos/5f87340d114b38fa1f8339f9/master/w_1600%2Cc_limit/Ideas_Surprised_Pikachu_HD.jpg, TOP:When you discovered GPTDeploy" \
 --model gpt-4 \
 --path microservice
 ```
@@ -187,7 +178,6 @@ gptdeploy generate \
 ```bash
 gptdeploy generate \
 --description "Given a word, return a list of rhyming words using the datamuse api" \
---test "hello" \
 --model gpt-4 \
 --path microservice
 ```
@@ -197,7 +187,6 @@ gptdeploy generate \
 ```bash
 gptdeploy generate \
 --description "Generate a word cloud from a given text" \
---test "Lorem ipsum dolor sit amet, consectetur adipiscing elit." \
 --model gpt-4 \
 --path microservice
 ```
@@ -206,8 +195,7 @@ gptdeploy generate \
 ### 3d model info
 ```bash
 gptdeploy generate \
---description "Given a 3d object, return vertex count and face count" \
---test "https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj" \
+--description "Given a 3d object, return vertex count and face count. Example: https://raw.githubusercontent.com/polygonjs/polygonjs-assets/master/models/wolf.obj" \
 --model gpt-4 \
 --path microservice
 ```
@@ -216,8 +204,7 @@ gptdeploy generate \
 ### Table extraction
 ```bash
 gptdeploy generate \
---description "Given a URL, extract all tables as csv" \
---test "http://www.ins.tn/statistiques/90" \
+--description "Given a URL, extract all tables as csv. Example: http://www.ins.tn/statistiques/90" \
 --model gpt-4 \
 --path microservice
 ```
@@ -226,8 +213,7 @@ gptdeploy generate \
 ### Audio to mel spectrogram
 ```bash
 gptdeploy generate \
---description "Create mel spectrograms from audio file" \
---test "https://cdn.pixabay.com/download/audio/2023/02/28/audio_550d815fa5.mp3" \
+--description "Create mel spectrogram from audio file. Example: https://cdn.pixabay.com/download/audio/2023/02/28/audio_550d815fa5.mp3" \
 --model gpt-4 \
 --path microservice
 ```
@@ -237,7 +223,6 @@ gptdeploy generate \
 ```bash
 gptdeploy generate \
 --description "Convert text to speech" \
---test "Hello, welcome to GPT Deploy!" \
 --model gpt-4 \
 --path microservice
 ```
@@ -251,8 +236,7 @@ gptdeploy generate \
 ### Heatmap Generator
 ```bash
 gptdeploy generate \
---description "Create a heatmap from an image and a list of relative coordinates" \
---test "https://images.unsplash.com/photo-1574786198875-49f5d09fe2d2, [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.2, 0.1], [0.7, 0.2], [0.4, 0.2]]" \
+--description "Create a heatmap from an image and a list of relative coordinates. Example input: https://images.unsplash.com/photo-1574786198875-49f5d09fe2d2, [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.2, 0.1], [0.7, 0.2], [0.4, 0.2]]" \
 --model gpt-4 \
 --path microservice
 ```
@@ -261,10 +245,8 @@ gptdeploy generate \
 ### QR Code Generator
 ```bash
 gptdeploy generate \
---description "Generate QR code from URL" \
---test "https://www.example.com" \
---model gpt-4 \
---path microservice
+--description "Generate QR code from URL. Example input: https://www.example.com" \
+--model gpt-4 
 ```
 <img src="res/qr_example.png" alt="QR Code Generator" width="400" />
 
@@ -272,8 +254,7 @@ gptdeploy generate \
 
 ```bash
 gptdeploy generate \
---description "Visualize the Mandelbrot set with custom parameters" \
---test "center=-0+1i, zoom=1.0, size=800x800, iterations=1000" \
+--description "Visualize the Mandelbrot set with custom parameters. Example input: center=-0+1i, zoom=1.0, size=800x800, iterations=1000" \
 --model gpt-4 \
 --path microservice
 ```
@@ -283,7 +264,7 @@ gptdeploy generate \
 ### Markdown to HTML Converter
 
 ```bash
-gptdeploy generate --description "Convert markdown to HTML" --test "# Hello, welcome to GPT Deploy!"
+gptdeploy generate --description "Convert markdown to HTML"
 ```
 
 <img src="res/markdown_to_html_example.png" alt="Markdown to HTML Converter" width="400" />
