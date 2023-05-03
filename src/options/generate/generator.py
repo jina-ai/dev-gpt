@@ -13,7 +13,7 @@ from pydantic.dataclasses import dataclass
 from src.apis import gpt
 from src.apis.gpt import _GPTConversation
 from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
-from src.apis.pypi import is_package_on_pypi
+from src.apis.pypi import is_package_on_pypi, get_latest_package_version, clean_requirements_txt
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     BLACKLISTED_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
@@ -49,9 +49,9 @@ class Generator:
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False, can_contain_code_block=True):
         optional_line_break = '\n' if can_contain_code_block else ''  # the \n at the end makes sure that ``` within the generated code is not matched because it is not right before a line break
         pattern = fr"\*?\*?{file_name}\*?\*?\n```(?:\w+\n)?([\s\S]*?){optional_line_break}```"
-        match = re.search(pattern, plain_text, re.MULTILINE)
-        if match:
-            return match.group(1).strip()
+        matches = re.findall(pattern, plain_text, re.MULTILINE)
+        if matches:
+            return matches[-1].strip()
         elif match_single_block:
             # Check for a single code block
             single_code_block_pattern = r"```(?:\w+\n)?([\s\S]*?)```"
@@ -212,8 +212,10 @@ metas:
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r',
                   encoding='utf-8') as f:
             docker_file_template_lines = f.readlines()
-        docker_file_template_lines = [line for line in docker_file_template_lines if
-                                      not line.startswith('RUN apt-get update')]
+        docker_file_template_lines = [
+            line.replace('{{apt_get_packages}}', '')
+            for line in docker_file_template_lines
+        ]
         docker_file_content = '\n'.join(docker_file_template_lines)
         persist_file(docker_file_content, os.path.join(MICROSERVICE_FOLDER_v1, 'Dockerfile'))
 
@@ -305,6 +307,7 @@ pytest
                                                                num_approach, i)
             next_microservice_path = get_microservice_path(self.microservice_root_path, microservice_name, packages,
                                                            num_approach, i + 1)
+            clean_requirements_txt(previous_microservice_path)
             log_hubble = push_executor(previous_microservice_path)
             error = process_error_message(log_hubble)
             if error:

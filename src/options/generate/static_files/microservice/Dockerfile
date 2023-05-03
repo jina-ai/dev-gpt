@@ -2,7 +2,7 @@ FROM jinaai/jina:3.15.1-dev14-py39-standard
 # update pip
 RUN pip install --upgrade pip
 
-RUN apt-get update && apt-get install --no-install-recommends -y ffmpeg build-essential pkg-config {{apt_get_packages}} && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --no-install-recommends -y ffmpeg build-essential pkg-config libpoppler-cpp-dev {{apt_get_packages}} && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ## install requirements for the executor
 COPY requirements.txt .

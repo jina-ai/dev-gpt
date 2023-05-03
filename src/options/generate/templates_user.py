@@ -44,12 +44,26 @@ PDFParserExecutor
 ```'''
 )
 
+# todo split into multiple calls. One for brainstorming - one for the final answer
+template_generate_possible_packages = PromptTemplate.from_template(
+    '''Here is the task description of the problem you need to solve:
+"{description}"
+1. Write down up to 3 different strategies to solve the task. For each strategy write down how it solves the core problems.
+Note that packages are preferred over external apis except if it is mentioned in the description.
+2. For each strategy list up to 3 Python packages that are specifically designed or have functionalities to solve the complete core problems.
+3. For each package think if it fulfills the following requirements:
+a) specifically designed or have functionalities to solve the complete core problem.
+b) has a stable api among different versions
+c) does not have system requirements
+d) can solve the task when running in a docker container
+e) the implementation of the core problem using the package would obey the following rules:
+''' + not_allowed_function_string + '''
 
-template_generate_possible_packages_output_format_string = '''You must output the package combinations as a \
-list of lists wrapped into ``` and name it **strategies.json**. \
-Do not use quotation marks around packages names in the output. \
-Separate packages in a combination by comma. \
-Note that you can also leave a line empty to indicate that one of the strategies does not require any package and can be done in plain python.
+When answering, just write "yes" or "no".
+
+4. For each approach, list the required python package combinations as discibed in the following.
+You must output the package combinations as json wrapped into tripple backticks ``` and name it **strategies.json**. \
+Note that you can also leave a list empty to indicate that one of the strategies does not require any package and can be done in plain python.
 Write the output using double asterisks and triple backticks like this:
 **strategies.json**
 ```
@@ -60,31 +74,7 @@ Write the output using double asterisks and triple backticks like this:
   [],
   ["package10"]
 ]
-```'''
-
-
-template_generate_possible_packages = PromptTemplate.from_template(
-    '''Here is the task description of the problem you need to solve:
-"{description}"
-1. Write down ut to 3 different strategies to solve the task. For each strategy write down all the non-trivial subtasks you need to solve. If there is a natural language understanding or generation stragegy, write it down.
-2. Find out what is the core problem to solve.
-3. List up to 10 Python packages that are specifically designed or have functionalities to solve the complete core problem with one of the defined strategies. You must add gpt_3_5_turbo if the task involves generating or understanding natural language or using a (pre-trained) language model.
-4. Exclude any package that can generate or understand natural language or enables using any language model, but you must not exclude gpt_3_5_turbo. Print the cleaned list of packages and give a brief reason for keeping it after its name.
-5. For each cleaned package think if it fulfills the following requirements:
-a) specifically designed or have functionalities to solve the complete core problem.
-b) has a stable api among different versions
-c) does not have system requirements
-d) can solve the task when running in a docker container
-e) the implementation of the core problem using the package would obey the following rules:
-''' + not_allowed_function_string + '''
-
-When answering, just write "yes" or "no".
-
-6. Determine the 5 most suitable python package combinations, ordered from the best to the least suitable. Combine the packages to achieve a comprehensive solution.
-If the package is mentioned in the description, then it is automatically the best one.
-If you listed gpt_3_5_turbo earlier, you must use it. gpt_3_5_turbo is the best package for handling text-based tasks. Also, gpt_3_5_turbo doesn't need any other packages processing text or using language models. It can handle any text-based task alone.
-
-''' + template_generate_possible_packages_output_format_string)
+```''')
 
 
 template_code_wrapping_string = '''The code will go into {file_name_purpose}.
@@ -129,7 +119,7 @@ Obey the following rules:
 
 Your approach:
 1. Identify the core challenge when implementing the function.
-2. Think about solutions for these challenges. If gpt_3_5_turbo is mentioned in the above list of packages, then you must use it.
+2. Think about solutions for these challenges.
 3. Decide for one of the solutions.
 4. Write the code for the function. Don't write code for the test.
 ''' + gpt_35_turbo_usage_string + '\n' + template_code_wrapping_string
@@ -211,6 +201,10 @@ The output would be:
 template_summarize_error = PromptTemplate.from_template(
     '''Your task is to condense an error encountered during the docker build process. The error message is as follows:
 "{error}"
+Your task is to summarize the error message as compact and informative as possible \
+while maintaining all information necessary to debug the core issue (100 words).
+Note that you must not suggest a solution to the error.
+Warnings are not worth mentioning.
 Your response should be concise and informative, highlighting the core issue while omitting any warnings. It should also provide some additional context regarding the specific file and line number where the error occurred. The actual core error message should also be included.'''
 )
 
