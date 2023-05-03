@@ -30,7 +30,7 @@ https://github.com/jina-ai/gptdeploy/issues/new
     return wrapper
 
 def path_param(func):
-    @click.option('--path', required=True, help='Path to the generated microservice.')
+    @click.option('--path', default='microservice', help='Path to the generated microservice.')
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         path = os.path.expanduser(kwargs['path'])
