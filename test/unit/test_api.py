@@ -1,5 +1,7 @@
+import os
+
 from src.apis.jina_cloud import is_executor_in_hub
-from src.apis.pypi import is_package_on_pypi
+from src.apis.pypi import is_package_on_pypi, clean_requirements_txt
 from src.options.generate.generator import Generator
 
 
@@ -32,3 +34,30 @@ def test_filter_packages_list():
         ["gpt_3_5_turbo", "requests", "pydub"],
         ["requests", "gtts"]
     ]
+
+
+def test_precheck_requirements_txt(tmpdir):
+    requirements_content = """\
+jina==1.2.3
+docarray==1.2.3
+requests~=2.26.0
+gtts~=2.2.3
+pydub~=123.123.123
+base64~=3.3.0
+"""
+    requirements_clean = """\
+jina==1.2.3
+docarray==1.2.3
+requests~=2.26.0
+gtts~=2.2.3
+pydub~=0.25.1"""
+    requirements_txt_path = os.path.join(tmpdir, "requirements.txt")
+    with open(requirements_txt_path, "w", encoding="utf-8") as f:
+        f.write(requirements_content)
+
+    clean_requirements_txt(tmpdir)
+
+    with open(requirements_txt_path, "r", encoding="utf-8") as f:
+        updated_requirements = f.read()
+
+    assert updated_requirements == requirements_clean

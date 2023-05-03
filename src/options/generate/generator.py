@@ -13,7 +13,7 @@ from pydantic.dataclasses import dataclass
 from src.apis import gpt
 from src.apis.gpt import _GPTConversation
 from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
-from src.apis.pypi import is_package_on_pypi
+from src.apis.pypi import is_package_on_pypi, get_latest_package_version, clean_requirements_txt
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     BLACKLISTED_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
@@ -303,6 +303,7 @@ pytest
                                                                num_approach, i)
             next_microservice_path = get_microservice_path(self.microservice_root_path, microservice_name, packages,
                                                            num_approach, i + 1)
+            clean_requirements_txt(previous_microservice_path)
             log_hubble = push_executor(previous_microservice_path)
             error = process_error_message(log_hubble)
             if error:

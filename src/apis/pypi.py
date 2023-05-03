@@ -1,4 +1,10 @@
+import os
+import re
+from datetime import datetime
+
 import requests
+from packaging import version
+
 
 def is_package_on_pypi(package_name, version=None):
     optional_version = f"/{version}" if version else ""
@@ -10,3 +16,60 @@ def is_package_on_pypi(package_name, version=None):
         return False
     else:
         return None
+
+
+def get_latest_package_version(package_name):
+    url = f'https://pypi.org/pypi/{package_name}/json'
+    response = requests.get(url)
+    if response.status_code != 200:
+        return None
+    data = response.json()
+    releases = data['releases']
+
+    # Get package versions not older than 2021
+    valid_versions = []
+    for v, release_info in releases.items():
+        upload_time = datetime.strptime(release_info[0]['upload_time'], '%Y-%m-%dT%H:%M:%S')
+        if upload_time.year <= 2021:
+            valid_versions.append(v)
+
+    v = max(valid_versions, key=version.parse) if valid_versions else None
+    return v
+
+
+def clean_requirements_txt(previous_microservice_path):
+    requirements_txt_path = os.path.join(previous_microservice_path, 'requirements.txt')
+    with open(requirements_txt_path, 'r', encoding='utf-8') as f:
+        requirements_txt = f.read()
+
+    updated_requirements = []
+
+    for line in requirements_txt.split('\n'):
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+
+        split = re.split(r'==|>=|<=|>|<|~=', line)
+        if len(split) == 1:
+            version = None
+            package_name = split[0]
+        elif len(split) == 2:
+            package_name, version = split
+        else:
+            raise ValueError(f'Could not parse line {line} in requirements.txt')
+
+        # Keep lines with jina, docarray, openai, pytest unchanged
+        if package_name in {'jina', 'docarray', 'openai', 'pytest'}:
+            updated_requirements.append(line)
+            continue
+        if is_package_on_pypi(package_name):
+            if version is None or not is_package_on_pypi(package_name, version):
+                latest_version = get_latest_package_version(package_name)
+                if latest_version is None:
+                    raise ValueError(f'Package {package_name} not found on PyPI')
+                updated_requirements.append(f'{package_name}~={latest_version}')
+            else:
+                updated_requirements.append(line)
+
+    with open(requirements_txt_path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(updated_requirements))
