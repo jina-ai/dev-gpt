@@ -47,9 +47,9 @@ class Generator:
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False, can_contain_code_block=True):
         optional_line_break = '\n' if can_contain_code_block else ''  # the \n at the end makes sure that ``` within the generated code is not matched because it is not right before a line break
         pattern = fr"\*?\*?{file_name}\*?\*?\n```(?:\w+\n)?([\s\S]*?){optional_line_break}```"
-        match = re.search(pattern, plain_text, re.MULTILINE)
-        if match:
-            return match.group(1).strip()
+        matches = re.findall(pattern, plain_text, re.MULTILINE)
+        if matches:
+            return matches[-1].strip()
         elif match_single_block:
             # Check for a single code block
             single_code_block_pattern = r"```(?:\w+\n)?([\s\S]*?)```"
