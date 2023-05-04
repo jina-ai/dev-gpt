@@ -25,7 +25,7 @@ jobs:
       if: steps.check.outputs.changed == 'true'
       shell: bash
       run: |
-        FILE='scr/constants.py'
+        FILE='src/constants.py'
         VERSION=$(sed -n '/DOCKER_BASE_IMAGE_VERSION =/p' $FILE | cut -d \' -f2)
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
