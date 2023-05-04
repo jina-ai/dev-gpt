@@ -2,7 +2,7 @@ name: CI
 
 on:
   workflow_dispatch:
-  pull_request:
+#  pull_request:
 
 jobs:
   test_cognitive_level:

@@ -35,7 +35,7 @@ jobs:
         VERSION: ${{ env.VERSION }}
       shell: bash
       run: |
-        if jina hub pull jinahub+docker://jinaai/gpt-dev/$VERSION; then
+        if docker pull jinaai/gpt-dev:$VERSION; then
           echo "Executor version/tag is used already. Please update the tag"
           exit 1
         else
