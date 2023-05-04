@@ -164,10 +164,11 @@ def deploy_on_jcloud(executor_name, microservice_path):
             time.sleep(5)
         except SystemExit as e:
             raise SystemExit(f'''
-Looks like something went wrong in the generation and we didn't catch it.
-Please, create an issue here: https://github.com/jina-ai/gptdeploy/issues/new/choose
-nd add details on the microservice you are trying to create.
-In the meantime, you can upgrade your GPT Deploy version, if not using latest, and try again.
+Looks like you either ran out of credits or something went wrong in the generation and we didn't catch it.
+To check if you ran out of credits, please go to https://cloud.jina.ai.
+If you have credits left, please create an issue here https://github.com/jina-ai/gptdeploy/issues/new/choose
+and add details on the microservice you are trying to create.
+In that case, you can upgrade your GPT Deploy version, if not using latest, and try again.
 ''') from e
     if i == 2:
         raise Exception('''
