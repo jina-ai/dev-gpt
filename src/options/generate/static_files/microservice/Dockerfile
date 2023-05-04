@@ -1,8 +1,6 @@
-FROM jinaai/jina:3.14.1-py39-standard
-# update pip
-RUN pip install --upgrade pip
+FROM jinaai/gpt-dev:{{DOCKER_BASE_IMAGE_VERSION}}
 
-RUN apt-get update && apt-get install --no-install-recommends -y ffmpeg build-essential pkg-config libpoppler-cpp-dev {{apt_get_packages}} && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get install --no-install-recommends -y {{APT_GET_PACKAGES}}
 
 ## install requirements for the executor
 COPY requirements.txt .
