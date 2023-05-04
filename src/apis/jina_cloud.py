@@ -164,10 +164,10 @@ def deploy_on_jcloud(executor_name, microservice_path):
             time.sleep(5)
         except SystemExit as e:
             raise SystemExit(f'''
-Looks like your free credits ran out. 
-Please add payment information to your account and try again.
-Visit https://cloud.jina.ai/
-            ''') from e
+Looks like something went wrong in the generation and we didn't catch it.
+Please, create an issue here: https://github.com/jina-ai/gptdeploy/issues/new/choose
+And add details on the microservice you are trying to create.
+''') from e
     if i == 2:
         raise Exception('''
 Could not deploy on Jina Cloud. 
