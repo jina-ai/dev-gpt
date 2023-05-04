@@ -13,7 +13,7 @@ from pydantic.dataclasses import dataclass
 from src.apis import gpt
 from src.apis.gpt import _GPTConversation
 from src.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
-from src.apis.pypi import is_package_on_pypi, get_latest_package_version, clean_requirements_txt
+from src.apis.pypi import is_package_on_pypi, clean_requirements_txt
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     BLACKLISTED_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
@@ -48,6 +48,8 @@ class Generator:
         self.microservice_name = None
         self.previous_microservice_path = None
         self.cur_microservice_path = None
+        self.previous_errors = []
+        self.previous_solutions = []
 
     def extract_content_from_result(self, plain_text, file_name, match_single_block=False, can_contain_code_block=True):
         optional_line_break = '\n' if can_contain_code_block else ''  # the \n at the end makes sure that ``` within the generated code is not matched because it is not right before a line break
@@ -352,49 +354,8 @@ pytest
                 all_files_string = self.files_to_string(
                     {key: val for key, val in file_name_to_content.items() if key != EXECUTOR_FILE_NAME}
                 )
-                suggested_solutions = json.loads(
-                    self.generate_and_persist_file(
-                        section_title='Suggest solution for code issue',
-                        template=template_suggest_solutions_code_issue,
-                        file_name_s=['solutions.json'],
-                        summarized_error=summarized_error,
-                        task_description=self.microservice_specification.task,
-                        test_description=self.microservice_specification.test,
-                        all_files_string=all_files_string,
-                    )['solutions.json']
-                )
 
-                was_error_seen_before = json.loads(
-                    self.generate_and_persist_file(
-                        section_title='Check if error was seen before',
-                        template=template_was_error_seen_before,
-                        file_name_s=['response.json'],
-                        summarized_error=summarized_error,
-                        previous_errors=None,       # todo: fill-in mapping from previous errors to suggested solutions
-                        system_definition_examples=None,
-                    )['response.json']
-                )['was_error_seen_before'].lower() == 'yes'
-
-                suggested_solution = None
-                if was_error_seen_before:
-                    for _num_solution in range(len(suggested_solutions)):
-                        _suggested_solution = suggested_solutions[str(_num_solution)]
-                        was_solution_tried_before = json.loads(
-                            self.generate_and_persist_file(
-                                section_title='Check if solution was tried before',
-                                template=template_was_solution_tried_before,
-                                file_name_s=['response.json'],
-                                tried_solutions=None,  # todo: fill-in mapping from tried solutions to suggested solutions
-                                suggested_solution=_suggested_solution,
-                                system_definition_examples=None,
-                            )['response.json']
-                        )['will_lead_to_different_actions'].lower() == 'no'
-                        if not was_solution_tried_before:
-                            suggested_solution = _suggested_solution
-                            break
-
-                if suggested_solution is None:
-                    suggested_solution = f"solve error: {summarized_error}"
+                suggested_solution = self.generate_solution_suggestion(summarized_error, all_files_string)
 
                 self.generate_and_persist_file(
                     section_title='Implementing suggestion solution for code issue',
@@ -406,6 +367,58 @@ pytest
                     all_files_string=all_files_string,
                     suggested_solution=suggested_solution,
                 )
+
+    def generate_solution_suggestion(self, summarized_error, all_files_string):
+        suggested_solutions = json.loads(
+            self.generate_and_persist_file(
+                section_title='Suggest solution for code issue',
+                template=template_suggest_solutions_code_issue,
+                file_name_s=['solutions.json'],
+                summarized_error=summarized_error,
+                task_description=self.microservice_specification.task,
+                test_description=self.microservice_specification.test,
+                all_files_string=all_files_string,
+            )['solutions.json']
+        )
+
+        if len(self.previous_errors) > 0:
+            was_error_seen_before = json.loads(
+                self.generate_and_persist_file(
+                    section_title='Check if error was seen before',
+                    template=template_was_error_seen_before,
+                    file_name_s=['response.json'],
+                    summarized_error=summarized_error,
+                    previous_errors=f'- "{os.linesep}"'.join(self.previous_errors),
+                    system_definition_examples=None,
+                )['response.json']
+            )['was_error_seen_before'].lower() == 'yes'
+
+            suggested_solution = None
+            if was_error_seen_before:
+                for _num_solution in range(1, len(suggested_solutions) + 1):
+                    _suggested_solution = suggested_solutions[str(_num_solution)]
+                    was_solution_tried_before = json.loads(
+                        self.generate_and_persist_file(
+                            section_title='Check if solution was tried before',
+                            template=template_was_solution_tried_before,
+                            file_name_s=['response.json'],
+                            tried_solutions=f'- "{os.linesep}"'.join(self.previous_solutions),
+                            suggested_solution=_suggested_solution,
+                            system_definition_examples=None,
+                        )['response.json']
+                    )['will_lead_to_different_actions'].lower() == 'no'
+                    if not was_solution_tried_before:
+                        suggested_solution = _suggested_solution
+                        break
+            else:
+                suggested_solution = suggested_solutions['1']
+
+            if suggested_solution is None:
+                suggested_solution = f"solve error: {summarized_error}"
+        else:
+            suggested_solution = suggested_solutions['1']
+
+        return suggested_solution
 
     class MaxDebugTimeReachedException(BaseException):
         pass
