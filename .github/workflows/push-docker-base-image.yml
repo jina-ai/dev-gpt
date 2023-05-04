@@ -27,4 +27,4 @@ jobs:
       with:
         context: src/options/generate/static_files/base_image
         push: true
-        tags: jina/gpt-dev:latest
+        tags: jinaai/gpt-dev:latest
