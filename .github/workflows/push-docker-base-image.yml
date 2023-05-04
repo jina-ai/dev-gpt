@@ -59,4 +59,4 @@ jobs:
       with:
         context: src/options/generate/static_files/base_image
         push: true
-        tags: jinaai/gpt-dev:$VERSION
+        tags: jinaai/gpt-dev:${{ env.VERSION }}
