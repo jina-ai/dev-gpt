@@ -129,7 +129,7 @@ metas:
         system_introduction_message = _GPTConversation._create_system_message(self.microservice_specification.task,
                                                                               self.microservice_specification.test,
                                                                               system_definition_examples)
-        conversation = self.gpt_session.get_conversation(messages=[system_introduction_message])
+        conversation = self.gpt_session.get_conversation(messages=[system_introduction_message] if system_introduction_message else [])
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         if 'file_name' in template.input_variables and len(file_name_s) == 1:
             template_kwargs['file_name'] = file_name_s[0]
