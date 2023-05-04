@@ -145,10 +145,7 @@ class _GPTConversation:
         return response.content
 
     @staticmethod
-    def _create_system_message(task_description, test_description, system_definition_examples: List[str] = []) -> SystemMessage:
-        if system_definition_examples is None:
-            return None
-
+    def _create_system_message(task_description, test_description) -> SystemMessage:
         system_message = PromptTemplate.from_template(template_system_message_base).format(
             task_description=task_description,
             test_description=test_description,
