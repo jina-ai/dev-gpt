@@ -1,0 +1,30 @@
+name: Push docker base image
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_DEVBOT_USER }}
+        password: ${{ secrets.DOCKERHUB_DEVBOT_PWD }}
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v2
+      with:
+        context: src/options/generate/static_files/base_image
+        push: true
+        tags: jina/gpt-dev:latest
