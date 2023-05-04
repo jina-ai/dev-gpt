@@ -170,7 +170,7 @@ template_generate_apt_get_install = PromptTemplate.from_template(
 
 {docker_file_wrapped}
 
-Name all packages which need to be installed via `apt-get install` in above Dockerfile (`{{apt_get_packages}}`) for the following requirements.txt file:
+Name all packages which need to be installed via `apt-get install` in above Dockerfile (`{{APT_GET_PACKAGES}}`) for the following requirements.txt file:
 
 {requirements_file_wrapped}
 
@@ -178,7 +178,7 @@ Note that you must not list apt-get packages that are already installed in the D
 Note that openai does not require any apt-get packages.
 Note that you are only allowed to list packages where you are highly confident that they are really needed.
 Note that you can assume that the standard python packages are already installed.
-Output the packages that need to me placed at {{apt_get_packages}} as json in the following format:
+Output the packages that need to me placed at {{APT_GET_PACKAGES}} as json in the following format:
 **apt-get-packages.json**
 ```json
 {{"packages": ["<package1>", "<package2>"]}}
@@ -291,23 +291,20 @@ Here is the summary of the error that occurred:
 {summarized_error}
 
 To solve this error, you should determine the list of packages that need to be installed via `apt-get install` in the Dockerfile.
-Output the apt-get packages that need to be placed at {{apt_get_packages}} as json in the following format:
+Output the apt-get packages that need to be placed at {{APT_GET_PACKAGES}} as json in the following format:
 **apt-get-packages.json**
 ```json
 {{"packages": ["<package1>", "<package2>"]}}
 ```
-Example for the following requirements.txt file:
-**requirements.txt**
-```
-numpy==1.19.5
-fitz
-```
-The output would be:
+Example:
+Error is about missing package `libgl1-mesa-glx`.
+The output is:
 **apt-get-packages.json**
 ```json
-{{"packages": []}}
+{{"packages": [libgl1-mesa-glx]}}
 ```
-Note that you must not output any other files. Only output the apt-get-packages.json file.
+Note that you must not output the content of any other files like the Dockerfile or requirements.txt. 
+Only output the apt-get-packages.json file.
 '''
 )
 
