@@ -369,6 +369,9 @@ pytest
                     suggested_solution=suggested_solution,
                 )
 
+                self.previous_errors.append(summarized_error)
+                self.previous_solutions.append(suggested_solution)
+
     def generate_solution_suggestion(self, summarized_error, all_files_string):
         suggested_solutions = json.loads(
             self.generate_and_persist_file(
