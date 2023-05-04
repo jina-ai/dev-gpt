@@ -59,3 +59,57 @@ jobs:
           SCENEX_API_KEY: ${{ secrets.SCENEX_API_KEY }}
           WHISPER_API_KEY: ${{ secrets.WHISPER_API_KEY }}
 
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Check if code relevant to executor has changed
+        uses: dorny/paths-filter@v2
+        id: check
+        with:
+          filters: |
+            changed:
+              - src/options/generate/static_files/base_image/**
+
+      - name: Get base image tag
+        if: steps.check.outputs.changed == 'true'
+        shell: bash
+        run: |
+          FILE='src/constants.py'
+          VERSION=$(sed -n '/DOCKER_BASE_IMAGE_VERSION =/p' $FILE | cut -d \' -f2)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Check that tag isn't used already for the docker base image
+        if: steps.check.outputs.changed == 'true'
+        env:
+          VERSION: ${{ env.VERSION }}
+        shell: bash
+        run: |
+          if docker pull jinaai/gpt-dev:$VERSION; then
+            echo "Executor version/tag is used already. Please update the tag"
+            exit 1
+          else
+            echo "Executor version/tag isn't used already, continue to build..."
+          fi
+
+      - name: Set up Docker Buildx
+        if: steps.check.outputs.changed == 'true'
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        if: steps.check.outputs.changed == 'true'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_DEVBOT_USER }}
+          password: ${{ secrets.DOCKERHUB_DEVBOT_PWD }}
+
+      - name: Build and Push Docker Image
+        if: steps.check.outputs.changed == 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: src/options/generate/static_files/base_image
+          push: true
+          tags: jinaai/gpt-dev:${{ env.VERSION }}
+

@@ -17,7 +17,7 @@ from src.apis.pypi import is_package_on_pypi, get_latest_package_version, clean_
 from src.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     BLACKLISTED_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
-    IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES
+    IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES, DOCKER_BASE_IMAGE_VERSION
 from src.options.generate.templates_system import system_task_iteration, system_task_introduction, system_test_iteration
 from src.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
@@ -211,7 +211,7 @@ metas:
                   encoding='utf-8') as f:
             docker_file_template_lines = f.readlines()
         docker_file_template_lines = [
-            line.replace('{{apt_get_packages}}', '')
+            line.replace('{{APT_GET_PACKAGES}}', '').replace('{{DOCKER_BASE_IMAGE_VERSION}}', DOCKER_BASE_IMAGE_VERSION)
             for line in docker_file_template_lines
         ]
         docker_file_content = '\n'.join(docker_file_template_lines)
@@ -231,8 +231,8 @@ metas:
         packages = ' '.join(json.loads(json_string)['packages'])
 
         docker_file_template = self.read_docker_template()
-        return {DOCKER_FILE_NAME: docker_file_template.replace('{{apt_get_packages}}', '{apt_get_packages}').format(
-            apt_get_packages=packages)}
+        return {DOCKER_FILE_NAME: docker_file_template.replace('{{APT_GET_PACKAGES}}', '{APT_GET_PACKAGES}').replace('{{DOCKER_BASE_IMAGE_VERSION}}', DOCKER_BASE_IMAGE_VERSION).format(
+            APT_GET_PACKAGES=packages)}
 
     def parse_result_fn_requirements(self, content_raw: str):
         content_parsed = self.extract_content_from_result(content_raw, 'requirements.txt', match_single_block=True)
