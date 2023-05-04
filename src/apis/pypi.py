@@ -63,13 +63,12 @@ def clean_requirements_txt(previous_microservice_path):
             continue
 
         split = re.split(r'==|>=|<=|>|<|~=', line)
-        if len(split) == 1:
+        if len(split) == 1 or len(split) > 2:
             version = None
             package_name = split[0]
-        elif len(split) == 2:
-            package_name, version = split
         else:
-            raise ValueError(f'Could not parse line {line} in requirements.txt')
+            package_name, version = split
+
 
         # Keep lines with jina, docarray, openai, pytest unchanged
         if package_name in {'jina', 'docarray', 'openai', 'pytest'}:
@@ -79,7 +78,7 @@ def clean_requirements_txt(previous_microservice_path):
             if version is None or not is_package_on_pypi(package_name, version):
                 latest_version = get_latest_package_version(package_name)
                 if latest_version is None:
-                    raise ValueError(f'Package {package_name} not found on PyPI')
+                    continue
                 updated_requirements.append(f'{package_name}~={latest_version}')
             else:
                 updated_requirements.append(line)

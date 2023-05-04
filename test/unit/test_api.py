@@ -47,6 +47,8 @@ gtts~=2.2.3
 pydub~=123.123.123
 # non-existing package with correct version
 base64~=3.3.0
+# not parsable version
+pdfminer.six>=20201018,<20211018
 # existing package without version
 requests
 # another existing package without version
@@ -57,6 +59,7 @@ jina==111.222.333
 docarray==111.222.333
 gtts~=2.2.3
 pydub~=0.25.1
+pdfminer.six~=20201018
 requests~=2.26.0
 streamlit~=0.89.0"""
     requirements_txt_path = os.path.join(tmpdir, "requirements.txt")
