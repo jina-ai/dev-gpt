@@ -30,7 +30,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=read_requirements(),
-    scripts=['dev_gpt.py'],
+    scripts=['main.py'],
     entry_points={
         'console_scripts': [
             'dev-gpt = dev_gpt:main',
