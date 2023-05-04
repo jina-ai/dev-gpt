@@ -166,7 +166,8 @@ def deploy_on_jcloud(executor_name, microservice_path):
             raise SystemExit(f'''
 Looks like something went wrong in the generation and we didn't catch it.
 Please, create an issue here: https://github.com/jina-ai/gptdeploy/issues/new/choose
-And add details on the microservice you are trying to create.
+nd add details on the microservice you are trying to create.
+In the meantime, you can upgrade your GPT Deploy version, if not using latest, and try again.
 ''') from e
     if i == 2:
         raise Exception('''
