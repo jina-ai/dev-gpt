@@ -1,4 +1,0 @@
-[server]
-
-baseUrlPath = "/playground"
-headless = true
