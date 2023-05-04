@@ -242,7 +242,7 @@ jcloud:
   version: 3.15.1.dev14
   labels:
     creator: microchain
-  name: dev-gpt
+  name: gptdeploy
 gateway:
     {f"uses: {prefix}://{get_user_name(DEMO_TOKEN)}/Gateway{executor_name}:latest" if use_custom_gateway else ""}
     {"" if use_docker else "install-requirements: True"}

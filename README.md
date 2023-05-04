@@ -1,12 +1,28 @@
 <h1 align="center">
-Dev GPT : One line to generate them all 🧙🚀
+Dev GPT: Your Automated Development Team
 </h1>
 
+<div align="center">
+<table>
+  <tr>
+    <td align="center" style="padding: 0 10px;">
+      <img src="res/team/product.png" alt="Product Manager" width="130" /><br>
+      <em>Product Manager</em>
+    </td>
+    <td align="center" style="padding: 0 10px;">
+      <img src="res/team/engineer.png" alt="Developer" width="130" /><br>
+      <em>Developer</em>
+    </td>
+    <td align="center" style="padding: 0 10px;">
+      <img src="res/team/dev-ops.png" alt="DevOps" width="130" /><br>
+      <em>DevOps</em>
+    </td>
+  </tr>
+</table>
+</div>
+
 <p align="center">
-<img src="res/dev-gpt-logo.png" alt="Jina NOW logo" width="150px">
-</p>
-<p align="center">
-Turn your natural language descriptions into fully functional, deployed AI-powered microservices with a single command!
+Tell your AI team what microservice you want to build, and they will do it for you.
 Your imagination is the limit!
 </p>
 
@@ -33,13 +49,13 @@ Your imagination is the limit!
     <img src="https://img.shields.io/badge/chat_on-Discord-7289DA?logo=discord&logoColor=white" alt="Discord Chat">
 </a>
 
+</p>
+
+Welcome to Dev GPT, where we bring your ideas to life with the power of advanced artificial intelligence! Our automated development team is designed to create microservices tailored to your specific needs, making your software development process seamless and efficient. Comprised of a virtual Product Manager, Developer, and DevOps, our AI team ensures that every aspect of your project is covered, from concept to deployment.
 
 [//]: # ([![Watch the video]&#40;res/thumbnail.png&#41;]&#40;https://user-images.githubusercontent.com/11627845/231530421-272a66aa-4260-4e17-ab7a-ba66adca754c.mp4&#41;)
 
-</p>
-This project streamlines the creation and deployment of AI-powered microservices. 
-Simply describe your task using natural language, and the system will automatically build and deploy your microservice. 
-You get guidance from our three agents:
+
 
 
 ## Quickstart
