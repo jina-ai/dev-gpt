@@ -280,18 +280,15 @@ Output the apt-get packages that need to be placed at {{APT_GET_PACKAGES}} as js
 ```json
 {{"packages": ["<package1>", "<package2>"]}}
 ```
-Example for the following requirements.txt file:
-**requirements.txt**
-```
-numpy==1.19.5
-fitz
-```
-The output would be:
+Example:
+Error is about missing package `libgl1-mesa-glx`.
+The output is:
 **apt-get-packages.json**
 ```json
-{{"packages": []}}
+{{"packages": [libgl1-mesa-glx]}}
 ```
-Note that you must not output any other files. Only output the apt-get-packages.json file.
+Note that you must not output the content of any other files like the Dockerfile or requirements.txt. 
+Only output the apt-get-packages.json file.
 '''
 )
 
