@@ -19,7 +19,7 @@ except FileNotFoundError:
 
 
 setup(
-    name='gptdeploy',
+    name='dev-gpt',
     version=__version__,
     description='Use natural language interface to generate, deploy and update your microservice infrastructure.',
     long_description=open('README.md', 'r', encoding='utf-8').read(),
