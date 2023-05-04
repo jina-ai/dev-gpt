@@ -71,13 +71,13 @@ jobs:
         with:
           filters: |
             changed:
-              - src/options/generate/static_files/base_image/**
+              - dev_gpt/options/generate/static_files/base_image/**
 
       - name: Get base image tag
         if: steps.check.outputs.changed == 'true'
         shell: bash
         run: |
-          FILE='src/constants.py'
+          FILE='dev_gpt/constants.py'
           VERSION=$(sed -n '/DOCKER_BASE_IMAGE_VERSION =/p' $FILE | cut -d \' -f2)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
