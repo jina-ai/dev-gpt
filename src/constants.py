@@ -1,3 +1,5 @@
+DOCKER_BASE_IMAGE_VERSION = '0.0.1'
+
 EXECUTOR_FILE_NAME = '__init__.py'
 IMPLEMENTATION_FILE_NAME = 'microservice.py'
 TEST_EXECUTOR_FILE_NAME = 'test_microservice.py'
@@ -51,3 +53,4 @@ LANGUAGE_PACKAGES = [
     'pattern', 'polyglot', 'pytorch-transformers', 'rasa', 'sentence-transformers',
     'spacy', 'stanza', 'summarizer', 'sumy', 'textblob', 'textstat', 'transformers'
 ]
+
