@@ -38,19 +38,27 @@ def test_filter_packages_list():
 
 def test_precheck_requirements_txt(tmpdir):
     requirements_content = """\
-jina==1.2.3
-docarray==1.2.3
-requests~=2.26.0
+# version does not exist but jina and docarray should not be verified
+jina==111.222.333
+docarray==111.222.333
+# package that actually exists in that version
 gtts~=2.2.3
+# package with non-existing version
 pydub~=123.123.123
+# non-existing package with correct version
 base64~=3.3.0
+# existing package without version
+requests
+# another existing package without version
+streamlit
 """
     requirements_clean = """\
-jina==1.2.3
-docarray==1.2.3
-requests~=2.26.0
+jina==111.222.333
+docarray==111.222.333
 gtts~=2.2.3
-pydub~=0.25.1"""
+pydub~=0.25.1
+requests~=2.26.0
+streamlit~=0.89.0"""
     requirements_txt_path = os.path.join(tmpdir, "requirements.txt")
     with open(requirements_txt_path, "w", encoding="utf-8") as f:
         f.write(requirements_content)
