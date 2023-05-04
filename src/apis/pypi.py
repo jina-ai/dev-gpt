@@ -35,8 +35,10 @@ def get_latest_package_version(package_name):
     # Get package versions not older than 2021
     valid_versions = []
     for v, release_info in releases.items():
+        if not release_info:
+            continue
         upload_time = datetime.strptime(release_info[0]['upload_time'], '%Y-%m-%dT%H:%M:%S')
-        if upload_time.year <= 2021:
+        if upload_time.year <= 2020 or (upload_time.year == 2021 and upload_time.month <= 9):  # knowledge cutoff 2021-09 (including september)
             valid_versions.append(v)
 
     v = max(valid_versions, key=version.parse) if valid_versions else None
