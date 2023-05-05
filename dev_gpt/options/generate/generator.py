@@ -100,7 +100,7 @@ metas:
             destination_folder: str = None,
             file_name_s: List[str] = None,
             parse_result_fn: Callable = None,
-            use_system_message: bool = True,
+            use_custom_system_message: bool = True,
             **template_kwargs
     ):
         """This function generates file(s) using the given template and persists it/them in the given destination folder.
@@ -115,7 +115,7 @@ metas:
             parse_result_fn (Callable, optional): A function that parses the generated content and returns a dictionary
                 mapping file_name to its content. If no content could be extract, it returns an empty dictionary.
                 Defaults to None. If None, default parsing is used which uses the file_name to extract from the generated content.
-            use_system_message (bool, optional): whether to use custom system message or not. Defaults to True.
+            use_custom_system_message (bool, optional): whether to use custom system message or not. Defaults to True.
             **template_kwargs: The keyword arguments to be passed to the template.
         """
         if destination_folder is None:
@@ -125,12 +125,15 @@ metas:
             parse_result_fn = self.get_default_parse_result_fn(file_name_s)
 
         print_colored('', f'\n\n############# {section_title} #############', 'blue')
-        system_introduction_message = _GPTConversation._create_system_message(
-            self.microservice_specification.task,
-            self.microservice_specification.test
-        )
+        if use_custom_system_message:
+            system_introduction_message = _GPTConversation._create_system_message(
+                self.microservice_specification.task,
+                self.microservice_specification.test
+            )
+        else:
+            system_introduction_message = SystemMessage(content='You are a helpful assistant.')
         conversation = self.gpt_session.get_conversation(
-            messages=[system_introduction_message] if use_system_message else []
+            messages=[system_introduction_message] if use_custom_system_message else []
         )
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         if 'file_name' in template.input_variables and len(file_name_s) == 1:
@@ -142,10 +145,12 @@ metas:
         )
         content = parse_result_fn(content_raw)
         if content == {}:
-            conversation = self.gpt_session.get_conversation(messages=[AIMessage(content=content_raw)])
+            conversation = self.gpt_session.get_conversation(
+                messages=[SystemMessage(content='You are a helpful assistant.'), AIMessage(content=content_raw)]
+            )
             content_raw = conversation.chat(
                 'You must add the content' + (f' for `{file_name_s[0]}`' if len(file_name_s) == 1 else '') +
-                '''. You must wrap any code in triple backticks at the beginning and end of any file.. A general example is this:
+                '''. You must wrap any code in triple backticks at the beginning and end of it. A general example is this:
 
 **file_name.file_ending**
 ```<json|py|...
@@ -402,7 +407,7 @@ pytest
                     file_name_s=['response.json'],
                     summarized_error=summarized_error,
                     previous_errors=f'- "{os.linesep}"'.join(self.previous_errors),
-                    use_system_message=False,
+                    use_custom_system_message=False,
                 )['response.json']
             )['was_error_seen_before'].lower() == 'yes'
 
@@ -417,7 +422,7 @@ pytest
                             file_name_s=['response.json'],
                             tried_solutions=f'- "{os.linesep}"'.join(self.previous_solutions),
                             suggested_solution=_suggested_solution,
-                            use_system_message=False,
+                            use_custom_system_message=False,
                         )['response.json']
                     )['will_lead_to_different_actions'].lower() == 'no'
                     if not was_solution_tried_before:
