@@ -1,6 +1,6 @@
 import pytest
 
-from src.options.generate.generator import Generator
+from dev_gpt.options.generate.generator import Generator
 
 def create_code_block(with_backticks, asterisks, with_highlight_info, file_name, start_inline, content):
     code_block = f'''

@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from src.options.generate.generator import Generator
+from dev_gpt.options.generate.generator import Generator
 
 
 # The cognitive difficulty level is determined by the number of requirements the microservice has.

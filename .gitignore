@@ -3,5 +3,5 @@
 .env
 data
 build
-gptdeploy.egg-info
+dev-gpt.egg-info
 dist

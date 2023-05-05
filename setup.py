@@ -8,7 +8,7 @@ def read_requirements():
 
 
 try:
-    libinfo_py = path.join('src', '__init__.py')
+    libinfo_py = path.join('dev_gpt', '__init__.py')
     libinfo_content = open(libinfo_py, 'r', encoding='utf8').readlines()
     version_line = [l.strip() for l in libinfo_content if l.startswith('__version__')][
         0
@@ -19,21 +19,21 @@ except FileNotFoundError:
 
 
 setup(
-    name='gptdeploy',
+    name='dev-gpt',
     version=__version__,
     description='Use natural language interface to generate, deploy and update your microservice infrastructure.',
     long_description=open('README.md', 'r', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
     author='Florian Hönicke',
     author_email='florian.hoenicke@jina.ai',
-    url='https://github.com/jina-ai/gptdeploy',
+    url='https://github.com/jina-ai/dev-gpt',
     packages=find_packages(),
     include_package_data=True,
     install_requires=read_requirements(),
-    scripts=['gptdeploy.py'],
+    scripts=['main.py'],
     entry_points={
         'console_scripts': [
-            'gptdeploy = src:main',
+            'dev-gpt = dev_gpt:main',
         ],
     },
 
