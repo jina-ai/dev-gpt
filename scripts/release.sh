@@ -7,7 +7,7 @@
 
 set -ex
 
-INIT_FILE='src/__init__.py'
+INIT_FILE='dev_gpt/__init__.py'
 VER_TAG='__version__ = '
 RELEASENOTE='./node_modules/.bin/git-release-notes'
 

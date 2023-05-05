@@ -1,8 +1,8 @@
 import os
 
-from src.apis.jina_cloud import is_executor_in_hub
-from src.apis.pypi import is_package_on_pypi, clean_requirements_txt
-from src.options.generate.generator import Generator
+from dev_gpt.apis.jina_cloud import is_executor_in_hub
+from dev_gpt.apis.pypi import is_package_on_pypi, clean_requirements_txt
+from dev_gpt.options.generate.generator import Generator
 
 
 def test_is_microservice_in_hub():
