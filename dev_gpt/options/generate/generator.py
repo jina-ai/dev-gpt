@@ -145,7 +145,7 @@ metas:
             conversation = self.gpt_session.get_conversation(messages=[AIMessage(content=content_raw)])
             content_raw = conversation.chat(
                 'You must add the content' + (f' for {file_name_s[0]}' if len(file_name_s) == 1 else '') +
-                ''' in triple backticks. A general example is this:
+                '''. Make sure to wrap any code in triple backticks in the beginning and end of any code. A general example is this:
 
 **file_name.file_ending**
 ```<json|py|...
