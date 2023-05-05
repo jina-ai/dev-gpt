@@ -94,7 +94,6 @@ metas:
             destination_folder: str,
             file_name_s: List[str] = None,
             parse_result_fn: Callable = None,
-            system_definition_examples: List[str] = [],
             **template_kwargs
     ):
         """This function generates file(s) using the given template and persists it/them in the given destination folder.
@@ -108,16 +107,16 @@ metas:
             parse_result_fn (Callable, optional): A function that parses the generated content and returns a dictionary
                 mapping file_name to its content. If no content could be extract, it returns an empty dictionary.
                 Defaults to None. If None, default parsing is used which uses the file_name to extract from the generated content.
-            system_definition_examples (List[str], optional): The system definition examples to be used for the conversation. Defaults to [].
             **template_kwargs: The keyword arguments to be passed to the template.
         """
         if parse_result_fn is None:
             parse_result_fn = self.get_default_parse_result_fn(file_name_s)
 
         print_colored('', f'\n\n############# {section_title} #############', 'blue')
-        system_introduction_message = _GPTConversation._create_system_message(self.microservice_specification.task,
-                                                                              self.microservice_specification.test,
-                                                                              system_definition_examples)
+        system_introduction_message = _GPTConversation._create_system_message(
+            self.microservice_specification.task,
+            self.microservice_specification.test
+        )
         conversation = self.gpt_session.get_conversation(messages=[system_introduction_message])
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         if 'file_name' in template.input_variables and len(file_name_s) == 1:
@@ -345,7 +344,6 @@ pytest
                 destination_folder=next_microservice_path,
                 file_name_s=['apt-get-packages.json'],
                 parse_result_fn=self.parse_result_fn_dockerfile,
-                system_definition_examples=[],
                 summarized_error=summarized_error,
                 all_files_string=dock_req_string,
             )
@@ -417,7 +415,6 @@ pytest
             template=template_generate_possible_packages,
             destination_folder=self.microservice_root_path,
             file_name_s=['strategies.json'],
-            system_definition_examples=[],
             description=self.microservice_specification.task
         )['strategies.json']
         packages_list = [[pkg.strip().lower() for pkg in packages] for packages in json.loads(packages_json_string)]
