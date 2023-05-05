@@ -148,14 +148,27 @@ metas:
             conversation = self.gpt_session.get_conversation(
                 messages=[SystemMessage(content='You are a helpful assistant.'), AIMessage(content=content_raw)]
             )
-            content_raw = conversation.chat(
-                'You must add the content' + (f' for `{file_name_s[0]}`' if len(file_name_s) == 1 else '') +
-                '''. You must wrap any code in triple backticks at the beginning and end of it. A general example is this:
-
-**file_name.file_ending**
+            if len(file_name_s) == 1:
+                file_ending = file_name_s[0].split('.')[-1]
+                if file_ending == 'py':
+                    tag = 'python'
+                elif file_ending == 'json':
+                    tag = 'json'
+                else:
+                    tag = ''
+                file_wrapping_example = f'''**{file_name_s[0]}**
+```{tag}
+<content_of_file>
+```'''
+            else:
+                file_wrapping_example = '''**file_name.file_ending**
 ```<json|py|...
 <content_of_file>
 ```'''
+            content_raw = conversation.chat(
+                'You must add the content' + (f' for `{file_name_s[0]}`' if len(file_name_s) == 1 else '') +
+                '. You must wrap any file in triple backticks at the beginning and end of it. Like this:\n' +
+                file_wrapping_example
             )
             content = parse_result_fn(content_raw)
         for _file_name, _file_content in content.items():
@@ -406,7 +419,7 @@ pytest
                     template=template_was_error_seen_before,
                     file_name_s=['response.json'],
                     summarized_error=summarized_error,
-                    previous_errors=f'- "{os.linesep}"'.join(self.previous_errors),
+                    previous_errors=f'- "{os.linesep}"\n'.join(self.previous_errors),
                     use_custom_system_message=False,
                 )['response.json']
             )['was_error_seen_before'].lower() == 'yes'
@@ -420,7 +433,7 @@ pytest
                             section_title='Check if solution was tried before',
                             template=template_was_solution_tried_before,
                             file_name_s=['response.json'],
-                            tried_solutions=f'- "{os.linesep}"'.join(self.previous_solutions),
+                            tried_solutions=f'- "{os.linesep}"\n'.join(self.previous_solutions),
                             suggested_solution=_suggested_solution,
                             use_custom_system_message=False,
                         )['response.json']
