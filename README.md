@@ -53,24 +53,24 @@ Your imagination is the limit!
 
 Welcome to Dev GPT, where we bring your ideas to life with the power of advanced artificial intelligence! Our automated development team is designed to create microservices tailored to your specific needs, making your software development process seamless and efficient. Comprised of a virtual Product Manager, Developer, and DevOps, our AI team ensures that every aspect of your project is covered, from concept to deployment.
 
-[//]: # ([![Watch the video]&#40;res/thumbnail.png&#41;]&#40;https://user-images.githubusercontent.com/11627845/231530421-272a66aa-4260-4e17-ab7a-ba66adca754c.mp4&#41;)
-
-
-
-
 ## Quickstart
-### Requirements
-- OpenAI key with access to GPT-3.5 or GPT-4 
 
-### Installation
 ```bash
 pip install dev-gpt
+dev-gpt generate
+```
+
+### Requirements
+- OpenAI key with access to GPT-3.5 or GPT-4
+```bash
 dev-gpt configure --key <your openai api key>
 ```
+
 If you set the environment variable `OPENAI_API_KEY`, the configuration step can be skipped.
 Your api key must have access to gpt-4 to use this tool. 
 We are working on a way to use gpt-3.5-turbo as well.
 
+## Docs
 ### Generate Microservice
 ```bash
 dev-gpt generate \
@@ -96,7 +96,6 @@ With this command a playground opens in your browser where you can test the micr
 dev-gpt run --path <path to microservice>
 ```
 
-
 ### Deploy Microservice
 If you want to deploy your microservice to the cloud a [Jina account](https://cloud.jina.ai/) is required.
 When creating a Jina account, you get some free credits, which you can use to deploy your microservice ($0.025/hour).
@@ -104,7 +103,6 @@ If you run out of credits, you can purchase more.
 ```bash
 dev-gpt deploy --microservice_path <path to microservice>
 ```
-
 
 ### Delete Microservice
 To save credits you can delete your microservice via the following commands:
@@ -123,7 +121,6 @@ dev-gpt generate \
 --model gpt-4
 ```
 <img src="res/compliment_example.png" alt="Compliment Generator" width="400" />
-
 
 ### Extract and summarize news articles given a URL
 ```bash
