@@ -142,8 +142,16 @@ metas:
         )
         content = parse_result_fn(content_raw)
         if content == {}:
+            conversation = self.gpt_session.get_conversation(messages=[AIMessage(content=content_raw)])
             content_raw = conversation.chat(
-                'You must add the content' + (f' for {file_name_s[0]}' if len(file_name_s) == 1 else ''))
+                'You must add the content' + (f' for {file_name_s[0]}' if len(file_name_s) == 1 else '') +
+                ''' in triple backticks. A general example is this:
+
+**file_name.file_ending**
+```<json|py|...
+<content_of_file>
+```'''
+            )
             content = parse_result_fn(content_raw)
         for _file_name, _file_content in content.items():
             persist_file(_file_content, os.path.join(destination_folder, _file_name))

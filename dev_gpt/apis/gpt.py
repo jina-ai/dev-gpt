@@ -109,7 +109,6 @@ class _GPTConversation:
         self.print_stream = print_stream
         self.print_costs = print_costs
 
-
     def print_messages(self, messages):
         for i, message in enumerate(messages):
             if os.environ['VERBOSE'].lower() == 'true':
