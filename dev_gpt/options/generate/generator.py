@@ -26,7 +26,8 @@ from dev_gpt.options.generate.templates_user import template_generate_microservi
     template_generate_function, template_generate_test, template_generate_requirements, \
     template_chain_of_thought, template_summarize_error, \
     template_solve_apt_get_dependency_issue, template_pm_task_iteration, \
-    template_pm_test_iteration
+    template_pm_test_iteration, template_suggest_solutions_code_issue, template_was_error_seen_before, \
+    template_was_solution_tried_before
 from dev_gpt.options.generate.ui import get_random_employee
 from dev_gpt.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from dev_gpt.utils.string_tools import print_colored
@@ -99,7 +100,7 @@ metas:
             destination_folder: str = None,
             file_name_s: List[str] = None,
             parse_result_fn: Callable = None,
-            system_definition_examples: List[str] = [], # todo: rename to use_system_definition_exampels: bool = True
+            use_system_message: bool = True,
             **template_kwargs
     ):
         """This function generates file(s) using the given template and persists it/them in the given destination folder.
@@ -114,7 +115,7 @@ metas:
             parse_result_fn (Callable, optional): A function that parses the generated content and returns a dictionary
                 mapping file_name to its content. If no content could be extract, it returns an empty dictionary.
                 Defaults to None. If None, default parsing is used which uses the file_name to extract from the generated content.
-            system_definition_examples (List[str], optional): The system definition examples to be used for the conversation. Defaults to [].
+            use_system_message (bool, optional): whether to use custom system message or not. Defaults to True.
             **template_kwargs: The keyword arguments to be passed to the template.
         """
         if destination_folder is None:
@@ -128,7 +129,9 @@ metas:
             self.microservice_specification.task,
             self.microservice_specification.test
         )
-        conversation = self.gpt_session.get_conversation(messages=[system_introduction_message] if use_system_message else [])
+        conversation = self.gpt_session.get_conversation(
+            messages=[system_introduction_message] if use_system_message else []
+        )
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         if 'file_name' in template.input_variables and len(file_name_s) == 1:
             template_kwargs['file_name'] = file_name_s[0]
@@ -158,8 +161,8 @@ metas:
 
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'jina_wrapper.py'), 'r', encoding='utf-8') as f:
             microservice_executor_boilerplate = f.read()
-        microservice_executor_code = microservice_executor_boilerplate.replace('class DevGPTExecutor(Executor):',
-                                                                               f'class {microservice_name}(Executor):')
+        microservice_executor_code = microservice_executor_boilerplate \
+            .replace('class DevGPTExecutor(Executor):', f'class {self.microservice_name}(Executor):')
         persist_file(microservice_executor_code, os.path.join(self.cur_microservice_path, EXECUTOR_FILE_NAME))
 
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'apis.py'), 'r', encoding='utf-8') as f:
@@ -335,7 +338,6 @@ pytest
                 template=template_solve_apt_get_dependency_issue,
                 file_name_s=['apt-get-packages.json'],
                 parse_result_fn=self.parse_result_fn_dockerfile,
-                system_definition_examples=[],
                 summarized_error=summarized_error,
                 all_files_string=dock_req_string,
             )
@@ -392,7 +394,7 @@ pytest
                     file_name_s=['response.json'],
                     summarized_error=summarized_error,
                     previous_errors=f'- "{os.linesep}"'.join(self.previous_errors),
-                    system_definition_examples=None,
+                    use_system_message=False,
                 )['response.json']
             )['was_error_seen_before'].lower() == 'yes'
 
@@ -407,7 +409,7 @@ pytest
                             file_name_s=['response.json'],
                             tried_solutions=f'- "{os.linesep}"'.join(self.previous_solutions),
                             suggested_solution=_suggested_solution,
-                            system_definition_examples=None,
+                            use_system_message=False,
                         )['response.json']
                     )['will_lead_to_different_actions'].lower() == 'no'
                     if not was_solution_tried_before:
@@ -466,7 +468,6 @@ pytest
             template=template_generate_possible_packages,
             destination_folder=self.microservice_root_path,
             file_name_s=['strategies.json'],
-            system_definition_examples=[],
             description=self.microservice_specification.task
         )['strategies.json']
         packages_list = [[pkg.strip().lower() for pkg in packages] for packages in json.loads(packages_json_string)]
