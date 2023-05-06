@@ -18,6 +18,7 @@ from dev_gpt.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES,
     BLACKLISTED_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
     IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES, DOCKER_BASE_IMAGE_VERSION
+from dev_gpt.options.generate.pm import PM
 from dev_gpt.options.generate.templates_system import system_task_iteration, system_task_introduction, system_test_iteration
 from dev_gpt.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
@@ -467,20 +468,8 @@ dev-gpt deploy --path {self.microservice_root_path}
                 if not original_task:
                     self.microservice_specification.task = self.get_user_input(pm, 'What should your microservice do?')
 
-                self.refine_requirements(
-                    pm,
-                    [
-                        SystemMessage(content=system_task_introduction + system_task_iteration),
-                    ],
-                    'task',
-                    '',
-                    template_pm_task_iteration,
-                    micro_service_initial_description=f'''Microservice description:
-```
-{self.microservice_specification.task}
-```
-''',
-                )
+                self.microservice_specification.task = PM(self.gpt_session).refine(self.microservice_specification.task)
+
                 self.refine_requirements(
                     pm,
                     [
