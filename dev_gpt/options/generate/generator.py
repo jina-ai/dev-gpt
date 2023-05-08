@@ -419,7 +419,7 @@ pytest
                     template=template_was_error_seen_before,
                     file_name_s=['was_error_seen_before.json'],
                     summarized_error=summarized_error,
-                    previous_errors=f'- "{os.linesep}"\n'.join(self.previous_errors),
+                    previous_errors='- "' + f'"{os.linesep}- "'.join(self.previous_errors) + '"',
                     use_custom_system_message=False,
                 )['was_error_seen_before.json']
             )['was_error_seen_before'].lower() == 'yes'
@@ -433,7 +433,7 @@ pytest
                             section_title='Check if solution was tried before',
                             template=template_was_solution_tried_before,
                             file_name_s=['will_lead_to_different_actions.json'],
-                            tried_solutions=f'- "{os.linesep}"\n'.join(self.previous_solutions),
+                            tried_solutions='- "' + f'"{os.linesep}- "'.join(self.previous_solutions) + '"',
                             suggested_solution=_suggested_solution,
                             use_custom_system_message=False,
                         )['will_lead_to_different_actions.json']
