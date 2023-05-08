@@ -294,6 +294,15 @@ Only output the apt-get-packages.json file.
 )
 
 
+response_format_suggest_solutions = '''**solutions.json**
+```json
+{{
+    "1": "<best solution>",
+    "2": "<2nd best solution>"
+}}
+```'''
+
+
 template_suggest_solutions_code_issue = PromptTemplate.from_template(
     '''General rules:
 ''' + not_allowed_function_string + '''
@@ -320,13 +329,7 @@ Note that any changes needed to make the test pass must be written under the con
 
 
 After thinking about the possible solutions, output them as JSON ranked from best to worst. Like this:
-**solutions.json**
-```json
-{{
-    "1": "<best solution>",
-    "2": "<2nd best solution>"
-}}
-```'''
+''' + response_format_suggest_solutions
 )
 
 

@@ -27,7 +27,8 @@ from dev_gpt.options.generate.templates_user import template_generate_microservi
     template_chain_of_thought, template_summarize_error, \
     template_solve_apt_get_dependency_issue, template_pm_task_iteration, \
     template_pm_test_iteration, template_suggest_solutions_code_issue, template_was_error_seen_before, \
-    template_was_solution_tried_before, response_format_was_error_seen_before, response_format_was_solution_tried_before
+    template_was_solution_tried_before, response_format_was_error_seen_before, \
+    response_format_was_solution_tried_before, response_format_suggest_solutions
 from dev_gpt.options.generate.ui import get_random_employee
 from dev_gpt.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from dev_gpt.utils.string_tools import print_colored
@@ -412,6 +413,7 @@ pytest
                 task_description=self.microservice_specification.task,
                 test_description=self.microservice_specification.test,
                 all_files_string=all_files_string,
+                response_format_example=response_format_suggest_solutions,
             )['solutions.json']
         )
 
