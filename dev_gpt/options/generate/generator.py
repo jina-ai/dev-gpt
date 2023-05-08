@@ -417,7 +417,7 @@ pytest
                 self.generate_and_persist_file(
                     section_title='Check if error was seen before',
                     template=template_was_error_seen_before,
-                    file_name_s=['response.json'],
+                    file_name_s=['was_error_seen_before.json'],
                     summarized_error=summarized_error,
                     previous_errors=f'- "{os.linesep}"\n'.join(self.previous_errors),
                     use_custom_system_message=False,
@@ -432,7 +432,7 @@ pytest
                         self.generate_and_persist_file(
                             section_title='Check if solution was tried before',
                             template=template_was_solution_tried_before,
-                            file_name_s=['response.json'],
+                            file_name_s=['will_lead_to_different_actions.json'],
                             tried_solutions=f'- "{os.linesep}"\n'.join(self.previous_solutions),
                             suggested_solution=_suggested_solution,
                             use_custom_system_message=False,

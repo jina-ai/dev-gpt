@@ -338,7 +338,7 @@ Now encountered error message: "{summarized_error}"
 Was this error message encountered before?
 
 Write down your final answer as json in the following format:
-**response.json**
+**was_error_seen_before.json**
 ```json
 {{"was_error_seen_before": "<yes/no>"}}
 ```
@@ -356,7 +356,7 @@ Suggested solution: "{suggested_solution}"
 Will the suggested solution lead to different actions than the previously tried solutions?
 
 Write down your final answer as json in the following format:
-**response.json**
+**will_lead_to_different_actions.json**
 ```json
 {{"will_lead_to_different_actions": "<yes/no>"}}
 ```
