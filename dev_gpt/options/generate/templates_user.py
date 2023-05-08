@@ -330,6 +330,12 @@ After thinking about the possible solutions, output them as JSON ranked from bes
 )
 
 
+response_format_was_error_seen_before = '''**was_error_seen_before.json**
+```json
+{{"was_error_seen_before": "<yes/no>"}}
+```'''
+
+
 template_was_error_seen_before = PromptTemplate.from_template(
     '''Previously encountered error messages:
 {previous_errors}
@@ -338,13 +344,16 @@ Now encountered error message: "{summarized_error}"
 Was this error message encountered before?
 
 Write down your final answer as json in the following format:
-**was_error_seen_before.json**
-```json
-{{"was_error_seen_before": "<yes/no>"}}
-```
+''' + response_format_was_error_seen_before + '''
 Note that you must obey the double asterisk and triple backtick syntax from above.
 '''
 )
+
+
+response_format_was_solution_tried_before = '''**will_lead_to_different_actions.json**
+```json
+{{"will_lead_to_different_actions": "<yes/no>"}}
+```'''
 
 
 template_was_solution_tried_before = PromptTemplate.from_template(
@@ -356,10 +365,7 @@ Suggested solution: "{suggested_solution}"
 Will the suggested solution lead to different actions than the previously tried solutions?
 
 Write down your final answer as json in the following format:
-**will_lead_to_different_actions.json**
-```json
-{{"will_lead_to_different_actions": "<yes/no>"}}
-```
+''' + response_format_was_solution_tried_before + '''
 Note that you must obey the double asterisk and triple backtick syntax from above.'''
 )
 

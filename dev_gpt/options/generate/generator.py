@@ -27,7 +27,7 @@ from dev_gpt.options.generate.templates_user import template_generate_microservi
     template_chain_of_thought, template_summarize_error, \
     template_solve_apt_get_dependency_issue, template_pm_task_iteration, \
     template_pm_test_iteration, template_suggest_solutions_code_issue, template_was_error_seen_before, \
-    template_was_solution_tried_before
+    template_was_solution_tried_before, response_format_was_error_seen_before, response_format_was_solution_tried_before
 from dev_gpt.options.generate.ui import get_random_employee
 from dev_gpt.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from dev_gpt.utils.string_tools import print_colored
@@ -101,6 +101,7 @@ metas:
             file_name_s: List[str] = None,
             parse_result_fn: Callable = None,
             use_custom_system_message: bool = True,
+            response_format_example: str = None,
             **template_kwargs
     ):
         """This function generates file(s) using the given template and persists it/them in the given destination folder.
@@ -148,7 +149,9 @@ metas:
             conversation = self.gpt_session.get_conversation(
                 messages=[SystemMessage(content='You are a helpful assistant.'), AIMessage(content=content_raw)]
             )
-            if len(file_name_s) == 1:
+            if response_format_example is not None:
+                file_wrapping_example = response_format_example
+            elif len(file_name_s) == 1:
                 file_ending = file_name_s[0].split('.')[-1]
                 if file_ending == 'py':
                     tag = 'python'
@@ -421,6 +424,7 @@ pytest
                     summarized_error=summarized_error,
                     previous_errors='- "' + f'"{os.linesep}- "'.join(self.previous_errors) + '"',
                     use_custom_system_message=False,
+                    response_format_example=response_format_was_error_seen_before,
                 )['was_error_seen_before.json']
             )['was_error_seen_before'].lower() == 'yes'
 
@@ -436,6 +440,7 @@ pytest
                             tried_solutions='- "' + f'"{os.linesep}- "'.join(self.previous_solutions) + '"',
                             suggested_solution=_suggested_solution,
                             use_custom_system_message=False,
+                            response_format_example=response_format_was_solution_tried_before,
                         )['will_lead_to_different_actions.json']
                     )['will_lead_to_different_actions'].lower() == 'no'
                     if not was_solution_tried_before:
