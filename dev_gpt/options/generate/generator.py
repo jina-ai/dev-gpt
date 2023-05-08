@@ -421,7 +421,7 @@ pytest
                     summarized_error=summarized_error,
                     previous_errors=f'- "{os.linesep}"\n'.join(self.previous_errors),
                     use_custom_system_message=False,
-                )['response.json']
+                )['was_error_seen_before.json']
             )['was_error_seen_before'].lower() == 'yes'
 
             suggested_solution = None
@@ -436,7 +436,7 @@ pytest
                             tried_solutions=f'- "{os.linesep}"\n'.join(self.previous_solutions),
                             suggested_solution=_suggested_solution,
                             use_custom_system_message=False,
-                        )['response.json']
+                        )['will_lead_to_different_actions.json']
                     )['will_lead_to_different_actions'].lower() == 'no'
                     if not was_solution_tried_before:
                         suggested_solution = _suggested_solution
