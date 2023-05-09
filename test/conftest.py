@@ -16,8 +16,14 @@ def input_generator(input_sequence: list) -> Generator[str, None, None]:
 
 @pytest.fixture
 def mock_input_sequence(request, monkeypatch) -> None:
+    def get_next(_):
+        next_val = next(gen)
+        print(f"mocked user input: {next_val}")
+        return next_val
+
+    # lambda _: next(gen)
     gen = input_generator(request.param)
-    monkeypatch.setattr("builtins.input", lambda _: next(gen))
+    monkeypatch.setattr("builtins.input", get_next)
 
 @pytest.fixture
 def microservice_dir(tmpdir) -> str:
