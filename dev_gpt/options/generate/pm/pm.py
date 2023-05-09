@@ -48,6 +48,25 @@ Description of the microservice:
             identity_parser,
             **context
         )
+
+        test_description += self.user_input_extension_if_needed(
+            context,
+            microservice_description,
+            condition_question='Does request schema require a file?',
+            question_gen='Generate a question that asks for an example file url.',
+            extension_name='Input Example',
+        )
+        microservice_description += self.user_input_extension_if_needed(
+            context,
+            microservice_description,
+            condition_question='Does the microservice send requests to an API?',
+            question_gen='Generate a question that asks for the endpoint and an example of a request and response when interacting with the api.',
+            extension_name='Example of API usage',
+        )
+        # database missing
+        return microservice_description, test_description
+
+    def user_input_extension_if_needed(self, context, microservice_description, condition_question, question_gen, extension_name):
         example_file_url = get_user_input_if_needed(
             context={
                 'Microservice description': microservice_description,
@@ -55,17 +74,14 @@ Description of the microservice:
                 'Response schema': context['response_schema'],
             },
             conditions=[
-                is_question_true('Does request schema require a file?'),
-                # is_question_false('Is input url specified in the description?'),
+                is_question_true(condition_question),
             ],
-            question_gen_prompt_part="Generate a question that asks for an example file url.",
+            question_gen_prompt_part=question_gen,
         )
         if example_file_url:
-            test_description += f'\nInput Example: {example_file_url}'
-
-        return microservice_description, test_description
-
-
+            return f'\nInput Example: {example_file_url}'
+        else:
+            return ''
 
     # def get_nlp_fns(self, microservice_description):
     #     return ask_gpt(
