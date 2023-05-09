@@ -29,7 +29,7 @@ def test_generation_level_0(microservice_dir, mock_input_sequence):
 
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
-def test_generation_level_1(microservice_dir):
+def test_generation_level_1(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -52,7 +52,7 @@ But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
 
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
-def test_generation_level_2(microservice_dir):
+def test_generation_level_2(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -71,7 +71,7 @@ def test_generation_level_2(microservice_dir):
     assert generator.generate() == 0
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
-def test_generation_level_3(microservice_dir):
+def test_generation_level_3(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ✅ (calculate the average closing price)
@@ -96,7 +96,7 @@ Example input: 'AAPL'
     assert generator.generate() == 0
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
-def test_generation_level_4(microservice_dir):
+def test_generation_level_4(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -133,7 +133,7 @@ Example input file: https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav
     assert generator.generate() == 0
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
-def test_generation_level_5(microservice_dir):
+def test_generation_level_5(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ✅ (putting text on the image)
