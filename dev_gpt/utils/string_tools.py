@@ -1,5 +1,6 @@
 import os
 import platform
+import string
 
 if platform.system() == "Windows":
     os.system("color")
@@ -27,3 +28,15 @@ def print_colored(headline, text, color_code, end='\n'):
     if headline:
         print(f"{bold_start}{color_start}{headline}{reset}")
     print(f"{color_start}{text}{reset}", end=end)
+
+
+def get_template_parameters(formatted_string):
+    formatter = string.Formatter()
+    parsed = formatter.parse(formatted_string)
+    parameters = []
+
+    for literal_text, field_name, format_spec, conversion in parsed:
+        if field_name is not None:
+            parameters.append(field_name)
+
+    return parameters
