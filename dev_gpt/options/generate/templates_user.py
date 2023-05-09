@@ -288,7 +288,7 @@ The output is:
 ```json
 {{"packages": [libgl1-mesa-glx]}}
 ```
-Only output the apt-get-packages.json file. Ensure the response can be parsed by Python json.loads
+Only output content of the apt-get-packages.json file. Ensure the response can be parsed by Python json.loads
 Note that you must not output the content of any other. Especially don't output the Dockerfile or requirements.txt. 
 '''
 )
