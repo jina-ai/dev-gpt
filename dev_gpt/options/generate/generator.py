@@ -170,7 +170,7 @@ metas:
 <content_of_file>
 ```'''
             content_raw = conversation.chat(
-                'You must add the content' + (f' for `{file_name_s[0]}`' if len(file_name_s) == 1 else '') +
+                'Based on your previous response, only output the content' + (f' for `{file_name_s[0]}`' if len(file_name_s) == 1 else '') +
                 '. You must wrap any file in triple backticks at the beginning and end of it. Like this:\n' +
                 file_wrapping_example
             )
