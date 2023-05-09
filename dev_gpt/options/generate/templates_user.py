@@ -289,7 +289,7 @@ The output is:
 {{"packages": [libgl1-mesa-glx]}}
 ```
 Note that you must not output the content of any other files like the Dockerfile or requirements.txt. 
-Only output the apt-get-packages.json file.
+Only output the apt-get-packages.json file. Ensure the response can be parsed by Python json.loads
 '''
 )
 
@@ -329,7 +329,8 @@ Note that any changes needed to make the test pass must be written under the con
 
 
 After thinking about the possible solutions, output them as JSON ranked from best to worst. Like this:
-''' + response_format_suggest_solutions
+''' + response_format_suggest_solutions + '''
+Ensure the response can be parsed by Python json.loads'''
 )
 
 
@@ -348,7 +349,7 @@ Was this error message encountered before?
 
 Write down your final answer as json in the following format:
 ''' + response_format_was_error_seen_before + '''
-Note that you must obey the double asterisk and triple backtick syntax from above.
+Note that you must obey the double asterisk and triple backtick syntax from above. Ensure the response can be parsed by Python json.loads
 '''
 )
 
@@ -369,7 +370,7 @@ Will the suggested solution lead to different actions than the previously tried 
 
 Write down your final answer as json in the following format:
 ''' + response_format_was_solution_tried_before + '''
-Note that you must obey the double asterisk and triple backtick syntax from above.'''
+Note that you must obey the double asterisk and triple backtick syntax from above. Ensure the response can be parsed by Python json.loads'''
 )
 
 
