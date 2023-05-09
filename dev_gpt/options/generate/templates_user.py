@@ -289,6 +289,7 @@ The output is:
 ```
 Note that you must not output the content of any other files like the Dockerfile or requirements.txt. 
 Only output the apt-get-packages.json file.
+Note that the first line you output must be: **apt-get-packages.json**
 '''
 )
 

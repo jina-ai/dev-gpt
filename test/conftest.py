@@ -21,7 +21,6 @@ def mock_input_sequence(request, monkeypatch) -> None:
         print(f"mocked user input: {next_val}")
         return next_val
 
-    # lambda _: next(gen)
     gen = input_generator(request.param)
     monkeypatch.setattr("builtins.input", get_next)
 
