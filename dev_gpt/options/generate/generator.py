@@ -481,15 +481,15 @@ dev-gpt deploy --path {self.microservice_root_path}
         ]
         return packages_list
 
-    def create_prototype_implementation(self):
-        microservice_py_lines = ['''\
-Class {microservice_name}:''']
-        for sub_task in self.pm.iterate_over_sub_tasks_pydantic(self.sub_task_tree):
-            microservice_py_lines.append(f'    {sub_task.python_fn_signature}')
-            microservice_py_lines.append(f'        """')
-            microservice_py_lines.append(f'        {sub_task.python_fn_docstring}')
-            microservice_py_lines.append(f'        """')
-            microservice_py_lines.append(f'        raise NotImplementedError')
-        microservice_py_str = '\n'.join(microservice_py_lines)
-        persist_file(os.path.join(self.microservice_root_path, 'microservice.py'), microservice_py_str)
+#     def create_prototype_implementation(self):
+#         microservice_py_lines = ['''\
+# Class {microservice_name}:''']
+#         for sub_task in self.pm.iterate_over_sub_tasks_pydantic(self.sub_task_tree):
+#             microservice_py_lines.append(f'    {sub_task.python_fn_signature}')
+#             microservice_py_lines.append(f'        """')
+#             microservice_py_lines.append(f'        {sub_task.python_fn_docstring}')
+#             microservice_py_lines.append(f'        """')
+#             microservice_py_lines.append(f'        raise NotImplementedError')
+#         microservice_py_str = '\n'.join(microservice_py_lines)
+#         persist_file(os.path.join(self.microservice_root_path, 'microservice.py'), microservice_py_str)
 

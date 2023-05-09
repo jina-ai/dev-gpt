@@ -1,18 +1,15 @@
-import json
-import re
-from typing import Generator
-
 from dev_gpt.apis import gpt
 from dev_gpt.apis.gpt import ask_gpt
-from dev_gpt.options.generate.chains.condition import is_false, is_true
-from dev_gpt.options.generate.chains.get_user_input_if_neede import get_user_input_if_needed
-from dev_gpt.options.generate.parser import identity_parser, boolean_parser, json_parser
-from dev_gpt.options.generate.pm.task_tree_schema import TaskTree
+from dev_gpt.options.generate.chains.user_confirmation_feedback_loop import user_feedback_loop
+from dev_gpt.options.generate.condition import is_false, is_true
+from dev_gpt.options.generate.chains.get_user_input_if_needed import get_user_input_if_needed
+from dev_gpt.options.generate.parser import identity_parser
+# from dev_gpt.options.generate.pm.task_tree_schema import TaskTree
 from dev_gpt.options.generate.ui import get_random_employee
 
 
 class PM:
-    def refine_specification(self, microservice_description) -> TaskTree:
+    def refine_specification(self, microservice_description):
         pm = get_random_employee('pm')
         print(f'{pm.emoji}👋 Hi, I\'m {pm.name}, a PM at Jina AI. Gathering the requirements for our engineers.')
         original_task = microservice_description
@@ -34,152 +31,29 @@ Description of the microservice:
             val = input('you: ')
         return val
 
-    def refine(self, microservice_description) -> TaskTree:
+    def refine(self, microservice_description):
         microservice_description, test_description = self.refine_description(microservice_description)
         return microservice_description, test_description
         # sub_task_tree = self.construct_sub_task_tree(microservice_description)
         # return sub_task_tree
 
-    def get_nlp_fns(self, microservice_description):
-        return ask_gpt(
-            get_nlp_fns_prompt,
-            json_parser,
-            microservice_description=microservice_description
-        )
-
-    def construct_sub_task_tree(self, microservice_description):
-        """
-        takes a microservice description and recursively constructs a tree of sub-tasks that need to be done to implement the microservice
-        """
-        #
-        # nlp_fns = self.get_nlp_fns(
-        #     microservice_description
-        # )
-
-        sub_task_tree_dict = ask_gpt(
-            construct_sub_task_tree_prompt, json_parser,
-            microservice_description=microservice_description,
-            # nlp_fns=nlp_fns
-        )
-        reflections = ask_gpt(
-            sub_task_tree_reflections_prompt, identity_parser,
-            microservice_description=microservice_description,
-            # nlp_fns=nlp_fns,
-            sub_task_tree=sub_task_tree_dict,
-        )
-        solutions = ask_gpt(
-            sub_task_tree_solutions_prompt, identity_parser,
-            # nlp_fns=nlp_fns,
-            microservice_description=microservice_description, sub_task_tree=sub_task_tree_dict,
-            reflections=reflections,
-        )
-        sub_task_tree_updated = ask_gpt(
-            sub_task_tree_update_prompt,
-            json_parser,
-            microservice_description=microservice_description,
-            # nlp_fns=nlp_fns,
-            sub_task_tree=sub_task_tree_dict, solutions=solutions
-        )
-        # for task_dict in self.iterate_over_sub_tasks(sub_task_tree_updated):
-        #     task_dict.update(self.get_additional_task_info(task_dict['task']))
-
-        sub_task_tree = TaskTree.parse_obj(sub_task_tree_updated)
-        return sub_task_tree
-
-    def get_additional_task_info(self, sub_task_description):
-        additional_info_dict = self.get_additional_infos(
-            description=sub_task_description,
-            parameter={
-                'display_name': 'Task description',
-                'text': sub_task_description,
-            },
-            potentially_required_information_list=[
-                {
-                    'field_name': 'api_key',
-                    'display_name': 'valid API key',
-                }, {
-                    'field_name': 'database_access',
-                    'display_name': 'database access',
-                }, {
-                    'field_name': 'documentation',
-                    'display_name': 'documentation',
-                }, {
-                    'field_name': 'example_api_call',
-                    'display_name': 'curl command or sample code for api call',
-                },
-            ],
-
-        )
-        return additional_info_dict
-
-    def get_additional_infos(self, description, parameter, potentially_required_information_list):
-        additional_info_dict = {}
-        for potentially_required_information in potentially_required_information_list:
-            is_task_requiring_information = ask_gpt(
-                is_task_requiring_information_template,
-                boolean_parser,
-                description=description,
-                description_title=parameter['display_name'],
-                description_text=parameter['text'],
-                potentially_required_information=potentially_required_information
-            )
-            if is_task_requiring_information:
-                generated_question = ask_gpt(
-                    generate_question_for_required_information_template,
-                    identity_parser,
-                    description=description,
-                    description_title=parameter['display_name'],
-                    description_text=parameter['text'],
-                    potentially_required_information=potentially_required_information
-                )
-                user_answer = input(generated_question)
-                additional_info_dict[potentially_required_information] = user_answer
-        return additional_info_dict
-
-    def iterate_over_sub_tasks(self, sub_task_tree_updated):
-        sub_tasks = sub_task_tree_updated['sub_tasks'] if 'sub_tasks' in sub_task_tree_updated else []
-        for sub_task in sub_tasks:
-            yield sub_task
-            yield from self.iterate_over_sub_tasks(sub_task)
-
-    def iterate_over_sub_tasks_pydantic(self, sub_task_tree: TaskTree) -> Generator[TaskTree, None, None]:
-        sub_tasks = sub_task_tree.sub_fns
-        for sub_task in sub_tasks:
-            yield sub_task
-            yield from self.iterate_over_sub_tasks_pydantic(sub_task)
-
     def refine_description(self, microservice_description):
-        microservice_description = ask_gpt(better_description_prompt, identity_parser,
-                                                microservice_description=microservice_description)
-        request_schema = ask_gpt(generate_request_schema_prompt, identity_parser,
-                                      microservice_description=microservice_description)
-        response_schema = ask_gpt(generate_output_schema_prompt, identity_parser,
-                                       microservice_description=microservice_description, request_schema=request_schema)
-        # additional_specifications = self.add_additional_specifications(microservice_description, request_schema,
-        #                                                                response_schema)
-        microservice_description = ask_gpt(summarize_description_and_schemas_prompt, identity_parser,
-                                                microservice_description=microservice_description,
-                                                request_schema=request_schema,
-                                                response_schema=response_schema,
-                                                # additional_specifications=additional_specifications
-                                                )
+        context = {
+            'microservice_description': microservice_description
+        }
+        self.auto_refine_description(context)
+        user_feedback_loop(context, microservice_description)
 
-        while (user_feedback := self.get_user_feedback(microservice_description)):
-            microservice_description = ask_gpt(add_feedback_prompt, identity_parser,
-                                                    microservice_description=microservice_description,
-                                                    user_feedback=user_feedback)
         test_description = ask_gpt(
             generate_test_description_prompt,
             identity_parser,
-            microservice_description=microservice_description,
-            request_schema=request_schema,
-            response_schema=response_schema
+            **context
         )
         example_file_url = get_user_input_if_needed(
             context={
                 'Microservice description': microservice_description,
-                'Request schema': request_schema,
-                'Response schema': response_schema,
+                'Request schema': context['request_schema'],
+                'Response schema': context['response_schema'],
             },
             conditions=[
                 is_true('Does request schema contain an example file url?'),
@@ -192,30 +66,151 @@ Description of the microservice:
 
         return microservice_description, test_description
 
-    def add_additional_specifications(self, microservice_description, request_schema, response_schema):
-        questions = ask_gpt(
-            ask_questions_prompt, identity_parser,
-            microservice_description=microservice_description,
-            request_schema=request_schema, response_schema=response_schema)
-        additional_specifications = ask_gpt(
-            answer_questions_prompt,
+    def auto_refine_description(self, context):
+        context['microservice_description'] = ask_gpt(
+            better_description_prompt,
             identity_parser,
-            microservice_description=microservice_description,
-            request_schema=request_schema,
-            response_schema=response_schema,
-            questions=questions
+            **context
         )
-        return additional_specifications
+        context['request_schema'] = ask_gpt(
+            generate_request_schema_prompt,
+            identity_parser,
+            **context
+        )
+        context['response_schema'] = ask_gpt(
+            generate_output_schema_prompt,
+            identity_parser,
+            **context
+        )
+        context['microservice_description'] = ask_gpt(
+            summarize_description_and_schemas_prompt, identity_parser,
+            **context
+        )
 
-    def get_user_feedback(self, microservice_description):
-        while True:
-            user_feedback = input(
-                f'I suggest that we implement the following microservice:\n{microservice_description}\nDo you agree? [y/n]')
-            if user_feedback.lower() in ['y', 'yes', 'yeah', 'yep', 'yup', 'sure', 'ok', 'okay']:
-                print('Great! I will hand this over to the developers!')
-                return None
-            elif user_feedback.lower() in ['n', 'no', 'nope', 'nah', 'nay', 'not']:
-                return input('What do you want to change?')
+    # def get_nlp_fns(self, microservice_description):
+    #     return ask_gpt(
+    #         get_nlp_fns_prompt,
+    #         json_parser,
+    #         microservice_description=microservice_description
+    #     )
+    #
+    # def construct_sub_task_tree(self, microservice_description):
+    #     """
+    #     takes a microservice description and recursively constructs a tree of sub-tasks that need to be done to implement the microservice
+    #     """
+    #     #
+    #     # nlp_fns = self.get_nlp_fns(
+    #     #     microservice_description
+    #     # )
+    #
+    #     sub_task_tree_dict = ask_gpt(
+    #         construct_sub_task_tree_prompt, json_parser,
+    #         microservice_description=microservice_description,
+    #         # nlp_fns=nlp_fns
+    #     )
+    #     reflections = ask_gpt(
+    #         sub_task_tree_reflections_prompt, identity_parser,
+    #         microservice_description=microservice_description,
+    #         # nlp_fns=nlp_fns,
+    #         sub_task_tree=sub_task_tree_dict,
+    #     )
+    #     solutions = ask_gpt(
+    #         sub_task_tree_solutions_prompt, identity_parser,
+    #         # nlp_fns=nlp_fns,
+    #         microservice_description=microservice_description, sub_task_tree=sub_task_tree_dict,
+    #         reflections=reflections,
+    #     )
+    #     sub_task_tree_updated = ask_gpt(
+    #         sub_task_tree_update_prompt,
+    #         json_parser,
+    #         microservice_description=microservice_description,
+    #         # nlp_fns=nlp_fns,
+    #         sub_task_tree=sub_task_tree_dict, solutions=solutions
+    #     )
+    #     # for task_dict in self.iterate_over_sub_tasks(sub_task_tree_updated):
+    #     #     task_dict.update(self.get_additional_task_info(task_dict['task']))
+    #
+    #     sub_task_tree = TaskTree.parse_obj(sub_task_tree_updated)
+    #     return sub_task_tree
+
+    # def get_additional_task_info(self, sub_task_description):
+    #     additional_info_dict = self.get_additional_infos(
+    #         description=sub_task_description,
+    #         parameter={
+    #             'display_name': 'Task description',
+    #             'text': sub_task_description,
+    #         },
+    #         potentially_required_information_list=[
+    #             {
+    #                 'field_name': 'api_key',
+    #                 'display_name': 'valid API key',
+    #             }, {
+    #                 'field_name': 'database_access',
+    #                 'display_name': 'database access',
+    #             }, {
+    #                 'field_name': 'documentation',
+    #                 'display_name': 'documentation',
+    #             }, {
+    #                 'field_name': 'example_api_call',
+    #                 'display_name': 'curl command or sample code for api call',
+    #             },
+    #         ],
+    #
+    #     )
+    #     return additional_info_dict
+
+    # def get_additional_infos(self, description, parameter, potentially_required_information_list):
+    #     additional_info_dict = {}
+    #     for potentially_required_information in potentially_required_information_list:
+    #         is_task_requiring_information = ask_gpt(
+    #             is_task_requiring_information_template,
+    #             boolean_parser,
+    #             description=description,
+    #             description_title=parameter['display_name'],
+    #             description_text=parameter['text'],
+    #             potentially_required_information=potentially_required_information
+    #         )
+    #         if is_task_requiring_information:
+    #             generated_question = ask_gpt(
+    #                 generate_question_for_required_information_template,
+    #                 identity_parser,
+    #                 description=description,
+    #                 description_title=parameter['display_name'],
+    #                 description_text=parameter['text'],
+    #                 potentially_required_information=potentially_required_information
+    #             )
+    #             user_answer = input(generated_question)
+    #             additional_info_dict[potentially_required_information] = user_answer
+    #     return additional_info_dict
+
+    # def iterate_over_sub_tasks(self, sub_task_tree_updated):
+    #     sub_tasks = sub_task_tree_updated['sub_tasks'] if 'sub_tasks' in sub_task_tree_updated else []
+    #     for sub_task in sub_tasks:
+    #         yield sub_task
+    #         yield from self.iterate_over_sub_tasks(sub_task)
+    #
+    # def iterate_over_sub_tasks_pydantic(self, sub_task_tree: TaskTree) -> Generator[TaskTree, None, None]:
+    #     sub_tasks = sub_task_tree.sub_fns
+    #     for sub_task in sub_tasks:
+    #         yield sub_task
+    #         yield from self.iterate_over_sub_tasks_pydantic(sub_task)
+
+    # def add_additional_specifications(self, microservice_description, request_schema, response_schema):
+    #     questions = ask_gpt(
+    #         ask_questions_prompt, identity_parser,
+    #         microservice_description=microservice_description,
+    #         request_schema=request_schema, response_schema=response_schema)
+    #     additional_specifications = ask_gpt(
+    #         answer_questions_prompt,
+    #         identity_parser,
+    #         microservice_description=microservice_description,
+    #         request_schema=request_schema,
+    #         response_schema=response_schema,
+    #         questions=questions
+    #     )
+    #     return additional_specifications
+
+
                 # return self.refine_user_feedback(microservice_description)
 
     # def refine_user_feedback(self, microservice_description):
@@ -247,7 +242,7 @@ Example for the description: "return the average temperature of the 5 days weath
 
 generate_request_schema_prompt = client_description + '''
 Generate the lean request json schema of the Microservice.
-Note: If you are not sure about the details, the come up with the minimal number of parameters possible.'''
+Note: If you are not sure about the details, then come up with the minimal number of parameters possible.'''
 
 generate_output_schema_prompt = client_description + '''
 request json schema:
@@ -255,7 +250,7 @@ request json schema:
 {request_schema}
 ```
 Generate the lean response json schema for the Microservice.
-Note: If you are not sure about the details, the come up with the minimal number of parameters possible.'''
+Note: If you are not sure about the details, then come up with the minimal number of parameters possible.'''
 
 # If we want to activate this back, then it first needs to work. Currently, it outputs "no" for too many cases.
 # is_feedback_valuable_prompt = client_description + '''
@@ -282,132 +277,127 @@ Note: You must not mention any details about algorithms or the technical impleme
 Note: You must not mention that there is a request and response JSON schema
 Note: You must not use any formatting like triple backticks.'''
 
-add_feedback_prompt = client_description + '''
-User feedback:
-```
-{user_feedback}
-```
-Update the microservice description by incorporating the user feedback in a concise way without losing any information.'''
 
-summarize_description_prompt = client_description + '''
-Make the description more concise without losing any information.
-Note: You must not mention any details about algorithms or the technical implementation.
-Note: You must ignore facts that are not specified.
-Note: You must ignore facts that are not relevant.
-Note: You must ignore facts that are unknown.
-Note: You must ignore facts that are unclear.'''
 
-construct_sub_task_tree_prompt = client_description + '''
-Recursively constructs a tree of functions that need to be implemented for the endpoint_function that retrieves a json string and returns a json string.
-Example:
-Input: "Input: list of integers, Output: Audio file of short story where each number is mentioned exactly once."
-Output:
-{{
-    "description": "Create an audio file containing a short story in which each integer from the provided list is seamlessly incorporated, ensuring that every integer is mentioned exactly once.",
-    "python_fn_signature": "def generate_integer_story_audio(numbers: List[int]) -> str:",
-    "sub_fns": [
-        {{
-            "description": "Generate sentence from integer.",
-            "python_fn_signature": "def generate_sentence_from_integer(number: int) -> int:",
-            "sub_fns": []
-        }},
-        {{
-            "description": "Convert the story into an audio file.",
-            "python_fn_signature": "def convert_story_to_audio(story: str) -> bytes:",
-            "sub_fns": []
-        }}
-    ]
-}}
+# summarize_description_prompt = client_description + '''
+# Make the description more concise without losing any information.
+# Note: You must not mention any details about algorithms or the technical implementation.
+# Note: You must ignore facts that are not specified.
+# Note: You must ignore facts that are not relevant.
+# Note: You must ignore facts that are unknown.
+# Note: You must ignore facts that are unclear.'''
 
-Note: you must only output the json string - nothing else.
-Note: you must pretty print the json string.'''
+# construct_sub_task_tree_prompt = client_description + '''
+# Recursively constructs a tree of functions that need to be implemented for the endpoint_function that retrieves a json string and returns a json string.
+# Example:
+# Input: "Input: list of integers, Output: Audio file of short story where each number is mentioned exactly once."
+# Output:
+# {{
+#     "description": "Create an audio file containing a short story in which each integer from the provided list is seamlessly incorporated, ensuring that every integer is mentioned exactly once.",
+#     "python_fn_signature": "def generate_integer_story_audio(numbers: List[int]) -> str:",
+#     "sub_fns": [
+#         {{
+#             "description": "Generate sentence from integer.",
+#             "python_fn_signature": "def generate_sentence_from_integer(number: int) -> int:",
+#             "sub_fns": []
+#         }},
+#         {{
+#             "description": "Convert the story into an audio file.",
+#             "python_fn_signature": "def convert_story_to_audio(story: str) -> bytes:",
+#             "sub_fns": []
+#         }}
+#     ]
+# }}
+#
+# Note: you must only output the json string - nothing else.
+# Note: you must pretty print the json string.'''
 
-sub_task_tree_reflections_prompt = client_description + '''
-Sub task tree:
-```
-{sub_task_tree}
-```
-Write down 3 arguments why the sub task tree might not perfectly represents the information mentioned in the microservice description. (5 words per argument)'''
+# sub_task_tree_reflections_prompt = client_description + '''
+# Sub task tree:
+# ```
+# {sub_task_tree}
+# ```
+# Write down 3 arguments why the sub task tree might not perfectly represents the information mentioned in the microservice description. (5 words per argument)'''
+#
+# sub_task_tree_solutions_prompt = client_description + '''
+# Sub task tree:
+# ```
+# {sub_task_tree}
+# ```
+# Reflections:
+# ```
+# {reflections}
+# ```
+# For each constructive criticism, write a solution (5 words) that address the criticism.'''
+#
+# sub_task_tree_update_prompt = client_description + '''
+# Sub task tree:
+# ```
+# {sub_task_tree}
+# ```
+# Solutions:
+# ```
+# {solutions}
+# ```
+# Update the sub task tree by applying the solutions. (pretty print the json string)'''
+#
+# ask_questions_prompt = client_description + '''
+# Request json schema:
+# ```
+# {request_schema}
+# ```
+# Response json schema:
+# ```
+# {response_schema}
+# ```
+# Ask the user up to 5 unique detailed questions (5 words) about the microservice description that are not yet answered.
+# '''
 
-sub_task_tree_solutions_prompt = client_description + '''
-Sub task tree:
-```
-{sub_task_tree}
-```
-Reflections:
-```
-{reflections}
-```
-For each constructive criticism, write a solution (5 words) that address the criticism.'''
+# answer_questions_prompt = client_description + '''
+# Request json schema:
+# ```
+# {request_schema}
+# ```
+# Response json schema:
+# ```
+# {response_schema}
+# ```
+# Questions:
+# ```
+# {questions}
+# ```
+# Answer all questions where you can think of a plausible answer.
+# Note: You must not answer questions with something like "...is not specified", "I don't know" or "Unknown".
+# '''
 
-sub_task_tree_update_prompt = client_description + '''
-Sub task tree:
-```
-{sub_task_tree}
-```
-Solutions:
-```
-{solutions}
-```
-Update the sub task tree by applying the solutions. (pretty print the json string)'''
+# is_task_requiring_information_template = '''\
+# {description_title}
+# ```
+# {description_text}
+# ```
+# Does the implementation of the {description_title} require information about "{potentially_required_information}"?
+# Note: You must either answer "yes" or "no".'''
 
-ask_questions_prompt = client_description + '''
-Request json schema:
-```
-{request_schema}
-```
-Response json schema:
-```
-{response_schema}
-```
-Ask the user up to 5 unique detailed questions (5 words) about the microservice description that are not yet answered.
-'''
+# generate_question_for_required_information_template = '''\
+# {description_title}
+# ```
+# {description_text}
+# ```
+# Generate a question that asks for the information "{potentially_required_information}" regarding "{description_title}".
+# Note: you must only output the question - nothing else.'''
 
-answer_questions_prompt = client_description + '''
-Request json schema:
-```
-{request_schema}
-```
-Response json schema:
-```
-{response_schema}
-```
-Questions:
-```
-{questions}
-```
-Answer all questions where you can think of a plausible answer.
-Note: You must not answer questions with something like "...is not specified", "I don't know" or "Unknown".
-'''
-
-is_task_requiring_information_template = '''\
-{description_title}
-```
-{description_text}
-```
-Does the implementation of the {description_title} require information about "{potentially_required_information}"?
-Note: You must either answer "yes" or "no".'''
-
-generate_question_for_required_information_template = '''\
-{description_title}
-```
-{description_text}
-```
-Generate a question that asks for the information "{potentially_required_information}" regarding "{description_title}".
-Note: you must only output the question - nothing else.'''
-
-get_nlp_fns_prompt = client_description + '''
-Respond with all code parts that could be accomplished by GPT 3.
-Example for "Take a video and/or a pdf as input, extract the subtitles from the video and the text from the pdf, \
-summarize the extracted text and translate it to German":
-```
-[
-    "summarize the text",
-    "translate the text to German"
-]
-```
-Note: only list code parts that could be expressed as a function that takes a string as input and returns a string as output.
-Note: the output must be parsable by the python function json.loads.'''
+# get_nlp_fns_prompt = client_description + '''
+# Respond with all code parts that could be accomplished by GPT 3.
+# Example for "Take a video and/or a pdf as input, extract the subtitles from the video and the text from the pdf, \
+# summarize the extracted text and translate it to German":
+# ```
+# [
+#     "summarize the text",
+#     "translate the text to German"
+# ]
+# ```
+# Note: only list code parts that could be expressed as a function that takes a string as input and returns a string as output.
+# Note: the output must be parsable by the python function json.loads.'''
 
 generate_test_description_prompt = client_description + '''
 Request json schema:
