@@ -1,7 +1,8 @@
 from dev_gpt.apis import gpt
 from dev_gpt.apis.gpt import ask_gpt
+from dev_gpt.options.generate.chains.auto_refine_description import auto_refine_description
 from dev_gpt.options.generate.chains.user_confirmation_feedback_loop import user_feedback_loop
-from dev_gpt.options.generate.condition import is_false, is_true
+from dev_gpt.options.generate.condition import is_question_false, is_question_true
 from dev_gpt.options.generate.chains.get_user_input_if_needed import get_user_input_if_needed
 from dev_gpt.options.generate.parser import identity_parser
 # from dev_gpt.options.generate.pm.task_tree_schema import TaskTree
@@ -38,11 +39,9 @@ Description of the microservice:
         # return sub_task_tree
 
     def refine_description(self, microservice_description):
-        context = {
-            'microservice_description': microservice_description
-        }
-        self.auto_refine_description(context)
-        user_feedback_loop(context, microservice_description)
+        context = {'microservice_description': microservice_description}
+        auto_refine_description(context)
+        microservice_description = user_feedback_loop(context, context['microservice_description'])
 
         test_description = ask_gpt(
             generate_test_description_prompt,
@@ -56,8 +55,8 @@ Description of the microservice:
                 'Response schema': context['response_schema'],
             },
             conditions=[
-                is_true('Does request schema contain an example file url?'),
-                is_false('Is input url specified in the description?'),
+                is_question_true('Does request schema require a file?'),
+                # is_question_false('Is input url specified in the description?'),
             ],
             question_gen_prompt_part="Generate a question that asks for an example file url.",
         )
@@ -66,26 +65,7 @@ Description of the microservice:
 
         return microservice_description, test_description
 
-    def auto_refine_description(self, context):
-        context['microservice_description'] = ask_gpt(
-            better_description_prompt,
-            identity_parser,
-            **context
-        )
-        context['request_schema'] = ask_gpt(
-            generate_request_schema_prompt,
-            identity_parser,
-            **context
-        )
-        context['response_schema'] = ask_gpt(
-            generate_output_schema_prompt,
-            identity_parser,
-            **context
-        )
-        context['microservice_description'] = ask_gpt(
-            summarize_description_and_schemas_prompt, identity_parser,
-            **context
-        )
+
 
     # def get_nlp_fns(self, microservice_description):
     #     return ask_gpt(
@@ -229,28 +209,10 @@ Microservice description:
 {microservice_description}
 ```'''
 
-better_description_prompt = client_description + '''
-Update the description of the Microservice to make it more precise without adding or removing information.
-Note: the output must be a list of tasks the Microservice has to perform.
-Example for the description: "return the average temperature of the 5 days weather forecast for a given location."
-1. get the 5 days weather forcast from the https://openweathermap.org/ API
-2. extract the temperature from the response
-3. calculate the average temperature'''
 
 # better_description_prompt = client_description + '''
 # Update the description of the Microservice to make it more precise without adding or removing information.'''
 
-generate_request_schema_prompt = client_description + '''
-Generate the lean request json schema of the Microservice.
-Note: If you are not sure about the details, then come up with the minimal number of parameters possible.'''
-
-generate_output_schema_prompt = client_description + '''
-request json schema:
-```
-{request_schema}
-```
-Generate the lean response json schema for the Microservice.
-Note: If you are not sure about the details, then come up with the minimal number of parameters possible.'''
 
 # If we want to activate this back, then it first needs to work. Currently, it outputs "no" for too many cases.
 # is_feedback_valuable_prompt = client_description + '''
@@ -262,20 +224,6 @@ Note: If you are not sure about the details, then come up with the minimal numbe
 # Note: You must either answer "yes" or "no".
 # Note: If the user does not want to provide feedback, then you must answer "no".'''
 
-
-summarize_description_and_schemas_prompt = client_description + '''
-Request json schema:
-```
-{request_schema}
-```
-Response json schema:
-```
-{response_schema}
-```
-Write an updated microservice description by incorporating information about the request and response parameters in a concise way without losing any information.
-Note: You must not mention any details about algorithms or the technical implementation.
-Note: You must not mention that there is a request and response JSON schema
-Note: You must not use any formatting like triple backticks.'''
 
 
 

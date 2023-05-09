@@ -51,7 +51,7 @@ But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
     assert generator.generate() == 0
 
 
-@pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://www.africau.edu/images/default/sample.pdf']], indirect=True)
 def test_generation_level_2(microservice_dir, mock_input_sequence):
     """
     Requirements:
@@ -64,7 +64,7 @@ def test_generation_level_2(microservice_dir, mock_input_sequence):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        "The input is a PDF like https://www.africau.edu/images/default/sample.pdf and the output the summarized text (50 words).",
+        "The input is a PDF and the output the summarized text (50 words).",
         str(microservice_dir),
         'gpt-3.5-turbo'
     )
@@ -95,7 +95,7 @@ Example input: 'AAPL'
     )
     assert generator.generate() == 0
 
-@pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav']], indirect=True)
 def test_generation_level_4(microservice_dir, mock_input_sequence):
     """
     Requirements:
@@ -125,14 +125,13 @@ print('This is the text from the audio file:', response.json()['text'])
 2. Summarize the text (~50 words) while still maintaining the key facts.
 3. Create an audio file of the summarized text using a tts library.
 4. Return the the audio file as base64 encoded binary.
-Example input file: https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav
 ''',
         str(microservice_dir),
         'gpt-4'
     )
     assert generator.generate() == 0
 
-@pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/560px-PNG_transparency_demonstration_1.png']], indirect=True)
 def test_generation_level_5(microservice_dir, mock_input_sequence):
     """
     Requirements:
@@ -165,7 +164,6 @@ Result format:
 The description is then used to generate a joke.
 The joke is the put on the image.
 The output is the image with the joke on it.
-Example input image: https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/560px-PNG_transparency_demonstration_1.png
 ''',
                           str(microservice_dir),
                           'gpt-3.5-turbo'
