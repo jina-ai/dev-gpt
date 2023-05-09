@@ -60,7 +60,7 @@ Description of the microservice:
             context,
             microservice_description,
             condition_question='Does the microservice send requests to an API?',
-            question_gen='Generate a question that asks for the endpoint and an example of a request and response when interacting with the api.',
+            question_gen='Generate a question that asks for the endpoint and an example of a request and response when interacting with the external API.',
             extension_name='Example of API usage',
         )
         # database missing

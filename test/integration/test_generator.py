@@ -70,7 +70,7 @@ def test_generation_level_2(microservice_dir, mock_input_sequence):
     )
     assert generator.generate() == 0
 
-@pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'yfinance.Ticker("MSFT").info']], indirect=True)
 def test_generation_level_3(microservice_dir, mock_input_sequence):
     """
     Requirements:
@@ -95,7 +95,27 @@ Example input: 'AAPL'
     )
     assert generator.generate() == 0
 
-@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav']], indirect=True)
+@pytest.mark.parametrize(
+    'mock_input_sequence', [
+        [
+            'y',
+            'https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav',
+            '''\
+import requests
+url = "https://transcribe.whisperapi.com"
+headers = {{
+'Authorization': 'Bearer {os.environ['WHISPER_API_KEY']}'
+}}
+data = {{
+  "url": "URL_OF_STORED_AUDIO_FILE"
+}}
+response = requests.post(url, headers=headers, data=data)
+assert response.status_code == 200
+print('This is the text from the audio file:', response.json()['text'])'''
+        ]
+    ],
+    indirect=True
+)
 def test_generation_level_4(microservice_dir, mock_input_sequence):
     """
     Requirements:
@@ -110,18 +130,6 @@ def test_generation_level_4(microservice_dir, mock_input_sequence):
     generator = Generator(
         f'''Given an audio file (1min wav) of speech, 
 1. convert it to text using the Whisper API.
-Here is the documentation on how to use the API:
-import requests
-url = "https://transcribe.whisperapi.com"
-headers = {{
-'Authorization': 'Bearer {os.environ['WHISPER_API_KEY']}'
-}}
-data = {{
-  "url": "URL_OF_STORED_AUDIO_FILE"
-}}
-response = requests.post(url, headers=headers, data=data)
-assert response.status_code == 200
-print('This is the text from the audio file:', response.json()['text'])
 2. Summarize the text (~50 words) while still maintaining the key facts.
 3. Create an audio file of the summarized text using a tts library.
 4. Return the the audio file as base64 encoded binary.
