@@ -1,8 +1,9 @@
 from dev_gpt.apis import gpt
 from dev_gpt.apis.gpt import ask_gpt
 from dev_gpt.options.generate.chains.auto_refine_description import auto_refine_description
+from dev_gpt.options.generate.chains.question_answering import is_question_true
+from dev_gpt.options.generate.chains.translation import translation
 from dev_gpt.options.generate.chains.user_confirmation_feedback_loop import user_feedback_loop
-from dev_gpt.options.generate.condition import is_question_true
 from dev_gpt.options.generate.chains.get_user_input_if_needed import get_user_input_if_needed
 from dev_gpt.options.generate.parser import identity_parser
 from dev_gpt.options.generate.ui import get_random_employee
@@ -61,10 +62,19 @@ Description of the microservice:
             condition_question='Does the microservice send requests to an API?',
             question_gen='Generate a question that asks for the endpoint and an example of a request and response when interacting with the external API.',
             extension_name='Example of API usage',
+            post_transformation_fn=translation(from_format='api instruction', to_format='python code snippet')
         )
         return microservice_description, test_description
 
-    def user_input_extension_if_needed(self, context, microservice_description, condition_question, question_gen, extension_name):
+    def user_input_extension_if_needed(
+            self,
+            context,
+            microservice_description,
+            condition_question,
+            question_gen,
+            extension_name,
+            post_transformation_fn=None
+    ):
         user_answer = get_user_input_if_needed(
             context={
                 'Microservice description': microservice_description,
@@ -77,6 +87,8 @@ Description of the microservice:
             question_gen_prompt_part=question_gen,
         )
         if user_answer:
+            if post_transformation_fn:
+                user_answer = post_transformation_fn(user_answer)
             return f'\n{extension_name}: {user_answer}'
         else:
             return ''
