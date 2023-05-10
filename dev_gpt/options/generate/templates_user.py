@@ -97,7 +97,7 @@ When you get asked something like 'Who was having a date with <X>?', then you an
 You must not answer something else - only the json.
 \'\'\')
 
-response_string = gpt(prompt)  # fill-in the prompt (str); the output is a string
+generated_string = gpt(prompt)  # fill-in the prompt (str); the output is a string
 ```
 """
 

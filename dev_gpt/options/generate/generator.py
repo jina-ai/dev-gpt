@@ -416,6 +416,7 @@ pytest
                          packages_list]
 
         packages_list = self.filter_packages_list(packages_list)
+        packages_list = self.remove_duplicates_from_packages_list(packages_list)
         packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
         return packages_list
     # '/private/var/folders/f5/whmffl4d7q79s29jpyb6719m0000gn/T/pytest-of-florianhonicke/pytest-128/test_generation_level_0_mock_i0'
@@ -480,6 +481,10 @@ dev-gpt deploy --path {self.microservice_root_path}
             ] for packages in packages_list
         ]
         return packages_list
+
+    @staticmethod
+    def remove_duplicates_from_packages_list(packages_list):
+        return [list(set(packages)) for packages in packages_list]
 
 #     def create_prototype_implementation(self):
 #         microservice_py_lines = ['''\
