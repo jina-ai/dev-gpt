@@ -97,7 +97,7 @@ When you get asked something like 'Who was having a date with <X>?', then you an
 You must not answer something else - only the json.
 \'\'\')
 
-response_string = gpt(prompt)  # fill-in the prompt (str); the output is a string
+generated_string = gpt(prompt)  # fill-in the prompt (str); the output is a string
 ```
 """
 
@@ -289,6 +289,7 @@ The output is:
 ```
 Note that you must not output the content of any other files like the Dockerfile or requirements.txt. 
 Only output the apt-get-packages.json file.
+Note that the first line you output must be: **apt-get-packages.json**
 '''
 )
 

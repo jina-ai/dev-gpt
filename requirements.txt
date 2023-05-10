@@ -6,3 +6,4 @@ psutil
 jcloud
 jina-hubble-sdk
 langchain==0.0.153
+pydantic==1.10.7
