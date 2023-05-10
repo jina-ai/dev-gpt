@@ -100,7 +100,7 @@ Example input: 'AAPL'
         [
             'y',
             'https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav',
-            '''\
+            f'''\
 import requests
 url = "https://transcribe.whisperapi.com"
 headers = {{
