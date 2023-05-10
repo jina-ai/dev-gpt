@@ -113,12 +113,12 @@ Response json schema:
 ```
 {response_schema}
 ```
-Generate the description of the weak test assertion for the microservice. The weak assertion only checks if the output is of the correct type. Nothing else.
+Generate the description of the weak test assertion for the microservice. The weak assertion only checks if the output of func is of the correct type (e.g. str, int, bool, etc.). Nothing else.
 Note: you must only output the test description - nothing else.
 Note: you must not use any formatting like triple backticks.
 Note: the generated description must be less than 30 words long.
 Example:
-"Input is a base64 encoded image. The test asserts that the output is of type 'str'".'''
+"Input for func is a base64 encoded image. The test asserts that the output of func is of type 'str'".'''
 
 # def get_nlp_fns(self, microservice_description):
 #     return ask_gpt(
