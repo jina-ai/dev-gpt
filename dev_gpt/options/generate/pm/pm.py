@@ -52,8 +52,8 @@ Description of the microservice:
         test_description += self.user_input_extension_if_needed(
             context,
             microservice_description,
-            condition_question='Does request schema require a file?',
-            question_gen='Generate a question that asks for an example file url.',
+            condition_question='Does the request schema provided include a property that represents a file?',
+            question_gen='Generate a question that requests for an example file url.',
             extension_name='Input Example',
         )
         microservice_description += self.user_input_extension_if_needed(
