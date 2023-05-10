@@ -99,7 +99,7 @@ Example input: 'AAPL'
     'mock_input_sequence', [
         [
             'y',
-            'https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav',
+            'https://www2.cs.uic.edu/~i101/SoundFiles/taunt.wav',
             f'''\
 import requests
 url = "https://transcribe.whisperapi.com"
