@@ -111,7 +111,7 @@ data = {{
 }}
 response = requests.post(url, headers=headers, data=data)
 assert response.status_code == 200
-print('This is the text from the audio file:', response.json()['text'])'''
+print('This is the text from the audio file:', response.text)'''
         ]
     ],
     indirect=True
