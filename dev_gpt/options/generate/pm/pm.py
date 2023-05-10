@@ -63,7 +63,6 @@ Description of the microservice:
             question_gen='Generate a question that asks for the endpoint and an example of a request and response when interacting with the external API.',
             extension_name='Example of API usage',
         )
-        # database missing
         return microservice_description, test_description
 
     def user_input_extension_if_needed(self, context, microservice_description, condition_question, question_gen, extension_name):
@@ -372,11 +371,9 @@ Response json schema:
 ```
 {response_schema}
 ```
-Generate the description of the test scenario for the microservice.
+Generate the description of the test scenario for the microservice that asserts that the output is of the correct python type for a given input.
 Note: you must only output the test description - nothing else.
-Note: you must not use any formatting like triple backticks.
-Note: the test must insert data in defined in the request schema and validate that the type of the response is matching with the response schema.
-'''
+Note: you must not use any formatting like triple backticks.'''
 
 if __name__ == '__main__':
     gpt_session = gpt.GPTSession('GPT-3.5-turbo')

@@ -1,7 +1,6 @@
 import json
 
 from dev_gpt.apis.gpt import ask_gpt
-from dev_gpt.options.generate.chains.extract_information import extract_information
 from dev_gpt.options.generate.parser import identity_parser
 from dev_gpt.options.generate.prompt_factory import context_to_string
 
