@@ -373,7 +373,10 @@ Response json schema:
 ```
 Generate the description of the test scenario for the microservice that asserts that the output is of the correct python type for a given input.
 Note: you must only output the test description - nothing else.
-Note: you must not use any formatting like triple backticks.'''
+Note: you must not use any formatting like triple backticks.
+Note: the generated description must be around 30 words long.
+Example:
+"Input is a base64 encoded image. The test asserts that the output is of type 'str'".'''
 
 if __name__ == '__main__':
     gpt_session = gpt.GPTSession('GPT-3.5-turbo')
