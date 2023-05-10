@@ -53,4 +53,5 @@ summarize_description_and_schemas_prompt = '''{context_string}
 Write an updated microservice description by incorporating information about the request and response parameters in a concise way without losing any information.
 Note: You must not mention any details about algorithms or the technical implementation.
 Note: You must not mention that there is a request and response JSON schema
-Note: You must not use any formatting like triple backticks.'''
+Note: You must not use any formatting like triple backticks.
+Note: If an external API is mentioned in the description, then you must mention the API in the updated description as well.'''
