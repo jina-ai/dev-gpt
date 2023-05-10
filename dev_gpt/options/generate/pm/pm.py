@@ -67,7 +67,7 @@ Description of the microservice:
         return microservice_description, test_description
 
     def user_input_extension_if_needed(self, context, microservice_description, condition_question, question_gen, extension_name):
-        example_file_url = get_user_input_if_needed(
+        user_answer = get_user_input_if_needed(
             context={
                 'Microservice description': microservice_description,
                 'Request schema': context['request_schema'],
@@ -78,8 +78,8 @@ Description of the microservice:
             ],
             question_gen_prompt_part=question_gen,
         )
-        if example_file_url:
-            return f'\nInput Example: {example_file_url}'
+        if user_answer:
+            return f'\n{extension_name}: {user_answer}'
         else:
             return ''
 
