@@ -70,6 +70,26 @@ def test_generation_level_2(microservice_dir, mock_input_sequence):
     )
     assert generator.generate() == 0
 
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png']], indirect=True)
+def test_generation_level_2_svg(microservice_dir, mock_input_sequence):
+    """
+    Requirements:
+    coding challenge: ✅
+    pip packages: ✅
+    environment: ❌
+    GPT-3.5-turbo: ❌
+    APIs: ❌
+    Databases: ❌
+    """
+    os.environ['VERBOSE'] = 'true'
+    generator = Generator(
+        "Get a png as input and return a vectorized version as svg.",
+        str(microservice_dir),
+        'gpt-3.5-turbo'
+    )
+    assert generator.generate() == 0
+
+
 @pytest.mark.parametrize('mock_input_sequence', [['y', 'yfinance.Ticker("MSFT").info']], indirect=True)
 def test_generation_level_3(microservice_dir, mock_input_sequence):
     """

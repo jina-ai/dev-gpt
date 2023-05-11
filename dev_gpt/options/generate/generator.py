@@ -7,7 +7,7 @@ from typing import Callable
 from typing import List, Text, Optional
 
 from langchain import PromptTemplate
-from langchain.schema import SystemMessage
+from langchain.schema import SystemMessage, AIMessage
 from pydantic.dataclasses import dataclass
 
 from dev_gpt.apis import gpt
