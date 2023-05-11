@@ -105,7 +105,7 @@ generated_string = gpt(prompt)  # fill-in the prompt (str); the output is a stri
 template_generate_function = PromptTemplate.from_template(
     general_guidelines_string + '''
 
-Write a python function which receives as input a dictionary and outputs a dictionary. The function is called 'func'.
+Write a python function which receives as input json string (that can be parsed with the python function json.loads) and outputs a json string (that can be parsed with the python function json.loads). The function is called 'func'.
 The function must full-fill: '{microservice_description}'.
 It will be tested with the following scenario: '{test_description}'.
 For the implementation use the following package(s): '{packages}'.

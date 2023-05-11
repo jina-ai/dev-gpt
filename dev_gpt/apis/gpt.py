@@ -77,7 +77,7 @@ class GPTSession:
                         }]
                     )
                     break
-                except RateLimitError:
+                except (RateLimitError, openai.error.APIError):
                     sleep(1)
                     continue
             return True
