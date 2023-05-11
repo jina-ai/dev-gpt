@@ -65,7 +65,7 @@ dev-gpt generate
 ```
 
 ### Requirements
-- OpenAI key with access to GPT-3.5 or GPT-4
+- OpenAI key with access to gpt-3.5-turbo or gpt-4
 ```bash
 dev-gpt configure --key <your openai api key>
 ```
@@ -79,12 +79,12 @@ We are working on a way to use gpt-3.5-turbo as well.
 ```bash
 dev-gpt generate \
 --description "<description of the microservice>" \
---model <gpt-3.5 or gpt-4> \
+--model <gpt-3.5-turbo or gpt-4> \
 --path </path/to/local/folder>
 ```
 To generate your personal microservice two things are required:
 - A `description` of the task you want to accomplish. (optional)
-- The `model` you want to use - either `gpt-3.5` or `gpt-4`. `gpt-3.5` is ~10x cheaper, 
+- The `model` you want to use - either `gpt-3.5-turbo` or `gpt-4`. `gpt-3.5-turbo` is ~10x cheaper, 
 but will not be able to generate as complex microservices. (default: largest you have access to)
 - A `path` on the local drive where the microservice will be generated. (default: ./microservice)
 
