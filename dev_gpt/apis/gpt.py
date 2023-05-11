@@ -88,11 +88,12 @@ class GPTSession:
         self.chars_prompt_so_far += chars_prompt
         self.chars_generation_so_far += chars_generation
         if print_costs:
-            print('\n')
-            money_prompt = self._calculate_money_spent(self.chars_prompt_so_far, self.pricing_prompt)
-            money_generation = self._calculate_money_spent(self.chars_generation_so_far, self.pricing_generation)
-            print('Total money spent so far on openai.com:', f'${money_prompt + money_generation:.3f}')
-            print('\n')
+            if os.environ['VERBOSE'].lower() == 'true':
+                print('\n')
+                money_prompt = self._calculate_money_spent(self.chars_prompt_so_far, self.pricing_prompt)
+                money_generation = self._calculate_money_spent(self.chars_generation_so_far, self.pricing_generation)
+                print('Total money spent so far on openai.com:', f'${money_prompt + money_generation:.3f}')
+                print('\n')
 
     @staticmethod
     def _calculate_money_spent(num_chars, price):
