@@ -7,18 +7,17 @@ from typing import Callable
 from typing import List, Text, Optional
 
 from langchain import PromptTemplate
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
 from pydantic.dataclasses import dataclass
 
 from dev_gpt.apis import gpt
 from dev_gpt.apis.gpt import _GPTConversation
 from dev_gpt.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
-from dev_gpt.apis.pypi import is_package_on_pypi, get_latest_package_version, clean_requirements_txt
+from dev_gpt.apis.pypi import is_package_on_pypi, clean_requirements_txt
 from dev_gpt.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     BLACKLISTED_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
     IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES, DOCKER_BASE_IMAGE_VERSION
-from dev_gpt.options.generate.templates_system import system_task_iteration, system_task_introduction, system_test_iteration
+from dev_gpt.options.generate.pm.pm import PM
 from dev_gpt.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
     template_implement_solution_code_issue, \
@@ -30,6 +29,7 @@ from dev_gpt.options.generate.templates_user import template_generate_microservi
     template_was_solution_tried_before, response_format_was_error_seen_before, \
     response_format_was_solution_tried_before, response_format_suggest_solutions
 from dev_gpt.options.generate.ui import get_random_employee
+    template_solve_apt_get_dependency_issue
 from dev_gpt.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from dev_gpt.utils.string_tools import print_colored
 
@@ -42,7 +42,7 @@ class TaskSpecification:
 
 class Generator:
     def __init__(self, task_description, path, model='gpt-4'):
-        self.gpt_session = gpt.GPTSession(task_description, model=model)
+        self.gpt_session = gpt.GPTSession(model=model)
         self.microservice_specification = TaskSpecification(task=task_description, test=None)
         self.microservice_root_path = path
         self.microservice_name = None
@@ -461,9 +461,6 @@ pytest
     class MaxDebugTimeReachedException(BaseException):
         pass
 
-    class TaskRefinementException(BaseException):
-        pass
-
     def is_dependency_issue(self, summarized_error, dock_req_string: str, package_manager: str):
         # a few heuristics to quickly jump ahead
         if any([error_message in summarized_error for error_message in
@@ -508,11 +505,13 @@ pytest
                          packages_list]
 
         packages_list = self.filter_packages_list(packages_list)
+        packages_list = self.remove_duplicates_from_packages_list(packages_list)
         packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
         return packages_list
-
+    # '/private/var/folders/f5/whmffl4d7q79s29jpyb6719m0000gn/T/pytest-of-florianhonicke/pytest-128/test_generation_level_0_mock_i0'
+    # '/private/var/folders/f5/whmffl4d7q79s29jpyb6719m0000gn/T/pytest-of-florianhonicke/pytest-129/test_generation_level_0_mock_i0'
     def generate(self):
-        self.refine_specification()
+        self.microservice_specification.task, self.microservice_specification.test = PM().refine_specification(self.microservice_specification.task)
         os.makedirs(self.microservice_root_path)
         generated_name = self.generate_microservice_name(self.microservice_specification.task)
         self.microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
@@ -543,104 +542,6 @@ dev-gpt deploy --path {self.microservice_root_path}
         error_summary = conversation.chat(template_summarize_error.format(error=error))
         return error_summary
 
-    def refine_specification(self):
-        pm = get_random_employee('pm')
-        print(f'{pm.emoji}👋 Hi, I\'m {pm.name}, a PM at Jina AI. Gathering the requirements for our engineers.')
-        original_task = self.microservice_specification.task
-        while True:
-            try:
-                self.microservice_specification.test = None
-                if not original_task:
-                    self.microservice_specification.task = self.get_user_input(pm, 'What should your microservice do?')
-
-                self.refine_requirements(
-                    pm,
-                    [
-                        SystemMessage(content=system_task_introduction + system_task_iteration),
-                    ],
-                    'task',
-                    '',
-                    template_pm_task_iteration,
-                    micro_service_initial_description=f'''Microservice description:
-```
-{self.microservice_specification.task}
-```
-''',
-                )
-                self.refine_requirements(
-                    pm,
-                    [
-                        SystemMessage(content=system_task_introduction + system_test_iteration),
-                    ],
-                    'test',
-                    '''Note that the test scenario must not contain information that was already mentioned in the microservice description.
-Note that you must not ask for information that were already mentioned before.''',
-                    template_pm_test_iteration,
-                    micro_service_initial_description=f'''Microservice original description: 
-```
-{original_task}
-```
-Microservice refined description: 
-```
-{self.microservice_specification.task}
-```
-''',
-                )
-                break
-            except self.TaskRefinementException as e:
-
-                print_colored('', f'{pm.emoji} Could not refine your requirements. Please try again...', 'red')
-
-        print(f'''
-{pm.emoji} 👍 Great, I will handover the following requirements to our engineers:
-Description of the microservice:
-{self.microservice_specification.task}
-Test scenario:
-{self.microservice_specification.test}
-''')
-
-    def refine_requirements(self, pm, messages, refinement_type, custom_suffix, template_pm_iteration,
-                            micro_service_initial_description=None):
-        user_input = self.microservice_specification.task
-        num_parsing_tries = 0
-        while True:
-            conversation = self.gpt_session.get_conversation(messages,
-                                                             print_stream=os.environ['VERBOSE'].lower() == 'true',
-                                                             print_costs=False)
-            agent_response_raw = conversation.chat(
-                template_pm_iteration.format(
-                    custom_suffix=custom_suffix,
-                    micro_service_initial_description=micro_service_initial_description if len(messages) == 1 else '',
-                ),
-                role='user'
-            )
-            messages.append(HumanMessage(content=user_input))
-            agent_question = self.extract_content_from_result(agent_response_raw, 'prompt.json',
-                                                              can_contain_code_block=False)
-            final = self.extract_content_from_result(agent_response_raw, 'final.json', can_contain_code_block=False)
-            if final:
-                messages.append(AIMessage(content=final))
-                setattr(self.microservice_specification, refinement_type, final)
-                break
-            elif agent_question:
-                question_parsed = json.loads(agent_question)['question']
-                messages.append(AIMessage(content=question_parsed))
-                user_input = self.get_user_input(pm, question_parsed)
-            else:
-                if num_parsing_tries > 2:
-                    raise self.TaskRefinementException()
-                num_parsing_tries += 1
-                messages.append(AIMessage(content=agent_response_raw))
-                messages.append(
-                    SystemMessage(content='You did not put your answer into the right format using *** and ```.'))
-
-    @staticmethod
-    def get_user_input(employee, prompt_to_user):
-        val = input(f'{employee.emoji}❓ {prompt_to_user}\nyou: ')
-        print()
-        while not val:
-            val = input('you: ')
-        return val
 
     @staticmethod
     def replace_with_gpt_3_5_turbo_if_possible(pkg):
@@ -669,3 +570,20 @@ Test scenario:
             ] for packages in packages_list
         ]
         return packages_list
+
+    @staticmethod
+    def remove_duplicates_from_packages_list(packages_list):
+        return [list(set(packages)) for packages in packages_list]
+
+#     def create_prototype_implementation(self):
+#         microservice_py_lines = ['''\
+# Class {microservice_name}:''']
+#         for sub_task in self.pm.iterate_over_sub_tasks_pydantic(self.sub_task_tree):
+#             microservice_py_lines.append(f'    {sub_task.python_fn_signature}')
+#             microservice_py_lines.append(f'        """')
+#             microservice_py_lines.append(f'        {sub_task.python_fn_docstring}')
+#             microservice_py_lines.append(f'        """')
+#             microservice_py_lines.append(f'        raise NotImplementedError')
+#         microservice_py_str = '\n'.join(microservice_py_lines)
+#         persist_file(os.path.join(self.microservice_root_path, 'microservice.py'), microservice_py_str)
+

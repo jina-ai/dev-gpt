@@ -17,6 +17,7 @@ def test_is_package_on_pypi():
     assert is_package_on_pypi('jina-jina-jina') is False
     assert is_package_on_pypi('jina-jina-jina', '0.9.25') is False
     assert is_package_on_pypi('jina-jina-jina', '10.10.10') is False
+    assert is_package_on_pypi('io', '0.0.1') is False
 
 
 def test_filter_packages_list():
@@ -47,6 +48,8 @@ gtts~=2.2.3
 pydub~=123.123.123
 # non-existing package with correct version
 base64~=3.3.0
+# another non-existing package
+io~=0.0.1
 # not parsable version
 pdfminer.six>=20201018,<20211018
 # existing package without version

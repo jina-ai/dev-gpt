@@ -35,6 +35,9 @@ def path_param(func):
     def wrapper(*args, **kwargs):
         path = os.path.expanduser(kwargs['path'])
         path = os.path.abspath(path)
+        if os.path.exists(path) and os.listdir(path):
+                click.echo(f"Error: The path {path} you provided via --path is not empty. Please choose a directory that does not exist or is empty.")
+                exit(1)
         kwargs['path'] = path
         return func(*args, **kwargs)
     return wrapper

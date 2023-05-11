@@ -97,7 +97,7 @@ When you get asked something like 'Who was having a date with <X>?', then you an
 You must not answer something else - only the json.
 \'\'\')
 
-response_string = gpt(prompt)  # fill-in the prompt (str); the output is a string
+generated_string = gpt(prompt)  # fill-in the prompt (str); the output is a string
 ```
 """
 
@@ -289,7 +289,8 @@ The output is:
 {{"packages": [libgl1-mesa-glx]}}
 ```
 Only output content of the apt-get-packages.json file. Ensure the response can be parsed by Python json.loads
-Note that you must not output the content of any other. Especially don't output the Dockerfile or requirements.txt. 
+Note: you must not output the content of any other. Especially don't output the Dockerfile or requirements.txt. 
+Note: the first line you output must be: **apt-get-packages.json**
 '''
 )
 
