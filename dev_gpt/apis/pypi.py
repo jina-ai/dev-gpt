@@ -5,7 +5,6 @@ from datetime import datetime
 import requests
 from packaging import version
 
-
 def is_package_on_pypi(package_name, version=None):
     """
     Returns True if the package is on PyPI, False if it is not, and None if the status code is not 200 or 404.
@@ -13,12 +12,7 @@ def is_package_on_pypi(package_name, version=None):
     optional_version = f"/{version}" if version else ""
     url = f"https://pypi.org/pypi/{package_name}{optional_version}/json"
     response = requests.get(url)
-    if response.status_code == 200:
-        return True
-    elif response.status_code == 404:
-        return False
-    else:
-        return None
+    return response.status_code == 200 and len(response.json()['urls']) > 0
 
 
 def get_latest_package_version(package_name):

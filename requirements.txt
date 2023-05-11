@@ -1,8 +1,10 @@
 jina==3.15.1.dev14
 click
 streamlit==1.9.0
+altair==4.2.2
 openai>=0.27.5
 psutil
 jcloud
 jina-hubble-sdk
 langchain==0.0.153
+pydantic==1.10.7

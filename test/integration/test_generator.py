@@ -7,7 +7,8 @@ from dev_gpt.options.generate.generator import Generator
 
 # The cognitive difficulty level is determined by the number of requirements the microservice has.
 
-def test_generation_level_0(tmpdir):
+@pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
+def test_generation_level_0(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -20,15 +21,15 @@ def test_generation_level_0(tmpdir):
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
         "The microservice is very simple, it does not take anything as input and only outputs the word 'test'",
-        str(tmpdir),
+        microservice_dir,
         'gpt-3.5-turbo'
     )
     assert generator.generate() == 0
 
 
 
-
-def test_generation_level_1(tmpdir):
+@pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
+def test_generation_level_1(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -44,13 +45,14 @@ def test_generation_level_1(tmpdir):
 Example tweet: 
 \'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 
 But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
-        str(tmpdir),
+        str(microservice_dir),
         'gpt-3.5-turbo'
     )
     assert generator.generate() == 0
 
 
-def test_generation_level_2(tmpdir):
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://www.africau.edu/images/default/sample.pdf']], indirect=True)
+def test_generation_level_2(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -62,13 +64,14 @@ def test_generation_level_2(tmpdir):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        "The input is a PDF like https://www.africau.edu/images/default/sample.pdf and the output the summarized text (50 words).",
-        str(tmpdir),
+        "The input is a PDF and the output the summarized text (50 words).",
+        str(microservice_dir),
         'gpt-3.5-turbo'
     )
     assert generator.generate() == 0
 
-def test_generation_level_3(tmpdir):
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'yfinance.Ticker("MSFT").info']], indirect=True)
+def test_generation_level_3(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ✅ (calculate the average closing price)
@@ -87,12 +90,33 @@ def test_generation_level_3(tmpdir):
 4. Return the summary as a string.
 Example input: 'AAPL'
 ''',
-        str(tmpdir),
+        str(microservice_dir),
         'gpt-3.5-turbo'
     )
     assert generator.generate() == 0
 
-def test_generation_level_4(tmpdir):
+@pytest.mark.parametrize(
+    'mock_input_sequence', [
+        [
+            'y',
+            'https://www2.cs.uic.edu/~i101/SoundFiles/taunt.wav',
+            f'''\
+import requests
+url = "https://transcribe.whisperapi.com"
+headers = {{
+'Authorization': 'Bearer {os.environ['WHISPER_API_KEY']}'
+}}
+data = {{
+  "url": "URL_OF_STORED_AUDIO_FILE"
+}}
+response = requests.post(url, headers=headers, data=data)
+assert response.status_code == 200
+print('This is the text from the audio file:', response.text)'''
+        ]
+    ],
+    indirect=True
+)
+def test_generation_level_4(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -106,30 +130,17 @@ def test_generation_level_4(tmpdir):
     generator = Generator(
         f'''Given an audio file (1min wav) of speech, 
 1. convert it to text using the Whisper API.
-Here is the documentation on how to use the API:
-import requests
-url = "https://transcribe.whisperapi.com"
-headers = {{
-'Authorization': 'Bearer {os.environ['WHISPER_API_KEY']}'
-}}
-data = {{
-  "url": "URL_OF_STORED_AUDIO_FILE"
-}}
-response = requests.post(url, headers=headers, data=data)
-assert response.status_code == 200
-print('This is the text from the audio file:', response.json()['text'])
 2. Summarize the text (~50 words) while still maintaining the key facts.
 3. Create an audio file of the summarized text using a tts library.
 4. Return the the audio file as base64 encoded binary.
-Example input file: https://www.signalogic.com/melp/EngSamples/Orig/ENG_M.wav
 ''',
-        str(tmpdir),
+        str(microservice_dir),
         'gpt-4'
     )
     assert generator.generate() == 0
 
-
-def test_generation_level_5(tmpdir):
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/560px-PNG_transparency_demonstration_1.png']], indirect=True)
+def test_generation_level_5(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ✅ (putting text on the image)
@@ -161,17 +172,31 @@ Result format:
 The description is then used to generate a joke.
 The joke is the put on the image.
 The output is the image with the joke on it.
-Example input image: https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/560px-PNG_transparency_demonstration_1.png
 ''',
-                          str(tmpdir),
+                          str(microservice_dir),
                           'gpt-3.5-turbo'
                           )
     assert generator.generate() == 0
 
-@pytest.fixture
-def tmpdir():
-    return 'microservice'
+# @pytest.fixture
+# def microservice_dir():
+#     return 'microservice'
 
 
-# further ideas:
-# Create a wrapper around google called Joogle. It modifies the page summary preview text of the search results to insert the word Jina as much as possible.
+# # further ideas:
+# # Create a wrapper around google called Joogle. It modifies the page summary preview text of the search results to insert the word Jina as much as possible.
+#
+# import pytest
+#
+# # This is your fixture which can accept parameters
+# @pytest.fixture
+# def my_fixture(microservice_dir, request,):
+#     return request.param  # request.param will contain the parameter value
+#
+# # Here you parameterize the fixture for the test
+# @pytest.mark.parametrize('my_fixture', ['param1', 'param2', 'param3'], indirect=True)
+# def test_my_function(my_fixture, microservice_dir):
+#     # 'my_fixture' now contains the value 'param1', 'param2', or 'param3'
+#     # depending on the iteration
+#     # Here you can write your test
+#     ...
