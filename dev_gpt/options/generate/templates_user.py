@@ -105,14 +105,18 @@ generated_string = gpt(prompt)  # fill-in the prompt (str); the output is a stri
 template_generate_function = PromptTemplate.from_template(
     general_guidelines_string + '''
 
-Write a python function which receives as input a dictionary and outputs a dictionary. The function is called 'func'.
-The function must full-fill: '{microservice_description}'.
+Write a python function which receives as \
+input json string (that can be parsed with the python function json.loads) and \
+outputs a json string (that can be parsed with the python function json.loads). \
+The function is called 'func'.
+The function must fulfill the following description: '{microservice_description}'.
 It will be tested with the following scenario: '{test_description}'.
 For the implementation use the following package(s): '{packages}'.
 
-The code must start with the following import:
+The code must start with the following imports:
 ```
 from .apis import GPT_3_5_Turbo
+import json
 ```
 Obey the following rules:
 ''' + not_allowed_function_string + '''
@@ -134,9 +138,10 @@ template_generate_test = PromptTemplate.from_template(
 Write a single pytest case that tests the following scenario: '{test_description}'. In case the test scenario is not precise enough, test a general case without any assumptions.
 Start the test with an extensive comment about the test case. If gpt_3_5_turbo is used in the executor, then the test must not check the exact output of the executor as it is not deterministic. 
 
-The test must start with the following import:
+The test must start with the following imports:
 ```
 from .microservice import func
+import json
 ```
 ''' + not_allowed_function_string + '''
 The test must not open local files.
@@ -148,9 +153,9 @@ The test must not set any environment variables which require a key.
 
 
 template_generate_requirements = PromptTemplate.from_template(
-    general_guidelines_string + '''
+    general_guidelines_string + f'''
 
-{code_files_wrapped}
+{{code_files_wrapped}}
     
 Write the content of the requirements.txt file like this:
 **requirements.txt**
@@ -160,9 +165,11 @@ Write the content of the requirements.txt file like this:
 Add any more packages that are needed to run the code.
 You must not add gpt_3_5_turbo to the requirements.txt file. 
 
-All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts. Output only the requirements.txt file.
-''' + '\n' + template_code_wrapping_string
-)
+All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts.
+
+{template_code_wrapping_string} 
+Note: you must only output the requirements.txt file - no other file.
+''')
 
 
 template_generate_apt_get_install = PromptTemplate.from_template(
@@ -331,7 +338,10 @@ Example:
 
 **microservice.py**
 ```python
-print('hello world')
+import json
+
+def func(json_input: str) -> str:
+    return json_input['img_base64']
 ```'''
 )
 
