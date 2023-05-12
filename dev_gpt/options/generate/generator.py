@@ -3,6 +3,7 @@ import os
 import random
 import re
 import shutil
+import sys
 from typing import Callable
 from typing import List, Text, Optional
 
@@ -440,10 +441,11 @@ pytest
                                   'red')
                     return -1
                 continue
+            command = 'dev-gpt' if sys.argv[0] == 'dev-gpt' else 'python main.py'
             print(f'''
 You can now run or deploy your microservice:
-dev-gpt run --path {self.microservice_root_path}
-dev-gpt deploy --path {self.microservice_root_path}
+{command} run --path {self.microservice_root_path}
+{command} deploy --path {self.microservice_root_path}
 '''
                   )
             return 0
