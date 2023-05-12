@@ -49,7 +49,7 @@ Your imagination is the limit!
 <a href="https://pypistats.org/packages/dev-gpt" target="_blank">
     <img src="https://img.shields.io/pypi/dm/dev-gpt?color=%2334D058&label=pypi%20downloads" alt="Downloads">
 </a>
-<a href="https://discord.gg/ESn8ED6Fyn" target="_blank">
+<a href="https://discord.gg/tBrFhx384D" target="_blank">
     <img src="https://img.shields.io/badge/chat_on-Discord-7289DA?logo=discord&logoColor=white" alt="Discord Chat">
 </a>
 

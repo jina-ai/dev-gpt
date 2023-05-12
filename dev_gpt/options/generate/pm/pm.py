@@ -63,7 +63,7 @@ Description of the microservice:
             condition_question='Does the microservice send requests to an API?',
             question_gen='Generate a question that asks for the endpoint and an example of a request and response when interacting with the external API.',
             extension_name='Example of API usage',
-            post_transformation_fn=translation(from_format='api instruction', to_format='python code snippet')
+            post_transformation_fn=translation(from_format='api instruction', to_format='python code snippet raw without formatting')
         )
         return microservice_description, test_description
 
