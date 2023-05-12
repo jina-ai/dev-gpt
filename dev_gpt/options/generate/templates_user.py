@@ -153,9 +153,9 @@ The test must not set any environment variables which require a key.
 
 
 template_generate_requirements = PromptTemplate.from_template(
-    general_guidelines_string + '''
+    general_guidelines_string + f'''
 
-{code_files_wrapped}
+{{code_files_wrapped}}
     
 Write the content of the requirements.txt file like this:
 **requirements.txt**
@@ -165,9 +165,11 @@ Write the content of the requirements.txt file like this:
 Add any more packages that are needed to run the code.
 You must not add gpt_3_5_turbo to the requirements.txt file. 
 
-All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts. Output only the requirements.txt file.
-''' + '\n' + template_code_wrapping_string
-)
+All versions are fixed using ~=, ==, <, >, <=, >=. The package versions must not have conflicts.
+
+{template_code_wrapping_string} 
+Note: you must only output the requirements.txt file - no other file.
+''')
 
 
 template_generate_apt_get_install = PromptTemplate.from_template(
