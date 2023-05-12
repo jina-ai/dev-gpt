@@ -17,7 +17,7 @@ not_allowed_function_string = '''The implemented function and the test must not 
 The implemented function and the test must not access a database.
 The implemented function and the test must not access a display.
 The implemented function and the test must not access external apis except unless it is explicitly mentioned in the description or test case (e.g. by mentioning the api that should be used or by providing a URL to access the data). 
-The implemented function and the test must not load data from the local file system unless it was created by the implemented function itself.
+The implemented function and the test must not open files from the local file system unless it was created by the implemented function itself.
 The implemented function and the test must not use a pre-trained model unless it is explicitly mentioned in the description.
 The implemented function and the test must not train a model.
 The implemented function and the test must not contain prototype or placeholder implementations.
