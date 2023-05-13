@@ -41,7 +41,7 @@ def test_generation_level_1(microservice_dir, mock_input_sequence):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        '''Input is a tweet that might contain passive aggressive language. The output is the positive version of that tweet.
+        '''Input is a tweet that might contain passive-aggressive language. The output is the positive version of that tweet.
 Example tweet: 
 \'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 
 But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
@@ -132,12 +132,32 @@ def test_generation_level_4(microservice_dir, mock_input_sequence):
 1. convert it to text using the Whisper API.
 2. Summarize the text (~50 words) while still maintaining the key facts.
 3. Create an audio file of the summarized text using a tts library.
-4. Return the the audio file as base64 encoded binary.
+4. Return the audio file as base64 encoded binary.
 ''',
         str(microservice_dir),
-        'gpt-4'
+        'gpt-3.5-turbo'
     )
     assert generator.generate() == 0
+
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png']], indirect=True)
+def test_generation_level_4_svg(microservice_dir, mock_input_sequence):
+    """
+    Requirements:
+    coding challenge: ✅✅ (involves three steps - segmentation, shape creation)
+    pip packages: ✅ (svg package)
+    environment: ✅ (svg dependencies)
+    GPT-3.5-turbo: ❌
+    APIs: ❌
+    Databases: ❌
+    """
+    os.environ['VERBOSE'] = 'true'
+    generator = Generator(
+        f'''Given a png image, convert it into an svg image in a sophisticated way.''',
+        str(microservice_dir),
+        'gpt-3.5-turbo'
+    )
+    assert generator.generate() == 0
+
 
 @pytest.mark.parametrize('mock_input_sequence', [['y', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/560px-PNG_transparency_demonstration_1.png']], indirect=True)
 def test_generation_level_5(microservice_dir, mock_input_sequence):
