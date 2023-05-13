@@ -37,10 +37,15 @@ The executor name must fulfill the following criteria:
 - only consists of lower and upper case characters
 - end with Executor.
 
-The output is a the raw string wrapped into ``` and starting with **name.txt** like this:
+The name is witten in the following format:
 **name.txt**
 ```
-PDFParserExecutor
+<name here>
+```
+Example for: "Get a png as input and return a vectorized version as svg.":
+**name.txt**
+```
+PngToSvgExecutor
 ```'''
 )
 
