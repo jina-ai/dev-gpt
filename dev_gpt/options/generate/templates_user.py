@@ -37,7 +37,7 @@ The executor name must fulfill the following criteria:
 - only consists of lower and upper case characters
 - end with Executor.
 
-The name is witten in the following format:
+Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 **name.txt**
 ```
 <name here>
