@@ -1,0 +1,4 @@
+streamlit==1.16.0
+altair==4.2.2
+extra-streamlit-components==0.1.55
+jina==3.15.1.dev14

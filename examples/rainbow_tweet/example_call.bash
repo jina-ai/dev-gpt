@@ -1,0 +1,1 @@
+curl -X 'POST' 'https://gptdeploy-02e02e4150.wolf.jina.ai/post' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"data": [{"text": "{\"tweet\":\"today is a bad day i dont like it\"}"}]}'

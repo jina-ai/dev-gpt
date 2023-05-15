@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Rainbow-Tweet",
+  "description": "The Rainbow-Tweet plugin allows the user to convert any tweet into positive language by clicking a button on the tweet.",
+  "version": "0.0.0.1",
+  "icons": {
+        "128": "logo.png"
+  },
+  "action": {
+    "default_icon": {
+      "128": "logo.png"
+    },
+    "default_title": "Configure API Key",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://twitter.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end"
+    }
+  ]
+}
