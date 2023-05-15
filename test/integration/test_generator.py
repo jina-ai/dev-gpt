@@ -8,7 +8,7 @@ from dev_gpt.options.generate.generator import Generator
 # The cognitive difficulty level is determined by the number of requirements the microservice has.
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
-def test_generation_level_0(microservice_dir, mock_input_sequence):
+def test_generation_level_0_test(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -29,13 +29,13 @@ def test_generation_level_0(microservice_dir, mock_input_sequence):
 
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
-def test_generation_level_1(microservice_dir, mock_input_sequence):
+def test_generation_level_1_positive_tweet(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
     pip packages: ❌
     environment: ❌
-    GPT-3.5-turbo: ✅ (for summarizing the text)
+    GPT-3.5-turbo: ✅ (for modifying the text)
     APIs: ❌
     Databases: ❌
     """
@@ -52,7 +52,7 @@ But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
 
 
 @pytest.mark.parametrize('mock_input_sequence', [['y', 'https://www.africau.edu/images/default/sample.pdf']], indirect=True)
-def test_generation_level_2(microservice_dir, mock_input_sequence):
+def test_generation_level_2_pdf_summarization(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -71,7 +71,7 @@ def test_generation_level_2(microservice_dir, mock_input_sequence):
     assert generator.generate() == 0
 
 @pytest.mark.parametrize('mock_input_sequence', [['y', 'yfinance.Ticker("MSFT").info']], indirect=True)
-def test_generation_level_3(microservice_dir, mock_input_sequence):
+def test_generation_level_3_fin_api(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ✅ (calculate the average closing price)
@@ -116,7 +116,7 @@ print('This is the text from the audio file:', response.text)'''
     ],
     indirect=True
 )
-def test_generation_level_4(microservice_dir, mock_input_sequence):
+def test_generation_level_4_audio_summarization(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
