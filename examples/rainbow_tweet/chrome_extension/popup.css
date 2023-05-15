@@ -1,0 +1,37 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  width: 300px;
+  padding: 20px;
+}
+
+h1 {
+  color: #444;
+}
+
+.btn {
+  color: white;
+  background-color: #1da1f2;
+  border: none;
+  padding: 10px 20px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+.footer {
+  margin-top: 20px;
+  text-align: center;
+}
+.btn:hover {
+  background-color: #0c84d2;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-text {
+  font-size: 0.875em;
+  color: #6c757d;
+}
