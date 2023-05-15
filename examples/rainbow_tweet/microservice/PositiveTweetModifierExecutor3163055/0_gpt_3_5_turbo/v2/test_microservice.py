@@ -8,7 +8,7 @@ import json
 def test_positive_tweet_type():
     # Define the input JSON string
     input_json = json.dumps({
-        "OPENAI_API_KEY": "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",
+        "OPENAI_API_KEY": "",
         "tweet": "I can't believe you did that. It's so typical of you."
     })
 
