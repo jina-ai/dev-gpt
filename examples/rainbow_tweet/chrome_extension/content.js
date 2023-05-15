@@ -7,6 +7,7 @@ chrome.storage.sync.get({
 }, function(items) {
   openai_api_key = items.openai_api_key;
 });
+
 let observer = new MutationObserver((mutations) => {
     console.log('Twitter Rewrite: DOM mutation detected');
     // For each mutation
@@ -15,7 +16,7 @@ let observer = new MutationObserver((mutations) => {
         if (mutation.addedNodes) {
             mutation.addedNodes.forEach((node) => {
                 // If the added node (or its descendants) contains a tweet
-                let tweets = node.querySelectorAll('[data-testid="tweetText"]');
+                let tweets = node.querySelectorAll('[data-testid="tweet"]');
                 tweets.forEach((tweet) => {
                     // If the tweet doesn't already have a modify button
                     if (!tweet.querySelector('.modify-button')) {
@@ -32,8 +33,9 @@ let observer = new MutationObserver((mutations) => {
 
                         // Add event listener for button click
                         button.addEventListener('click', function() {
+                            let thisButton = this;
                             // Send tweet to API
-                            let originalTweet = tweet.innerText;
+                            let originalTweet = tweet.querySelector('[data-testid="tweetText"]').innerText;
                             this.disabled = true;
                             this.innerText = 'Loading...';
                             fetch('https://gptdeploy-61694dd6a3.wolf.jina.ai/post', {
@@ -60,12 +62,16 @@ let observer = new MutationObserver((mutations) => {
                                 let newTweet = document.createElement('span');
                                 newTweet.innerHTML = rainbowTweet;
                                 // Replace the old text node with the new element node
-                                tweet.replaceWith(newTweet);
+                                tweet.querySelector('[data-testid="tweetText"]').replaceWith(newTweet);
+                                // Remove the button
+                                thisButton.remove();
                             });
                         });
 
-                        // Inject button into tweet
-                        tweet.appendChild(button);
+                        // Find the actions container and inject the button into it
+                        let actionGroups = tweet.querySelectorAll('div[role="group"]');
+                        let actionsContainer = actionGroups[actionGroups.length - 1];
+                        actionsContainer.appendChild(button);
                     }
                 });
             });

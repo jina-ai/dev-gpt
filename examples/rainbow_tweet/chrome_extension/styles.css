@@ -1,5 +1,6 @@
 .modify-button {
-  background-color: #00acee; /* Twitter Blue */
+  /* transparent */
+  background-color: #00000000;
   color: white;
   border: none;
   padding: 5px 10px;
