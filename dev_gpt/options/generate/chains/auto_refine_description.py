@@ -3,7 +3,7 @@ import json
 from dev_gpt.apis.gpt import ask_gpt
 from dev_gpt.options.generate.parser import identity_parser
 from dev_gpt.options.generate.prompt_factory import context_to_string
-
+from dev_gpt.options.generate.tools.tools import get_available_tools
 
 
 def auto_refine_description(context):
@@ -36,7 +36,9 @@ def auto_refine_description(context):
 better_description_prompt = f'''{{context_string}}
 Update the description of the Microservice to make it more precise without adding or removing information.
 Note: the output must be a list of tasks the Microservice has to perform.
-Example for the description: "return the average temperature of the 5 days weather forecast for a given location."
+Note: you can uses two tools if necessary:
+{get_available_tools()}
+Example for the description: "return a description of the average temperature of the 5 days weather forecast for a given location."
 1. get the 5 days weather forcast from the https://openweathermap.org/ API
 2. extract the temperature from the response
 3. calculate the average temperature'''

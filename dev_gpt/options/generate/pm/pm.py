@@ -60,7 +60,8 @@ Description of the microservice:
         microservice_description += self.user_input_extension_if_needed(
             context,
             microservice_description,
-            condition_question='Does the microservice send requests to an API?',
+            condition_question='''\
+Does the microservice send requests to an API beside the Google Custom Search API and gpt-3.5-turbo?''',
             question_gen='Generate a question that asks for the endpoint of the external API and an example of a request and response when interacting with the external API.',
             extension_name='Example of API usage',
             post_transformation_fn=translation(from_format='api instruction', to_format='python code snippet raw without formatting')

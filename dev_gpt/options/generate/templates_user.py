@@ -91,7 +91,7 @@ Note that you must obey the double asterisk and triple backtick syntax from like
 You must provide the complete file with the exact same syntax to wrap the code.'''
 
 
-gpt_35_turbo_usage_string = """If need to use gpt_3_5_turbo, then this is an example on how to use it:
+gpt_35_turbo_usage_string = """If you need to use gpt_3_5_turbo, then use it like shown in the following example:
 ```
 from .apis import GPT_3_5_Turbo
 
@@ -106,17 +106,35 @@ generated_string = gpt(prompt)  # fill-in the prompt (str); the output is a stri
 ```
 """
 
+google_custom_search_usage_string = """If you need to use google_custom_search, then use it like shown in the following example:
+a) when searching for text:
+```
+from .apis import search_web
+
+# input: search term (str), top_n (int)
+# output: list of strings
+string_list = search_web('<search term>', top_n=10)
+```
+b) when searching for images:
+```
+from .apis import search_images
+
+# input: search term (str), top_n (int)
+# output: list of image urls
+image_url_list = search_images('<search term>', top_n=10)
+```
+"""
 
 template_generate_function = PromptTemplate.from_template(
-    general_guidelines_string + '''
+    general_guidelines_string + f'''
 
 Write a python function which receives as \
 input json string (that can be parsed with the python function json.loads) and \
 outputs a json string (that can be parsed with the python function json.loads). \
 The function is called 'func'.
-The function must fulfill the following description: '{microservice_description}'.
-It will be tested with the following scenario: '{test_description}'.
-For the implementation use the following package(s): '{packages}'.
+The function must fulfill the following description: '{{microservice_description}}'.
+It will be tested with the following scenario: '{{test_description}}'.
+For the implementation use the following package(s): '{{packages}}'.
 
 The code must start with the following imports:
 ```
@@ -124,14 +142,16 @@ from .apis import GPT_3_5_Turbo
 import json
 ```
 Obey the following rules:
-''' + not_allowed_function_string + '''
+{not_allowed_function_string}
 
 Your approach:
 1. Identify the core challenge when implementing the function.
 2. Think about solutions for these challenges.
 3. Decide for one of the solutions.
 4. Write the code for the function. Don't write code for the test.
-''' + gpt_35_turbo_usage_string + '\n' + template_code_wrapping_string
+{gpt_35_turbo_usage_string}
+{google_custom_search_usage_string}
+{template_code_wrapping_string}'''
 )
 
 

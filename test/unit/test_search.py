@@ -1,4 +1,4 @@
-from dev_gpt.options.generate.static_files.microservice.search import search_web, search_image
+from dev_gpt.options.generate.static_files.microservice.search import search_web, search_images
 
 
 def test_web_search():
@@ -8,6 +8,6 @@ def test_web_search():
     assert not results[0].startswith("http")
 
 def test_image_search():
-    results = search_image("jina", 10)
+    results = search_images("jina", 10)
     assert len(results) == 10
     assert results[0].startswith("http")

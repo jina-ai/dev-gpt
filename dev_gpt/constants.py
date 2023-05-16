@@ -55,3 +55,7 @@ LANGUAGE_PACKAGES = [
     'vadersentiment'
 ]
 
+SEARCH_PACKAGES = [
+    'googlesearch-python', 'google', 'googlesearch', 'google-api-python-client', 'pygooglenews', 'google-cloud'
+]
+
