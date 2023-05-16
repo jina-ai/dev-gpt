@@ -37,10 +37,15 @@ The executor name must fulfill the following criteria:
 - only consists of lower and upper case characters
 - end with Executor.
 
-The output is a the raw string wrapped into ``` and starting with **name.txt** like this:
+Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
 **name.txt**
 ```
-PDFParserExecutor
+<name here>
+```
+Example for: "Get a png as input and return a vectorized version as svg.":
+**name.txt**
+```
+PngToSvgExecutor
 ```'''
 )
 
@@ -62,7 +67,7 @@ e) the implementation of the core problem using the package would obey the follo
 When answering, just write "yes" or "no".
 
 4. For each approach, list the required python package combinations as discibed in the following.
-You must output the package combinations as json wrapped into tripple backticks ``` and name it **strategies.json**. \
+You must output the package combinations as json wrapped into triple backticks ``` and name it **strategies.json**. \
 Note that you can also leave a list empty to indicate that one of the strategies does not require any package and can be done in plain python.
 Write the output using double asterisks and triple backticks like this:
 **strategies.json**
@@ -78,7 +83,7 @@ Write the output using double asterisks and triple backticks like this:
 
 
 template_code_wrapping_string = '''The code will go into {file_name_purpose}.
-Note that you must obey the double asterisk and tripple backtick syntax from like this:
+Note that you must obey the double asterisk and triple backtick syntax from like this:
 **{file_name}**
 ```{tag_name}
 ...code...
@@ -206,10 +211,11 @@ The output would be:
 
 
 template_summarize_error = PromptTemplate.from_template(
-    '''Here is an error message I encountered during the docker build process:
+    '''Your task is to condense an error encountered during the docker build process. The error message is as follows:
 "{error}"
 Your task is to summarize the error message as compact and informative as possible \
 while maintaining all information necessary to debug the core issue (100 words).
+It should also provide some additional context regarding the specific file and line number where the error occurred. \
 Note that you must not suggest a solution to the error.
 Warnings are not worth mentioning.'''
 )
@@ -234,7 +240,7 @@ Is this error happening because a PACKAGE_MANAGER package is missing or failed t
 ```json
 {{"dependency_installation_failure": "<yes/no>"}}
 ```
-Note that you must obey the double asterisk and tripple backtick syntax from above.
+Note that you must obey the double asterisk and triple backtick syntax from above.
 '''
 )
 
@@ -294,14 +300,23 @@ The output is:
 ```json
 {{"packages": [libgl1-mesa-glx]}}
 ```
-Note that you must not output the content of any other files like the Dockerfile or requirements.txt. 
-Only output the apt-get-packages.json file.
-Note that the first line you output must be: **apt-get-packages.json**
+Only output content of the apt-get-packages.json file. Ensure the response can be parsed by Python json.loads
+Note: you must not output the content of any other. Especially don't output the Dockerfile or requirements.txt. 
+Note: the first line you output must be: **apt-get-packages.json**
 '''
 )
 
 
-template_solve_code_issue = PromptTemplate.from_template(
+response_format_suggest_solutions = '''**solutions.json**
+```json
+{{
+    "1": "<best solution>",
+    "2": "<2nd best solution>"
+}}
+```'''
+
+
+template_suggest_solutions_code_issue = PromptTemplate.from_template(
     '''General rules:
 ''' + not_allowed_function_string + '''
 
@@ -317,13 +332,71 @@ Here are all the files I use:
 Here is the summary of the error that occurred:
 {summarized_error}
 
-To solve this error, you should:
-1. Suggest 3 to 5 possible solutions on how to solve it. You have no access to the documentation of the package.
-2. Decide for the best solution and explain it in detail.
-3. Write down the files that need to be changed, but not files that don't need to be changed.
-Note that any changes needed to make the test pass must be written under the constraint that ''' + IMPLEMENTATION_FILE_NAME +  ''' will be used in a different file as well.
+You should suggest 3 to 5 possible solution approaches on how to solve it.
 Obey the following rules:
+Do not implement the solution.
+You have no access to the documentation of the package.
+You must not change the Dockerfile.
+Note that any changes needed to make the test pass must be written under the constraint that ''' + IMPLEMENTATION_FILE_NAME +  ''' will be used in a different file as well.
 ''' + f'{not_allowed_function_string}\n{not_allowed_docker_string}\n{gpt_35_turbo_usage_string}' + '''
+
+
+After thinking about the possible solutions, output them as JSON ranked from best to worst. Like this:
+''' + response_format_suggest_solutions + '''
+Ensure the response can be parsed by Python json.loads'''
+)
+
+
+response_format_was_error_seen_before = '''**was_error_seen_before.json**
+```json
+{{"was_error_seen_before": "<yes/no>"}}
+```'''
+
+
+template_was_error_seen_before = PromptTemplate.from_template(
+    '''Previously encountered error messages:
+{previous_errors}
+
+Now encountered error message: "{summarized_error}"
+Was this error message encountered before?
+
+Write down your final answer as json in the following format:
+''' + response_format_was_error_seen_before + '''
+Note that you must obey the double asterisk and triple backtick syntax from above. Ensure the response can be parsed by Python json.loads
+'''
+)
+
+
+response_format_was_solution_tried_before = '''**will_lead_to_different_actions.json**
+```json
+{{"will_lead_to_different_actions": "<yes/no>"}}
+```'''
+
+
+template_was_solution_tried_before = PromptTemplate.from_template(
+    '''Previously tried solutions:
+{tried_solutions}
+
+Suggested solution: "{suggested_solution}"
+
+Will the suggested solution lead to different actions than the previously tried solutions?
+
+Write down your final answer as json in the following format:
+''' + response_format_was_solution_tried_before + '''
+Note that you must obey the double asterisk and triple backtick syntax from above. Ensure the response can be parsed by Python json.loads'''
+)
+
+
+template_implement_solution_code_issue = PromptTemplate.from_template(
+    '''Here is the description of the task the function must solve:
+{task_description}
+
+Here is the test scenario the function must pass:
+{test_description}
+Here are all the files I use:
+{all_files_string}
+
+Implemented the suggested solution: {suggested_solution}
 
 Output all the files that need change. You must not change the Dockerfile. 
 Don't output files that don't need change. If you output a file, then write the complete file.
@@ -336,7 +409,7 @@ Use the exact following syntax to wrap the code:
 
 Example:
 
-**microservice.py**
+**implementation.py**
 ```python
 import json
 
@@ -427,7 +500,7 @@ Or write the detailed microservice description all mentioned code samples, docum
 }}
 ``` 
 Note that your response must be either prompt.json or final.json. You must not write both.
-Note that you must obey the double asterisk and tripple backtick syntax from above.
+Note that you must obey the double asterisk and triple backtick syntax from above.
 Note that the last sequence of characters in your response must be ``` (triple backtick).
 Note that prompt.json must not only contain one question.
 Note that if urls, secrets, database names, etc. are mentioned, they must be part of the summary.
@@ -471,7 +544,7 @@ Example for the case where the example is already mentioned in the refined descr
 }}
 ```
 Note that your response must be either prompt.json or final.json. You must not write both.
-Note that you must obey the double asterisk and tripple backtick syntax from above.
+Note that you must obey the double asterisk and triple backtick syntax from above.
 Note that the last sequence of characters in your response must be ``` (triple backtick).
 Note that your response must start with the character sequence ** (double asterisk).
 Note that prompt.json must only contain one question.
