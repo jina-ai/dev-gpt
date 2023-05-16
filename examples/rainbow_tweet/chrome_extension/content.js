@@ -23,7 +23,7 @@ let observer = new MutationObserver((mutations) => {
                         // Create new button
                         let button = document.createElement('button');
                         if (openai_api_key === '') {
-                            button.innerText = 'Set OPENAI_API_KEY by clicking the extension icon';
+                            button.innerText = 'Set OPENAI_API_KEY by clicking the Rainbow-Tweet icon and reload the page';
                             button.disabled = true;
                         } else {
                             button.innerText = '🦄';
