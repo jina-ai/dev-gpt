@@ -38,7 +38,7 @@ def google_search(search_term, search_type, top_n):
         'q': search_term,
         'key': google_api_key,
         'cx': google_cse_id,
-        'searchType': search_type,
+        **({'searchType': search_type} if search_type == 'image' else {}),
         'num': top_n
     }
     response = requests.get(url, params=params)

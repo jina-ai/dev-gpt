@@ -4,7 +4,7 @@ from dev_gpt.options.generate.static_files.microservice.apis import search_web, 
 def test_web_search():
     results = search_web("jina", 10)
     assert len(results) == 10
-    assert "jina" in results[0]
+    assert "jina" in results[0].lower()
     assert not results[0].startswith("http")
 
 def test_image_search():
