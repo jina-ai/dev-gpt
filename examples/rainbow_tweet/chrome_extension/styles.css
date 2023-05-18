@@ -1,7 +1,5 @@
 .modify-button {
-  /* transparent */
-  background-color: #00000000;
-  color: white;
+  /* common styles */
   border: none;
   padding: 5px 10px;
   text-align: center;
@@ -11,28 +9,23 @@
   margin: 4px 2px;
   cursor: pointer;
   border-radius: 3px;
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);  /* Add some shadow */
+  background: transparent;  /* Make the button transparent */
 }
 
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .modify-button {
+    color: white;  /* Light text for dark mode */
+  }
+}
 
-/*!* Dynamic rainbow colors for each letter *!*/
-/*@keyframes rainbow {*/
-/*  0% { color: hsl(0, 100%, 50%); }*/
-/*  14% { color: hsl(60, 100%, 50%); }*/
-/*  28% { color: hsl(120, 100%, 50%); }*/
-/*  42% { color: hsl(180, 100%, 50%); }*/
-/*  57% { color: hsl(240, 100%, 50%); }*/
-/*  71% { color: hsl(300, 100%, 50%); }*/
-/*  85% { color: hsl(360, 100%, 50%); }*/
-/*  100% { color: hsl(0, 100%, 50%); }*/
-/*}*/
+/* Light mode */
+@media (prefers-color-scheme: light) {
+  .modify-button {
+    color: #000;  /* Dark text for light mode */
+  }
+}
 
-
-
-/*.rainbow-text {*/
-/*  animation: rainbow 7s linear infinite;*/
-/*  animation-delay: calc(.07s * var(--i));*/
-/*}*/
 
 /* Light mode colors (darker) */
 @keyframes rainbow-light {
