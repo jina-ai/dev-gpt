@@ -89,7 +89,7 @@ Note that you must obey the double asterisk and triple backtick syntax from like
 ```{tag_name}
 ...code...
 ```
-You must provide the complete file with the exact same syntax to wrap the code.'''
+You must provide the complete {file_name} wrapped with the exact syntax shown above.'''
 
 
 gpt_35_turbo_usage_string = """If you need to use gpt_3_5_turbo, then use it like shown in the following example:
