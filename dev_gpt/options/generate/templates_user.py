@@ -103,7 +103,7 @@ When you get asked something like 'Who was having a date with <X>?', then you an
 You must not answer something else - only the json.
 \'\'\')
 
-generated_string = gpt(prompt)  # fill-in the prompt (str); the output is a string
+generated_string = gpt_3_5_turbo("example user prompt")  # prompt is a string; generated_string is a string
 ```
 """
 
@@ -141,6 +141,7 @@ The code must start with the following imports:
 ```
 from .apis import GPT_3_5_Turbo
 import json
+import requests
 ```
 Obey the following rules:
 {not_allowed_function_string}
