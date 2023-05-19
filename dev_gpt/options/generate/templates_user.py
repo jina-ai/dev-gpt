@@ -363,9 +363,10 @@ Note that any changes needed to make the test pass must be written under the con
 ''' + f'{not_allowed_function_string}\n{not_allowed_docker_string}\n{gpt_35_turbo_usage_string}' + '''
 
 
-After thinking about the possible solutions, output them as JSON ranked from best to worst. Like this:
+After thinking about the possible solutions, output them as JSON ranked from best to worst.
+You must use the following format:
 ''' + response_format_suggest_solutions + '''
-Ensure the response can be parsed by Python json.loads'''
+Ensure the response starts with **solutions.json** and can be parsed by Python json.loads'''
 )
 
 
