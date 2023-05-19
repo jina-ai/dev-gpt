@@ -16,7 +16,8 @@ The Dockerfile must not attach a virtual display when running test_microservice.
 not_allowed_function_string = '''The implemented function and the test must not use the GPU.
 The implemented function and the test must not access a database.
 The implemented function and the test must not access a display.
-The implemented function and the test must not access external apis except unless it is explicitly mentioned in the description or test case (e.g. by mentioning the api that should be used or by providing a URL to access the data). 
+The implemented function and the test must not access external apis unless it is explicitly mentioned.
+The implemented function and the test must not be based on a large collection of hard-coded strings.
 The implemented function and the test must not load data from the local file system unless it was created by the implemented function itself.
 The implemented function and the test must not use a pre-trained model unless it is explicitly mentioned in the description.
 The implemented function and the test must not train a model.
