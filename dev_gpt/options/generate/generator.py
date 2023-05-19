@@ -197,7 +197,7 @@ metas:
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'apis.py'), 'r', encoding='utf-8') as f:
             persist_file(f.read(), os.path.join(self.cur_microservice_path, 'apis.py'))
 
-        is_using_gpt_3_5_turbo = 'gpt-3-5-turbo' in packages
+        is_using_gpt_3_5_turbo = 'gpt_3_5_turbo' in packages
         is_using_google_custom_search = 'google-custom-search' in packages
         microservice_content = self.generate_and_persist_file(
             section_title='Microservice',
