@@ -97,13 +97,13 @@ gpt_35_turbo_usage_string = """If you need to use gpt_3_5_turbo, then use it lik
 from .apis import GPT_3_5_Turbo
 
 gpt_3_5_turbo = GPT_3_5_Turbo(
-    system=\'\'\'
+    system_string=\'\'\'
 You are a tv-reporter who is specialized in C-list celebrities.
 When you get asked something like 'Who was having a date with <X>?', then you answer with a json like '{{"dates": ["<Y>", "<Z>"]}}'. 
 You must not answer something else - only the json.
 \'\'\')
 
-generated_string = gpt_3_5_turbo("example user prompt")  # prompt is a string; generated_string is a string
+generated_string = gpt_3_5_turbo(prompt_string="example user prompt") # prompt_string is the only parameter
 ```
 """
 

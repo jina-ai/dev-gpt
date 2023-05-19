@@ -257,11 +257,12 @@ metas:
         print('\nFirst version of the microservice generated. Start iterating on it to make the tests pass...')
 
 
-    def add_missing_imports_post_process_fn(self, content_raw: str):
+    def add_missing_imports_post_process_fn(self, content_dict: dict):
         for indicator, import_statement in INDICATOR_TO_IMPORT_STATEMENT.items():
-            if indicator in content_raw and import_statement not in content_raw:
-                content_raw = f'{import_statement}\n{content_raw}'
-        return content_raw
+            for file_name, file_content in content_dict.items():
+                if indicator in file_content and import_statement not in file_content:
+                    content_dict[file_name] = f'{import_statement}\n{file_content}'
+        return content_dict
 
 
     @staticmethod
