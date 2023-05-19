@@ -126,7 +126,8 @@ image_url_list = search_images('<search term>', top_n=10)
 ```
 """
 
-template_generate_function = PromptTemplate.from_template(
+def template_generate_function_constructor(is_using_gpt_3_5_turbo, is_using_google_custom_search):
+    return PromptTemplate.from_template(
     general_guidelines_string + f'''
 
 Write a python function which receives as \
@@ -151,10 +152,10 @@ Your approach:
 2. Think about solutions for these challenges.
 3. Decide for one of the solutions.
 4. Write the code for the function. Don't write code for the test.
-{gpt_35_turbo_usage_string}
-{google_custom_search_usage_string}
+{gpt_35_turbo_usage_string if is_using_gpt_3_5_turbo else ''}
+{google_custom_search_usage_string if is_using_google_custom_search else ''}
 {template_code_wrapping_string}'''
-)
+    )
 
 
 template_generate_test = PromptTemplate.from_template(

@@ -23,7 +23,7 @@ from dev_gpt.options.generate.templates_user import template_generate_microservi
     template_generate_possible_packages, \
     template_implement_solution_code_issue, \
     template_solve_pip_dependency_issue, template_is_dependency_issue, template_generate_playground, \
-    template_generate_function, template_generate_test, template_generate_requirements, \
+    template_generate_function_constructor, template_generate_test, template_generate_requirements, \
     template_chain_of_thought, template_summarize_error, \
     template_solve_apt_get_dependency_issue, \
     template_suggest_solutions_code_issue, template_was_error_seen_before, \
@@ -197,9 +197,11 @@ metas:
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'apis.py'), 'r', encoding='utf-8') as f:
             persist_file(f.read(), os.path.join(self.cur_microservice_path, 'apis.py'))
 
+        is_using_gpt_3_5_turbo = 'gpt-3-5-turbo' in packages
+        is_using_google_custom_search = 'google-custom-search' in packages
         microservice_content = self.generate_and_persist_file(
             section_title='Microservice',
-            template=template_generate_function,
+            template=template_generate_function_constructor(is_using_gpt_3_5_turbo, is_using_google_custom_search),
             microservice_description=self.microservice_specification.task,
             test_description=self.microservice_specification.test,
             packages=packages,
