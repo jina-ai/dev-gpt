@@ -198,8 +198,8 @@ metas:
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'apis.py'), 'r', encoding='utf-8') as f:
             persist_file(f.read(), os.path.join(self.cur_microservice_path, 'apis.py'))
 
-        is_using_gpt_3_5_turbo = 'gpt_3_5_turbo' in packages
-        is_using_google_custom_search = 'google-custom-search' in packages
+        is_using_gpt_3_5_turbo = 'gpt_3_5_turbo' in packages or 'gpt-3-5-turbo' in packages
+        is_using_google_custom_search = 'google_custom_search' in packages or 'google-custom-search' in packages
         microservice_content = self.generate_and_persist_file(
             section_title='Microservice',
             template=template_generate_function_constructor(is_using_gpt_3_5_turbo, is_using_google_custom_search),
@@ -335,7 +335,8 @@ pytest
             error = process_error_message(log_hubble)
             if error:
                 if not self_healing:
-                    raise Exception('Self-healing is disabled. Please fix the error manually.', error)
+                    print(error)
+                    raise Exception('Self-healing is disabled. Please fix the error manually.')
                 print('An error occurred during the build process. Feeding the error back to the assistant...')
                 self.previous_microservice_path = self.cur_microservice_path
                 self.cur_microservice_path = get_microservice_path(
