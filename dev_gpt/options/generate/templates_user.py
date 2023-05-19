@@ -170,6 +170,7 @@ The test must start with the following imports:
 ```
 from .microservice import func
 import json
+import requests
 ```
 ''' + not_allowed_function_string + '''
 The test must not open local files.
