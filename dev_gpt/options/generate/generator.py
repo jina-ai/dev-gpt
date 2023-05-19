@@ -261,6 +261,7 @@ metas:
         for indicator, import_statement in INDICATOR_TO_IMPORT_STATEMENT.items():
             if indicator in content_raw and import_statement not in content_raw:
                 content_raw = f'{import_statement}\n{content_raw}'
+        return content_raw
 
 
     @staticmethod
