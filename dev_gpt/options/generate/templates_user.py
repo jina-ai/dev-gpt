@@ -126,6 +126,7 @@ image_url_list = search_images('<search term>', top_n=10)
 ```
 """
 
+linebreak = '\n'
 def template_generate_function_constructor(is_using_gpt_3_5_turbo, is_using_google_custom_search):
     return PromptTemplate.from_template(
     general_guidelines_string + f'''
@@ -139,8 +140,7 @@ It will be tested with the following scenario: '{{test_description}}'.
 For the implementation use the following package(s): '{{packages}}'.
 
 The code must start with the following imports:
-```
-from .apis import GPT_3_5_Turbo
+```{linebreak +'from .apis import GPT_3_5_Turbo' if is_using_gpt_3_5_turbo else ""}
 import json
 import requests
 ```
