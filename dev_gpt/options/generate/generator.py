@@ -40,9 +40,10 @@ class TaskSpecification:
 
 
 class Generator:
-    def __init__(self, task_description, path, model='gpt-4'):
+    def __init__(self, task_description, path, model='gpt-4', self_healing=True):
         self.gpt_session = gpt.GPTSession(model=model)
         self.microservice_specification = TaskSpecification(task=task_description, test=None)
+        self.self_healing = self_healing
         self.microservice_root_path = path
         self.microservice_name = None
         self.previous_microservice_path = None
@@ -325,7 +326,7 @@ pytest
         if not is_executor_in_hub(gateway_name):
             raise Exception(f'{self.microservice_name} not in hub. Hubble logs: {hubble_log}')
 
-    def debug_microservice(self, num_approach, packages):
+    def debug_microservice(self, num_approach, packages, self_healing):
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
             print('Trying to debug the microservice. Might take a while...')
@@ -333,6 +334,8 @@ pytest
             log_hubble = push_executor(self.cur_microservice_path)
             error = process_error_message(log_hubble)
             if error:
+                if not self_healing:
+                    raise Exception('Self-healing is disabled. Please fix the error manually.', error)
                 print('An error occurred during the build process. Feeding the error back to the assistant...')
                 self.previous_microservice_path = self.cur_microservice_path
                 self.cur_microservice_path = get_microservice_path(
@@ -520,7 +523,7 @@ pytest
         for num_approach, packages in enumerate(packages_list):
             try:
                 self.generate_microservice(packages, num_approach)
-                self.debug_microservice(num_approach, packages)
+                self.debug_microservice(num_approach, packages, self.self_healing)
                 self.generate_playground()
             except self.MaxDebugTimeReachedException:
                 print('Could not debug the Microservice with the approach:', packages)

@@ -22,7 +22,8 @@ def test_generation_level_0(microservice_dir, mock_input_sequence):
     generator = Generator(
         "The microservice is very simple, it does not take anything as input and only outputs the word 'test'",
         microservice_dir,
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        self_healing=False,
     )
     assert generator.generate() == 0
 
@@ -46,7 +47,8 @@ Example tweet:
 \'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 
 But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
         str(microservice_dir),
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        self_healing=False,
     )
     assert generator.generate() == 0
 
@@ -66,7 +68,8 @@ def test_generation_level_2(microservice_dir, mock_input_sequence):
     generator = Generator(
         "The input is a PDF and the output the summarized text (50 words).",
         str(microservice_dir),
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        self_healing=False,
     )
     assert generator.generate() == 0
 
@@ -85,7 +88,8 @@ def test_generation_level_2_svg(microservice_dir, mock_input_sequence):
     generator = Generator(
         "Get a png as input and return a vectorized version as svg.",
         str(microservice_dir),
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        self_healing=False,
     )
     assert generator.generate() == 0
 
@@ -111,7 +115,8 @@ def test_generation_level_3(microservice_dir, mock_input_sequence):
 Example input: 'AAPL'
 ''',
         str(microservice_dir),
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        self_healing=False,
     )
     assert generator.generate() == 0
 
@@ -155,7 +160,8 @@ def test_generation_level_4(microservice_dir, mock_input_sequence):
 4. Return the the audio file as base64 encoded binary.
 ''',
         str(microservice_dir),
-        'gpt-4'
+        'gpt-4',
+        self_healing=False,
     )
     assert generator.generate() == 0
 
@@ -170,7 +176,8 @@ All logos need to be arranged on a square.
 The square is returned as png.
 ''',
         str(microservice_dir),
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        self_healing=False,
     )
     assert generator.generate() == 0
 
@@ -209,7 +216,8 @@ The joke is the put on the image.
 The output is the image with the joke on it.
 ''',
                           str(microservice_dir),
-                          'gpt-3.5-turbo'
+                          'gpt-3.5-turbo',
+                          self_healing=False,
                           )
     assert generator.generate() == 0
 
