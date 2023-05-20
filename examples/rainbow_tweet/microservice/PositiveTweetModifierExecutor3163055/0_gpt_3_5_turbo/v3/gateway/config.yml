@@ -1,0 +1,5 @@
+jtype: GatewayPositiveTweetModifierExecutor3163055
+py_modules:
+  - custom_gateway.py
+metas:
+  name: GatewayPositiveTweetModifierExecutor3163055

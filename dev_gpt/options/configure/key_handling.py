@@ -40,26 +40,26 @@ def get_shell():
         return None
 
 
-def get_shell_config(key):
+def get_shell_config(name, key):
     return {
-        "bash": {"config_file": "~/.bashrc", "export_line": f"export OPENAI_API_KEY={key}"},
-        "zsh": {"config_file": "~/.zshrc", "export_line": f"export OPENAI_API_KEY={key}"},
-        "sh": {"config_file": "~/.profile", "export_line": f"export OPENAI_API_KEY={key}"},
+        "bash": {"config_file": "~/.bashrc", "export_line": f"export {name}={key}"},
+        "zsh": {"config_file": "~/.zshrc", "export_line": f"export {name}={key}"},
+        "sh": {"config_file": "~/.profile", "export_line": f"export {name}={key}"},
         "fish": {
             "config_file": "~/.config/fish/config.fish",
-            "export_line": f"set -gx OPENAI_API_KEY {key}",
+            "export_line": f"set -gx {name} {key}",
         },
-        "csh": {"config_file": "~/.cshrc", "export_line": f"setenv OPENAI_API_KEY {key}"},
-        "tcsh": {"config_file": "~/.tcshrc", "export_line": f"setenv OPENAI_API_KEY {key}"},
-        "ksh": {"config_file": "~/.kshrc", "export_line": f"export OPENAI_API_KEY={key}"},
-        "dash": {"config_file": "~/.profile", "export_line": f"export OPENAI_API_KEY={key}"}
+        "csh": {"config_file": "~/.cshrc", "export_line": f"setenv {name} {key}"},
+        "tcsh": {"config_file": "~/.tcshrc", "export_line": f"setenv {name} {key}"},
+        "ksh": {"config_file": "~/.kshrc", "export_line": f"export {name}={key}"},
+        "dash": {"config_file": "~/.profile", "export_line": f"export {name}={key}"}
     }
 
 
-def set_env_variable(shell, key):
-    shell_config = get_shell_config(key)
+def set_env_variable(shell, name, key):
+    shell_config = get_shell_config(name, key)
     if shell not in shell_config:
-        click.echo("Sorry, your shell is not supported. Please add the key OPENAI_API_KEY manually.")
+        click.echo(f"Sorry, your shell is not supported. Please add the key {name} manually.")
         return
 
     config_file = os.path.expanduser(shell_config[shell]["config_file"])
@@ -71,8 +71,8 @@ def set_env_variable(shell, key):
         export_line = shell_config[shell]['export_line']
 
         # Update the existing API key if it exists, otherwise append it to the config file
-        if f"OPENAI_API_KEY" in content:
-            content = re.sub(r'OPENAI_API_KEY=.*', f'OPENAI_API_KEY={key}', content, flags=re.MULTILINE)
+        if f"{name}" in content:
+            content = re.sub(rf'{name}=.*', f'{name}={key}', content, flags=re.MULTILINE)
 
             with open(config_file, "w", encoding='utf-8') as file:
                 file.write(content)
@@ -81,7 +81,7 @@ def set_env_variable(shell, key):
                 file.write(f"\n{export_line}\n")
 
         click.echo(f'''
-✅ Success, OPENAI_API_KEY has been set in {config_file}.
+✅ Success, {name} has been set in {config_file}.
 Please restart your shell to apply the changes or run:
 source {config_file}
 '''
@@ -91,21 +91,21 @@ source {config_file}
         click.echo(f"Error: {config_file} not found. Please set the environment variable manually.")
 
 
-def set_api_key(key):
+def set_api_key(name, key):
     system_platform = platform.system().lower()
 
     if system_platform == "windows":
-        set_env_variable_command = f'setx OPENAI_API_KEY "{key}"'
+        set_env_variable_command = f'setx {name} "{key}"'
         subprocess.call(set_env_variable_command, shell=True)
-        click.echo('''
-✅ Success, OPENAI_API_KEY has been set.
+        click.echo(f'''
+✅ Success, {name} has been set.
 Please restart your Command Prompt to apply the changes.
 '''
                    )
 
     elif system_platform in ["linux", "darwin"]:
-        if "OPENAI_API_KEY" in os.environ or is_key_set_in_config_file(key):
-            if not click.confirm("OPENAI_API_KEY is already set. Do you want to overwrite it?"):
+        if f"{name}" in os.environ or is_key_set_in_config_file(key):
+            if not click.confirm(f"{name} is already set. Do you want to overwrite it?"):
                 click.echo("Aborted.")
                 return
 
@@ -115,24 +115,24 @@ Please restart your Command Prompt to apply the changes.
                 "Error: Unable to detect your shell or psutil is not available. Please set the environment variable manually.")
             return
 
-        set_env_variable(shell, key)
+        set_env_variable(shell, name, key)
     else:
         click.echo("Sorry, this platform is not supported.")
 
 
-def is_key_set_in_config_file(key):
+def is_key_set_in_config_file(name, key):
     shell = get_shell()
     if shell is None:
         return False
 
-    shell_config = get_shell_config(key)
+    shell_config = get_shell_config(name, key)
 
     config_file = os.path.expanduser(shell_config[shell]["config_file"])
 
     try:
         with open(config_file, "r", encoding='utf-8') as file:
             content = file.read()
-            if f"OPENAI_API_KEY" in content:
+            if f"{name}" in content:
                 return True
     except FileNotFoundError:
         pass

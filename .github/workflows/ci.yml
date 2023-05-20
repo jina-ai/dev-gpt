@@ -16,7 +16,8 @@ jobs:
           2_pdf_summarization,
           3_fin_api,
           4_audio_summarization,
-          4_svg
+          4_svg,
+          5_company_logos
         ]
     steps:
       - uses: actions/checkout@v2
@@ -40,6 +41,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SCENEX_API_KEY: ${{ secrets.SCENEX_API_KEY }}
           WHISPER_API_KEY: ${{ secrets.WHISPER_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
 
   test_unit:
     runs-on: ubuntu-latest
@@ -65,6 +68,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SCENEX_API_KEY: ${{ secrets.SCENEX_API_KEY }}
           WHISPER_API_KEY: ${{ secrets.WHISPER_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
 
   base-image-push:
     runs-on: ubuntu-latest

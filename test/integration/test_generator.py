@@ -22,10 +22,10 @@ def test_generation_level_0_test(microservice_dir, mock_input_sequence):
     generator = Generator(
         "The microservice is very simple, it does not take anything as input and only outputs the word 'test'",
         microservice_dir,
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        self_healing=False,
     )
     assert generator.generate() == 0
-
 
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
@@ -46,7 +46,8 @@ Example tweet:
 \'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 
 But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
         str(microservice_dir),
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        # self_healing=False,
     )
     assert generator.generate() == 0
 
@@ -66,9 +67,33 @@ def test_generation_level_2_pdf_summarization(microservice_dir, mock_input_seque
     generator = Generator(
         "The input is a PDF and the output the summarized text (50 words).",
         str(microservice_dir),
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        # self_healing=False,
     )
     assert generator.generate() == 0
+
+
+@pytest.mark.parametrize('mock_input_sequence', [
+    ['y', 'https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png']], indirect=True)
+def test_generation_level_2_svg(microservice_dir, mock_input_sequence):
+    """
+    Requirements:
+    coding challenge: ✅
+    pip packages: ✅
+    environment: ❌
+    GPT-3.5-turbo: ❌
+    APIs: ❌
+    Databases: ❌
+    """
+    os.environ['VERBOSE'] = 'true'
+    generator = Generator(
+        "Get a png as input and return a vectorized version as svg.",
+        str(microservice_dir),
+        'gpt-3.5-turbo',
+        # self_healing=False,
+    )
+    assert generator.generate() == 0
+
 
 @pytest.mark.parametrize('mock_input_sequence', [['y', 'yfinance.Ticker("MSFT").info']], indirect=True)
 def test_generation_level_3_fin_api(microservice_dir, mock_input_sequence):
@@ -91,9 +116,11 @@ def test_generation_level_3_fin_api(microservice_dir, mock_input_sequence):
 Example input: 'AAPL'
 ''',
         str(microservice_dir),
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        # self_healing=False,
     )
     assert generator.generate() == 0
+
 
 @pytest.mark.parametrize(
     'mock_input_sequence', [
@@ -135,6 +162,25 @@ def test_generation_level_4_audio_summarization(microservice_dir, mock_input_seq
 4. Return the audio file as base64 encoded binary.
 ''',
         str(microservice_dir),
+        'gpt-4',
+        # self_healing=False,
+    )
+    assert generator.generate() == 0
+
+
+@pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
+def test_generation_level_5_company_logos(microservice_dir, mock_input_sequence):
+    os.environ['VERBOSE'] = 'true'
+    generator = Generator(
+        f'''\
+Given a list of email addresses, get all company names from them.
+For all companies, get the company logo.
+All logos need to be arranged on a square.
+The square is returned as png.
+''',
+        str(microservice_dir),
+        'gpt-3.5-turbo',
+        # self_healing=False,
         'gpt-3.5-turbo'
     )
     assert generator.generate() == 0
@@ -171,7 +217,8 @@ def test_generation_level_5(microservice_dir, mock_input_sequence):
     Databases: ❌
     """
     os.environ['VERBOSE'] = 'true'
-    generator = Generator(f'''
+    generator = Generator(
+        f'''
 The input is an image.
 Use the following api to get the description of the image:
 Request:
@@ -193,9 +240,10 @@ The description is then used to generate a joke.
 The joke is the put on the image.
 The output is the image with the joke on it.
 ''',
-                          str(microservice_dir),
-                          'gpt-3.5-turbo'
-                          )
+        str(microservice_dir),
+        'gpt-3.5-turbo',
+        # self_healing=False,
+    )
     assert generator.generate() == 0
 
 # @pytest.fixture

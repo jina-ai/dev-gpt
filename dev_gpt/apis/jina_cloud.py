@@ -98,7 +98,7 @@ def _push_executor(dir_path):
         'public': 'True',
         'private': 'False',
         'verbose': 'True',
-        'buildEnv': f'{{"OPENAI_API_KEY": "{os.environ["OPENAI_API_KEY"]}"}}',
+        'buildEnv': f'{{"OPENAI_API_KEY": "{os.environ["OPENAI_API_KEY"]}", "GOOGLE_API_KEY": "{os.environ.get("GOOGLE_API_KEY","")}", "GOOGLE_CSE_ID": "{os.environ.get("GOOGLE_CSE_ID","")}"}}',
         'md5sum': md5_digest,
     }
     with suppress_stdout():
@@ -251,7 +251,9 @@ executors:
     uses: {prefix}://{get_user_name(DEMO_TOKEN)}/{executor_name}:latest
     {"" if use_docker else "install-requirements: True"}
     env:
-      OPENAI_API_KEY: {os.environ['OPENAI_API_KEY']}
+      OPENAI_API_KEY: ${{{{ ENV.OPENAI_API_KEY }}}}
+      GOOGLE_API_KEY: ${{{{ ENV.GOOGLE_API_KEY }}}}
+      GOOGLE_CSE_ID: ${{{{ ENV.GOOGLE_CSE_ID }}}}
     jcloud:
       resources:
         instance: C2

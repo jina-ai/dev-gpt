@@ -79,6 +79,7 @@ class CustomGateway(CompositeGateway):
                 f'Please, let http port ({http_port}) be 8080 for nginx to work'
             )
         kwargs['runtime_args']['port'][http_idx] = 8082
+        kwargs['cors'] = True
         super().__init__(**kwargs)
 
         # remove potential clashing arguments from kwargs

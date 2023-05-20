@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Twitter Rewrite: Extension Options</title>
+    <link rel="stylesheet" type="text/css" href="popup.css">
+</head>
+<body>
+<div class="container">
+    <h1>Rainbow-Tweet: Extension Options</h1>
+    <form id="optionForm">
+        <div class="form-group">
+            <label for="openai_api_key">OpenAI API Key:</label><br>
+            <input type="password" id="openai_api_key" name="openai_api_key"><br>
+            <small id="apiHelp" class="form-text text-muted">Enter your OpenAI API Key to start using the plugin. If you
+                don't have one, create it <a href="https://platform.openai.com/account/api-keys"
+                                             target="_blank">here</a>. After inserting the key, you need to reload the page</small>
+        </div>
+        <input type="submit" value="Save" class="btn btn-primary">
+    </form>
+    <p id="status"></p>
+    <div class="footer">
+        <hr>
+        <p>Created by <a href="https://github.com/jina-ai/dev-gpt" target="_blank">Dev-GPT</a></p>
+        <img src="jina.png" width="32" height="32">
+        <p>For questions or feedback, <a href="https://www.linkedin.com/in/florian-h%C3%B6nicke-b902b6aa/"
+                                         target="_blank">contact the developer</a>.</p>
+    </div>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>
