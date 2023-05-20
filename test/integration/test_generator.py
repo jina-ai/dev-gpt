@@ -162,7 +162,7 @@ def test_generation_level_4_audio_summarization(microservice_dir, mock_input_seq
 4. Return the audio file as base64 encoded binary.
 ''',
         str(microservice_dir),
-        'gpt-4',
+        'gpt-3.5-turbo',
         # self_healing=False,
     )
     assert generator.generate() == 0
@@ -181,7 +181,6 @@ The square is returned as png.
         str(microservice_dir),
         'gpt-3.5-turbo',
         # self_healing=False,
-        'gpt-3.5-turbo'
     )
     assert generator.generate() == 0
 
