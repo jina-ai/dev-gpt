@@ -199,8 +199,9 @@ metas:
             .replace('class DevGPTExecutor(Executor):', f'class {self.microservice_name}(Executor):')
         persist_file(microservice_executor_code, os.path.join(self.cur_microservice_path, EXECUTOR_FILE_NAME))
 
-        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'apis.py'), 'r', encoding='utf-8') as f:
-            persist_file(f.read(), os.path.join(self.cur_microservice_path, 'apis.py'))
+        for additional_file in ['google_custom_search.py', 'gpt_3_5_turbo.py']:
+            with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', additional_file), 'r', encoding='utf-8') as f:
+                persist_file(f.read(), os.path.join(self.cur_microservice_path, additional_file))
 
         is_using_gpt_3_5_turbo = 'gpt_3_5_turbo' in packages or 'gpt-3-5-turbo' in packages
         is_using_google_custom_search = 'google_custom_search' in packages or 'google-custom-search' in packages
