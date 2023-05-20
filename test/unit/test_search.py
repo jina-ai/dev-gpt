@@ -1,4 +1,4 @@
-from dev_gpt.options.generate.static_files.microservice.apis import search_web, search_images
+from dev_gpt.options.generate.static_files.microservice.google_custom_search import search_web, search_images
 
 
 def test_web_search():

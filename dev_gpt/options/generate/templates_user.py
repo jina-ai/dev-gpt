@@ -94,7 +94,7 @@ You must provide the complete {file_name} wrapped with the exact syntax shown ab
 
 gpt_35_turbo_usage_string = """If you need to use gpt_3_5_turbo, then use it like shown in the following example:
 ```
-from .apis import GPT_3_5_Turbo
+from .gpt_3_5_turbo import GPT_3_5_Turbo
 
 gpt_3_5_turbo = GPT_3_5_Turbo(
     system_string=\'\'\'
@@ -110,7 +110,7 @@ generated_string = gpt_3_5_turbo(prompt_string="example user prompt") # prompt_s
 google_custom_search_usage_string = """If you need to use google_custom_search, then use it like shown in the following example:
 a) when searching for text:
 ```
-from .apis import search_web
+from .google_custom_search import search_web
 
 # input: search term (str), top_n (int)
 # output: list of strings
@@ -118,7 +118,7 @@ string_list = search_web('<search term>', top_n=10)
 ```
 b) when searching for images:
 ```
-from .apis import search_images
+from .google_custom_search import search_images
 
 # input: search term (str), top_n (int)
 # output: list of image urls
@@ -140,7 +140,7 @@ It will be tested with the following scenario: '{{test_description}}'.
 For the implementation use the following package(s): '{{packages}}'.
 
 The code must start with the following imports:
-```{linebreak +'from .apis import GPT_3_5_Turbo' if is_using_gpt_3_5_turbo else ""}{linebreak + 'from .apis import search_web, search_images' if is_using_google_custom_search else ""}{linebreak}
+```{linebreak +'from .gpt_3_5_turbo import GPT_3_5_Turbo' if is_using_gpt_3_5_turbo else ""}{linebreak + 'from .google_custom_search import search_web, search_images' if is_using_google_custom_search else ""}{linebreak}
 
 import json
 import requests
