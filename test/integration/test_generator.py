@@ -199,7 +199,9 @@ def test_generation_level_4_svg(microservice_dir, mock_input_sequence):
     generator = Generator(
         f'''Given a png image, convert it into an svg image in a sophisticated way.''',
         str(microservice_dir),
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        # self_healing=False,
+
     )
     assert generator.generate() == 0
 
