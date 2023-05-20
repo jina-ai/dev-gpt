@@ -24,7 +24,7 @@ def configure_openai_api_key():
     if 'OPENAI_API_KEY' not in os.environ:
         print_colored('You need to set OPENAI_API_KEY in your environment.', '''
 Run:
-dev-gpt configure --key <your_openai_api_key>
+dev-gpt configure --openai_api_key <your_openai_api_key>
 
 If you have updated it already, please restart your terminal.
 ''', 'red')

@@ -16,7 +16,8 @@ The Dockerfile must not attach a virtual display when running test_microservice.
 not_allowed_function_string = '''The implemented function and the test must not use the GPU.
 The implemented function and the test must not access a database.
 The implemented function and the test must not access a display.
-The implemented function and the test must not access external apis except unless it is explicitly mentioned in the description or test case (e.g. by mentioning the api that should be used or by providing a URL to access the data). 
+The implemented function and the test must not access external apis unless it is explicitly mentioned.
+The implemented function and the test must not be based on a large collection of hard-coded strings.
 The implemented function and the test must not load data from the local file system unless it was created by the implemented function itself.
 The implemented function and the test must not use a pre-trained model unless it is explicitly mentioned in the description.
 The implemented function and the test must not train a model.
@@ -88,51 +89,73 @@ Note that you must obey the double asterisk and triple backtick syntax from like
 ```{tag_name}
 ...code...
 ```
-You must provide the complete file with the exact same syntax to wrap the code.'''
+You must provide the complete {file_name} wrapped with the exact syntax shown above.'''
 
 
-gpt_35_turbo_usage_string = """If need to use gpt_3_5_turbo, then this is an example on how to use it:
+gpt_35_turbo_usage_string = """If you need to use gpt_3_5_turbo, then use it like shown in the following example:
 ```
-from .apis import GPT_3_5_Turbo
+from .gpt_3_5_turbo import GPT_3_5_Turbo
 
 gpt_3_5_turbo = GPT_3_5_Turbo(
-    system=\'\'\'
+    system_string=\'\'\'
 You are a tv-reporter who is specialized in C-list celebrities.
 When you get asked something like 'Who was having a date with <X>?', then you answer with a json like '{{"dates": ["<Y>", "<Z>"]}}'. 
 You must not answer something else - only the json.
 \'\'\')
 
-generated_string = gpt(prompt)  # fill-in the prompt (str); the output is a string
+generated_string = gpt_3_5_turbo(prompt_string="example user prompt") # prompt_string is the only parameter
 ```
 """
 
+google_custom_search_usage_string = """If you need to use google_custom_search, then use it like shown in the following example:
+a) when searching for text:
+```
+from .google_custom_search import search_web
 
-template_generate_function = PromptTemplate.from_template(
-    general_guidelines_string + '''
+# input: search term (str), top_n (int)
+# output: list of strings
+string_list = search_web('<search term>', top_n=10)
+```
+b) when searching for images:
+```
+from .google_custom_search import search_images
+
+# input: search term (str), top_n (int)
+# output: list of image urls
+image_url_list = search_images('<search term>', top_n=10)
+```
+"""
+
+linebreak = '\n'
+def template_generate_function_constructor(is_using_gpt_3_5_turbo, is_using_google_custom_search):
+    return PromptTemplate.from_template(
+    general_guidelines_string + f'''
 
 Write a python function which receives as \
 input json string (that can be parsed with the python function json.loads) and \
 outputs a json string (that can be parsed with the python function json.loads). \
 The function is called 'func'.
-The function must fulfill the following description: '{microservice_description}'.
-It will be tested with the following scenario: '{test_description}'.
-For the implementation use the following package(s): '{packages}'.
+The function must fulfill the following description: '{{microservice_description}}'.
+It will be tested with the following scenario: '{{test_description}}'.
+For the implementation use the following package(s): '{{packages}}'.
 
 The code must start with the following imports:
-```
-from .apis import GPT_3_5_Turbo
+```{linebreak +'from .gpt_3_5_turbo import GPT_3_5_Turbo' if is_using_gpt_3_5_turbo else ""}{linebreak + 'from .google_custom_search import search_web, search_images' if is_using_google_custom_search else ""}
 import json
+import requests
 ```
 Obey the following rules:
-''' + not_allowed_function_string + '''
+{not_allowed_function_string}
 
 Your approach:
 1. Identify the core challenge when implementing the function.
 2. Think about solutions for these challenges.
 3. Decide for one of the solutions.
 4. Write the code for the function. Don't write code for the test.
-''' + gpt_35_turbo_usage_string + '\n' + template_code_wrapping_string
-)
+{gpt_35_turbo_usage_string if is_using_gpt_3_5_turbo else ''}
+{google_custom_search_usage_string if is_using_google_custom_search else ''}
+{template_code_wrapping_string}'''
+    )
 
 
 template_generate_test = PromptTemplate.from_template(
@@ -147,6 +170,7 @@ The test must start with the following imports:
 ```
 from .microservice import func
 import json
+import requests
 ```
 ''' + not_allowed_function_string + '''
 The test must not open local files.
@@ -341,9 +365,10 @@ Note that any changes needed to make the test pass must be written under the con
 ''' + f'{not_allowed_function_string}\n{not_allowed_docker_string}\n{gpt_35_turbo_usage_string}' + '''
 
 
-After thinking about the possible solutions, output them as JSON ranked from best to worst. Like this:
+After thinking about the possible solutions, output them as JSON ranked from best to worst.
+You must use the following format:
 ''' + response_format_suggest_solutions + '''
-Ensure the response can be parsed by Python json.loads'''
+Ensure the response starts with **solutions.json** and can be parsed by Python json.loads'''
 )
 
 
