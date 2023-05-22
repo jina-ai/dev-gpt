@@ -99,7 +99,7 @@ from .gpt_3_5_turbo import GPT_3_5_Turbo
 gpt_3_5_turbo = GPT_3_5_Turbo(
     system_string=\'\'\'
 You are a tv-reporter who is specialized in C-list celebrities.
-When you get asked something like 'Who was having a date with <X>?', then you answer with a json like '{{"dates": ["<Y>", "<Z>"]}}'. 
+When you get asked something like 'Who was having a date with <X>?', then you answer with a string like "<y>, <z> were having a date with <x>"'. 
 You must not answer something else - only the json.
 \'\'\')
 
@@ -132,9 +132,10 @@ def template_generate_function_constructor(is_using_gpt_3_5_turbo, is_using_goog
     general_guidelines_string + f'''
 
 Write a python function which receives as \
-input json string (that can be parsed with the python function json.loads) and \
-outputs a json string (that can be parsed with the python function json.loads). \
-The function is called 'func'.
+input json dictionary string (that can be parsed with the python function json.loads) and \
+outputs a json dictionary string (that can be parsed with the python function json.loads). \
+The function is called 'func' and has the following signature:
+def func(input_json_dict_string: str) -> str:
 The function must fulfill the following description: '{{microservice_description}}'.
 It will be tested with the following scenario: '{{test_description}}'.
 For the implementation use the following package(s): '{{packages}}'.
@@ -433,13 +434,12 @@ Use the exact following syntax to wrap the code:
 ```
 
 Example:
-
 **implementation.py**
 ```python
 import json
 
-def func(json_input: str) -> str:
-    return json_input['img_base64']
+def func(input_json_dict_string: str) -> str:
+    return json.dumps('output_param1': input_json_dict_string['img_base64'])
 ```'''
 )
 
@@ -449,50 +449,30 @@ template_generate_playground = PromptTemplate.from_template(
 
 {code_files_wrapped}
 
-Create a playground for the executor {microservice_name} using streamlit.
-The playground must look like it was made by a professional designer.
-All the ui elements are well thought out to make them visually appealing and easy to use.
-Don't mention the word Playground in the title.
-The playground contains many emojis that fit the theme of the playground and has an emoji as favicon.
-The playground encourages the user to deploy their own microservice by clicking on this link: https://github.com/jina-ai/dev-gpt
-The playground uses the following code to send a request to the microservice:
+1. Write down the json request model required by microservice.py.
+2. Generate a playground for the microservice {microservice_name} using the following streamlit template by replacing all the placeholders (<...>) with the correct values:
+**app_template.py**
+```python
+{playground_template}
 ```
-from jina import Client, Document, DocumentArray
-client = Client(host='http://localhost:8080')
-d = Document(text=json.dumps(INPUT_DICTIONARY)) # fill-in dictionary which takes input
-response = client.post('/', inputs=DocumentArray([d])) # always use '/'
-print(response[0].text) # can also be blob in case of image/audio..., this should be visualized in the streamlit app
-```
-Note that the response will always be in response[0].text
-The playground displays a code block containing the microservice specific curl code that can be used to send the request to the microservice.
-While the exact payload in the curl might change, the host and deployment ID always stay the same. Example: 
-```
-deployment_id = os.environ.get("K8S_NAMESPACE_NAME", "")
-host = f'https://dev-gpt-{{deployment_id.split("-")[1]}}.wolf.jina.ai/post' if deployment_id else "http://localhost:8080/post"
-with st.expander("See curl command"):
-    st.code(
-        f'curl -X \\'POST\\' \\'host\\' -H \\'accept: application/json\\' -H \\'Content-Type: application/json\\' -d \\'{{{{"data": [{{{{"text": "hello, world!"}}}}]}}}}\\'',
-        language='bash'
-    )
-```
-You must provide the complete app.py file using the following syntax to wrap the code:
+Note: Don't mention the word Playground in the title.
+Most importantly: You must generate the complete app.py file using the following syntax to wrap the code:
 **app.py**
 ```python
 ...
-```
-The playground (app.py) must always use the host on http://localhost:8080  and must not let the user configure the host on the UI.
-The playground (app.py) must not import the executor.
-'''
+```'''
 )
 
 
 template_chain_of_thought = PromptTemplate.from_template(
-    '''First, write down an extensive list of obvious and non-obvious observations about {file_name_purpose} that could need an adjustment. Explain why.
-Think if all the changes are required and finally decide for the changes you want to make, but you are not allowed disregard the instructions in the previous message.
-Be very hesitant to change the code. Only make a change if you are sure that it is necessary.
-
-Output only {file_name_purpose}
-Write the whole content of {file_name_purpose} - even if you decided to change only a small thing or even nothing.
+    '''\
+1. write down an extensive list (5 words per item) of obvious and non-obvious observations about {file_name_purpose} that could need an adjustment. 
+2. Explain why. (5 words per item)
+3. Think if all the changes are required
+4. decide for the changes you want to make, but you are not allowed disregard the instructions in the previous message.
+5. Write the whole content of {file_name_purpose} - even if you decided to change only a small thing or even nothing.
+Note: Be very hesitant to change the code. Only make a change if you are sure that it is necessary.
+Note: Output only {file_name_purpose}
 ''' + '\n' + template_code_wrapping_string + '''
 
 Remember: 
