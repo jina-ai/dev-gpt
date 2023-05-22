@@ -42,7 +42,7 @@ class TaskSpecification:
 
 class Generator:
     def __init__(self, task_description, path, model='gpt-4', self_healing=True):
-        self.gpt_session = gpt.GPTSession(model=model)
+        self.gpt_session = gpt.GPTSession(os.path.join(path, 'log.json'), model=model)
         self.microservice_specification = TaskSpecification(task=task_description, test=None)
         self.self_healing = self_healing
         self.microservice_root_path = path
@@ -540,8 +540,8 @@ pytest
     # '/private/var/folders/f5/whmffl4d7q79s29jpyb6719m0000gn/T/pytest-of-florianhonicke/pytest-128/test_generation_level_0_mock_i0'
     # '/private/var/folders/f5/whmffl4d7q79s29jpyb6719m0000gn/T/pytest-of-florianhonicke/pytest-129/test_generation_level_0_mock_i0'
     def generate(self):
-        self.microservice_specification.task, self.microservice_specification.test = PM().refine_specification(self.microservice_specification.task)
         os.makedirs(self.microservice_root_path)
+        self.microservice_specification.task, self.microservice_specification.test = PM().refine_specification(self.microservice_specification.task)
         generated_name = self.generate_microservice_name(self.microservice_specification.task)
         self.microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
         packages_list = self.get_possible_packages()
