@@ -30,8 +30,8 @@ The implemented function must follow a clean and elegant coding style.'''
 
 plain_response_format_prompt = '''The response must be raw text and not fenced by markdown or html'''
 
-template_generate_microservice_name = PromptTemplate.from_template(
-    f'''Generate a name for the executor matching the description:
+template_generate_microservice_name = f'''\
+Generate a name for the executor matching the description:
 "{{description}}"
 The executor name must fulfill the following criteria:
 - camel case
@@ -46,7 +46,6 @@ Negative example:
 PngToSvgExecutor
 ```
 '''
-)
 
 
 # todo split into multiple calls. One for brainstorming - one for the final answer

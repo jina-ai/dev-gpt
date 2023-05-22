@@ -171,7 +171,7 @@ class _GPTConversation:
         return SystemMessage(content=system_message)
 
 
-def ask_gpt(prompt_template, parser=identity_parser, **kwargs):
+def ask_gpt(prompt_template: str, parser=identity_parser, **kwargs):
     template_parameters = get_template_parameters(prompt_template)
     if set(template_parameters) != set(kwargs.keys()):
         raise ValueError(

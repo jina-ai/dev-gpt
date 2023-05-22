@@ -531,8 +531,8 @@ pytest
         packages_list = self.remove_duplicates_from_packages_list(packages_list)
         packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
         return packages_list
-    # '/private/var/folders/f5/whmffl4d7q79s29jpyb6719m0000gn/T/pytest-of-florianhonicke/pytest-128/test_generation_level_0_mock_i0'
-    # '/private/var/folders/f5/whmffl4d7q79s29jpyb6719m0000gn/T/pytest-of-florianhonicke/pytest-129/test_generation_level_0_mock_i0'
+
+
     def generate(self):
         os.makedirs(self.microservice_root_path)
         self.microservice_specification.task, self.microservice_specification.test = PM().refine_specification(self.microservice_specification.task)
