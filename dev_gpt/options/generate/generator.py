@@ -8,6 +8,7 @@ from typing import Callable
 from typing import List, Text, Optional
 
 from langchain import PromptTemplate
+from langchain.schema import SystemMessage, AIMessage
 from pydantic.dataclasses import dataclass
 
 from dev_gpt.apis import gpt
@@ -17,15 +18,19 @@ from dev_gpt.apis.pypi import is_package_on_pypi, clean_requirements_txt
 from dev_gpt.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
     BLACKLISTED_PACKAGES, EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_NAME, TEST_EXECUTOR_FILE_TAG, \
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
-    IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES, DOCKER_BASE_IMAGE_VERSION
+    IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES, DOCKER_BASE_IMAGE_VERSION, SEARCH_PACKAGES, \
+    INDICATOR_TO_IMPORT_STATEMENT
 from dev_gpt.options.generate.pm.pm import PM
 from dev_gpt.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
-    template_solve_code_issue, \
+    template_implement_solution_code_issue, \
     template_solve_pip_dependency_issue, template_is_dependency_issue, template_generate_playground, \
-    template_generate_function, template_generate_test, template_generate_requirements, \
+    template_generate_function_constructor, template_generate_test, template_generate_requirements, \
     template_chain_of_thought, template_summarize_error, \
-    template_solve_apt_get_dependency_issue
+    template_solve_apt_get_dependency_issue, \
+    template_suggest_solutions_code_issue, template_was_error_seen_before, \
+    template_was_solution_tried_before, response_format_was_error_seen_before, \
+    response_format_was_solution_tried_before, response_format_suggest_solutions
 from dev_gpt.utils.io import persist_file, get_all_microservice_files_with_content, get_microservice_path
 from dev_gpt.utils.string_tools import print_colored
 
@@ -37,10 +42,16 @@ class TaskSpecification:
 
 
 class Generator:
-    def __init__(self, task_description, path, model='gpt-4'):
-        self.gpt_session = gpt.GPTSession(model=model)
+    def __init__(self, task_description, path, model='gpt-4', self_healing=True):
+        self.gpt_session = gpt.GPTSession(os.path.join(path, 'log.json'), model=model)
         self.microservice_specification = TaskSpecification(task=task_description, test=None)
+        self.self_healing = self_healing
         self.microservice_root_path = path
+        self.microservice_name = None
+        self.previous_microservice_path = None
+        self.cur_microservice_path = None
+        self.previous_errors = []
+        self.previous_solutions = []
 
     @staticmethod
     def extract_content_from_result(plain_text, file_name, match_single_block=False, can_contain_code_block=True):
@@ -89,9 +100,12 @@ metas:
             self,
             section_title: str,
             template: PromptTemplate,
-            destination_folder: str,
+            destination_folder: str = None,
             file_name_s: List[str] = None,
             parse_result_fn: Callable = None,
+            use_custom_system_message: bool = True,
+            response_format_example: str = None,
+            post_process_fn: Callable = None,
             **template_kwargs
     ):
         """This function generates file(s) using the given template and persists it/them in the given destination folder.
@@ -100,22 +114,32 @@ metas:
         Args:
             section_title (str): The title of the section to be printed in the console.
             template (PromptTemplate): The template to be used for generating the file(s).
-            destination_folder (str): The destination folder where the generated file(s) should be persisted.
+            destination_folder (str): The destination folder where the generated file(s) should be persisted. If None,
+                the current microservice path is used. Defaults to None.
             file_name_s (List[str], optional): The name of the file(s) to be generated. Defaults to None.
             parse_result_fn (Callable, optional): A function that parses the generated content and returns a dictionary
                 mapping file_name to its content. If no content could be extract, it returns an empty dictionary.
                 Defaults to None. If None, default parsing is used which uses the file_name to extract from the generated content.
+            use_custom_system_message (bool, optional): whether to use custom system message or not. Defaults to True.
             **template_kwargs: The keyword arguments to be passed to the template.
         """
+        if destination_folder is None:
+            destination_folder = self.cur_microservice_path
+
         if parse_result_fn is None:
             parse_result_fn = self.get_default_parse_result_fn(file_name_s)
 
         print_colored('', f'\n\n############# {section_title} #############', 'blue')
-        system_introduction_message = _GPTConversation._create_system_message(
-            self.microservice_specification.task,
-            self.microservice_specification.test
+        if use_custom_system_message:
+            system_introduction_message = _GPTConversation._create_system_message(
+                self.microservice_specification.task,
+                self.microservice_specification.test
+            )
+        else:
+            system_introduction_message = SystemMessage(content='You are a helpful assistant.')
+        conversation = self.gpt_session.get_conversation(
+            messages=[system_introduction_message] if use_custom_system_message else []
         )
-        conversation = self.gpt_session.get_conversation(messages=[system_introduction_message])
         template_kwargs = {k: v for k, v in template_kwargs.items() if k in template.input_variables}
         if 'file_name' in template.input_variables and len(file_name_s) == 1:
             template_kwargs['file_name'] = file_name_s[0]
@@ -125,9 +149,36 @@ metas:
             )
         )
         content = parse_result_fn(content_raw)
+        if post_process_fn is not None:
+            content = post_process_fn(content)
         if content == {}:
+            conversation = self.gpt_session.get_conversation(
+                messages=[SystemMessage(content='You are a helpful assistant.'), AIMessage(content=content_raw)]
+            )
+            if response_format_example is not None:
+                file_wrapping_example = response_format_example
+            elif len(file_name_s) == 1:
+                file_ending = file_name_s[0].split('.')[-1]
+                if file_ending == 'py':
+                    tag = 'python'
+                elif file_ending == 'json':
+                    tag = 'json'
+                else:
+                    tag = ''
+                file_wrapping_example = f'''**{file_name_s[0]}**
+```{tag}
+<content_of_file>
+```'''
+            else:
+                file_wrapping_example = '''**file_name.file_ending**
+```<json|py|...
+<content_of_file>
+```'''
             content_raw = conversation.chat(
-                'You must add the content in the format shown above' + (f' for {file_name_s[0]}' if len(file_name_s) == 1 else ''))
+                'Based on your previous response, only output the content' + (f' for `{file_name_s[0]}`' if len(file_name_s) == 1 else '') +
+                '. Like this:\n' +
+                file_wrapping_example
+            )
             content = parse_result_fn(content_raw)
         for _file_name, _file_content in content.items():
             persist_file(_file_content, os.path.join(destination_folder, _file_name))
@@ -135,52 +186,54 @@ metas:
 
     def generate_microservice(
             self,
-            microservice_name,
             packages,
             num_approach,
     ):
-        MICROSERVICE_FOLDER_v1 = get_microservice_path(self.microservice_root_path, microservice_name, packages,
-                                                       num_approach, 1)
-        os.makedirs(MICROSERVICE_FOLDER_v1)
+        self.cur_microservice_path = get_microservice_path(
+            self.microservice_root_path, self.microservice_name, packages, num_approach, 1
+        )
+        os.makedirs(self.cur_microservice_path)
 
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'jina_wrapper.py'), 'r', encoding='utf-8') as f:
             microservice_executor_boilerplate = f.read()
-        microservice_executor_code = microservice_executor_boilerplate.replace('class DevGPTExecutor(Executor):',
-                                                                               f'class {microservice_name}(Executor):')
-        persist_file(microservice_executor_code, os.path.join(MICROSERVICE_FOLDER_v1, EXECUTOR_FILE_NAME))
+        microservice_executor_code = microservice_executor_boilerplate \
+            .replace('class DevGPTExecutor(Executor):', f'class {self.microservice_name}(Executor):')
+        persist_file(microservice_executor_code, os.path.join(self.cur_microservice_path, EXECUTOR_FILE_NAME))
 
-        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'apis.py'), 'r', encoding='utf-8') as f:
-            persist_file(f.read(), os.path.join(MICROSERVICE_FOLDER_v1, 'apis.py'))
+        for additional_file in ['google_custom_search.py', 'gpt_3_5_turbo.py']:
+            with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', additional_file), 'r', encoding='utf-8') as f:
+                persist_file(f.read(), os.path.join(self.cur_microservice_path, additional_file))
 
+        is_using_gpt_3_5_turbo = 'gpt_3_5_turbo' in packages or 'gpt-3-5-turbo' in packages
+        is_using_google_custom_search = 'google_custom_search' in packages or 'google-custom-search' in packages
         microservice_content = self.generate_and_persist_file(
             section_title='Microservice',
-            template=template_generate_function,
-            destination_folder=MICROSERVICE_FOLDER_v1,
+            template=template_generate_function_constructor(is_using_gpt_3_5_turbo, is_using_google_custom_search),
             microservice_description=self.microservice_specification.task,
             test_description=self.microservice_specification.test,
             packages=packages,
             file_name_purpose=IMPLEMENTATION_FILE_NAME,
             tag_name=IMPLEMENTATION_FILE_TAG,
             file_name_s=[IMPLEMENTATION_FILE_NAME],
+            post_process_fn=self.add_missing_imports_post_process_fn,
         )[IMPLEMENTATION_FILE_NAME]
 
         test_microservice_content = self.generate_and_persist_file(
             'Test Microservice',
             template_generate_test,
-            MICROSERVICE_FOLDER_v1,
             code_files_wrapped=self.files_to_string({EXECUTOR_FILE_NAME: microservice_content}),
-            microservice_name=microservice_name,
+            microservice_name=self.microservice_name,
             microservice_description=self.microservice_specification.task,
             test_description=self.microservice_specification.test,
             file_name_purpose=TEST_EXECUTOR_FILE_NAME,
             tag_name=TEST_EXECUTOR_FILE_TAG,
             file_name_s=[TEST_EXECUTOR_FILE_NAME],
+            post_process_fn=self.add_missing_imports_post_process_fn,
         )[TEST_EXECUTOR_FILE_NAME]
 
-        requirements_content = self.generate_and_persist_file(
+        self.generate_and_persist_file(
             'Requirements',
             template_generate_requirements,
-            MICROSERVICE_FOLDER_v1,
             code_files_wrapped=self.files_to_string({
                 IMPLEMENTATION_FILE_NAME: microservice_content,
                 TEST_EXECUTOR_FILE_NAME: test_microservice_content,
@@ -189,21 +242,7 @@ metas:
             file_name_s=[REQUIREMENTS_FILE_NAME],
             parse_result_fn=self.parse_result_fn_requirements,
             tag_name=REQUIREMENTS_FILE_TAG,
-        )[REQUIREMENTS_FILE_NAME]
-
-        # I deactivated this because 3.5-turbo was hallucinating packages that were not needed
-        # now, in the first iteration the default dockerfile is used
-        # self.generate_and_persist_file(
-        #     section_title='Generate Dockerfile',
-        #     template=template_generate_apt_get_install,
-        #     destination_folder=MICROSERVICE_FOLDER_v1,
-        #     file_name_s=None,
-        #     parse_result_fn=self.parse_result_fn_dockerfile,
-        #     docker_file_wrapped=self.read_docker_template(),
-        #     requirements_file_wrapped=self.files_to_string({
-        #         REQUIREMENTS_FILE_NAME: requirements_content,
-        #     })
-        # )
+        )
 
         with open(os.path.join(os.path.dirname(__file__), 'static_files', 'microservice', 'Dockerfile'), 'r',
                   encoding='utf-8') as f:
@@ -212,12 +251,25 @@ metas:
             line.replace('{{APT_GET_PACKAGES}}', '').replace('{{DOCKER_BASE_IMAGE_VERSION}}', DOCKER_BASE_IMAGE_VERSION)
             for line in docker_file_template_lines
         ]
-        docker_file_content = '\n'.join(docker_file_template_lines)
-        persist_file(docker_file_content, os.path.join(MICROSERVICE_FOLDER_v1, 'Dockerfile'))
+        docker_file_content = ''.join(docker_file_template_lines)
+        persist_file(docker_file_content, os.path.join(self.cur_microservice_path, 'Dockerfile'))
 
-        self.write_config_yml(microservice_name, MICROSERVICE_FOLDER_v1)
+        self.write_config_yml(self.microservice_name, self.cur_microservice_path)
 
         print('\nFirst version of the microservice generated. Start iterating on it to make the tests pass...')
+
+
+    def add_missing_imports_post_process_fn(self, content_dict: dict):
+        for file_name, file_content in content_dict.items():
+            file_content = self.add_missing_imports_for_file(file_content)
+            content_dict[file_name] = file_content
+        return content_dict
+
+    def add_missing_imports_for_file(self, file_content):
+        for indicator, import_statement in INDICATOR_TO_IMPORT_STATEMENT.items():
+            if indicator in file_content and import_statement not in file_content:
+                file_content = f'{import_statement}\n{file_content}'
+        return file_content
 
     @staticmethod
     def read_docker_template():
@@ -245,15 +297,18 @@ pytest
 {os.linesep.join(lines)}'''
         return {REQUIREMENTS_FILE_NAME: content_modified}
 
-    def generate_playground(self, microservice_name, microservice_path):
+    def generate_playground(self):
         print_colored('', '\n\n############# Playground #############', 'blue')
 
-        file_name_to_content = get_all_microservice_files_with_content(microservice_path)
+        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'gateway', 'app_template.py'), 'r', encoding='utf-8') as f:
+            playground_template = f.read()
+        file_name_to_content = get_all_microservice_files_with_content(self.cur_microservice_path)
         conversation = self.gpt_session.get_conversation()
         conversation.chat(
             template_generate_playground.format(
-                code_files_wrapped=self.files_to_string(file_name_to_content, ['test_microservice.py']),
-                microservice_name=microservice_name,
+                code_files_wrapped=self.files_to_string(file_name_to_content, ['test_microservice.py', 'microservice.py']),
+                microservice_name=self.microservice_name,
+                playground_template=playground_template,
             )
         )
         playground_content_raw = conversation.chat(
@@ -269,13 +324,14 @@ pytest
             playground_content = self.extract_content_from_result(
                 content_raw, 'app.py', match_single_block=True
             )
+        playground_content = self.add_missing_imports_for_file(playground_content)
 
-        gateway_path = os.path.join(microservice_path, 'gateway')
+        gateway_path = os.path.join(self.cur_microservice_path, 'gateway')
         shutil.copytree(os.path.join(os.path.dirname(__file__), 'static_files', 'gateway'), gateway_path)
         persist_file(playground_content, os.path.join(gateway_path, 'app.py'))
 
         # fill-in name of microservice
-        gateway_name = f'Gateway{microservice_name}'
+        gateway_name = f'Gateway{self.microservice_name}'
         custom_gateway_path = os.path.join(gateway_path, 'custom_gateway.py')
         with open(custom_gateway_path, 'r', encoding='utf-8') as f:
             custom_gateway_content = f.read()
@@ -293,40 +349,41 @@ pytest
         print('Final step...')
         hubble_log = push_executor(gateway_path)
         if not is_executor_in_hub(gateway_name):
-            raise Exception(f'{microservice_name} not in hub. Hubble logs: {hubble_log}')
+            raise Exception(f'{self.microservice_name} not in hub. Hubble logs: {hubble_log}')
 
-    def debug_microservice(self, microservice_name, num_approach, packages):
+    def debug_microservice(self, num_approach, packages, self_healing):
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
             print('Trying to debug the microservice. Might take a while...')
-            previous_microservice_path = get_microservice_path(self.microservice_root_path, microservice_name, packages,
-                                                               num_approach, i)
-            next_microservice_path = get_microservice_path(self.microservice_root_path, microservice_name, packages,
-                                                           num_approach, i + 1)
-            clean_requirements_txt(previous_microservice_path)
-            log_hubble = push_executor(previous_microservice_path)
+            clean_requirements_txt(self.cur_microservice_path)
+            log_hubble = push_executor(self.cur_microservice_path)
             error = process_error_message(log_hubble)
             if error:
+                if not self_healing:
+                    print(error)
+                    raise Exception('Self-healing is disabled. Please fix the error manually.')
                 print('An error occurred during the build process. Feeding the error back to the assistant...')
-                self.do_debug_iteration(error, next_microservice_path, previous_microservice_path)
+                self.previous_microservice_path = self.cur_microservice_path
+                self.cur_microservice_path = get_microservice_path(
+                    self.microservice_root_path, self.microservice_name, packages, num_approach, i + 1
+                )
+                os.makedirs(self.cur_microservice_path)
+                self.do_debug_iteration(error)
                 if i == MAX_DEBUGGING_ITERATIONS - 1:
                     raise self.MaxDebugTimeReachedException('Could not debug the microservice.')
             else:
                 # at the moment, there can be cases where no error log is extracted but the executor is still not published
                 # it leads to problems later on when someone tries a run or deployment
-                if is_executor_in_hub(microservice_name):
+                if is_executor_in_hub(self.microservice_name):
                     print('Successfully build microservice.')
                     break
                 else:
-                    raise Exception(f'{microservice_name} not in hub. Hubble logs: {log_hubble}')
+                    raise Exception(f'{self.microservice_name} not in hub. Hubble logs: {log_hubble}')
 
-        return get_microservice_path(self.microservice_root_path, microservice_name, packages, num_approach, i)
-
-    def do_debug_iteration(self, error, next_microservice_path, previous_microservice_path):
-        os.makedirs(next_microservice_path)
-        file_name_to_content = get_all_microservice_files_with_content(previous_microservice_path)
+    def do_debug_iteration(self, error):
+        file_name_to_content = get_all_microservice_files_with_content(self.previous_microservice_path)
         for file_name, content in file_name_to_content.items():
-            persist_file(content, os.path.join(next_microservice_path, file_name))
+            persist_file(content, os.path.join(self.cur_microservice_path, file_name))
 
         summarized_error = self.summarize_error(error)
         dock_req_string = self.files_to_string({
@@ -339,7 +396,6 @@ pytest
             self.generate_and_persist_file(
                 section_title='Debugging apt-get dependency issue',
                 template=template_solve_apt_get_dependency_issue,
-                destination_folder=next_microservice_path,
                 file_name_s=['apt-get-packages.json'],
                 parse_result_fn=self.parse_result_fn_dockerfile,
                 summarized_error=summarized_error,
@@ -352,23 +408,85 @@ pytest
                 self.generate_and_persist_file(
                     section_title='Debugging pip dependency issue',
                     template=template_solve_pip_dependency_issue,
-                    destination_folder=next_microservice_path,
                     file_name_s=[REQUIREMENTS_FILE_NAME],
                     summarized_error=summarized_error,
                     all_files_string=dock_req_string,
                 )
             else:
+                all_files_string = self.files_to_string(
+                    {key: val for key, val in file_name_to_content.items() if key != EXECUTOR_FILE_NAME}
+                )
+
+                suggested_solution = self.generate_solution_suggestion(summarized_error, all_files_string)
+
                 self.generate_and_persist_file(
-                    section_title='Debugging code issue',
-                    template=template_solve_code_issue,
-                    destination_folder=next_microservice_path,
+                    section_title='Implementing suggestion solution for code issue',
+                    template=template_implement_solution_code_issue,
                     file_name_s=[IMPLEMENTATION_FILE_NAME, TEST_EXECUTOR_FILE_NAME, REQUIREMENTS_FILE_NAME],
                     summarized_error=summarized_error,
                     task_description=self.microservice_specification.task,
                     test_description=self.microservice_specification.test,
-                    all_files_string=self.files_to_string(
-                        {key: val for key, val in file_name_to_content.items() if key != EXECUTOR_FILE_NAME}),
+                    all_files_string=all_files_string,
+                    suggested_solution=suggested_solution,
                 )
+
+                self.previous_errors.append(summarized_error)
+                self.previous_solutions.append(suggested_solution)
+
+    def generate_solution_suggestion(self, summarized_error, all_files_string):
+        suggested_solutions = json.loads(
+            self.generate_and_persist_file(
+                section_title='Suggest solution for code issue',
+                template=template_suggest_solutions_code_issue,
+                file_name_s=['solutions.json'],
+                summarized_error=summarized_error,
+                task_description=self.microservice_specification.task,
+                test_description=self.microservice_specification.test,
+                all_files_string=all_files_string,
+                response_format_example=response_format_suggest_solutions,
+            )['solutions.json']
+        )
+
+        if len(self.previous_errors) > 0:
+            was_error_seen_before = json.loads(
+                self.generate_and_persist_file(
+                    section_title='Check if error was seen before',
+                    template=template_was_error_seen_before,
+                    file_name_s=['was_error_seen_before.json'],
+                    summarized_error=summarized_error,
+                    previous_errors='- "' + f'"{os.linesep}- "'.join(self.previous_errors) + '"',
+                    use_custom_system_message=False,
+                    response_format_example=response_format_was_error_seen_before,
+                )['was_error_seen_before.json']
+            )['was_error_seen_before'].lower() == 'yes'
+
+            suggested_solution = None
+            if was_error_seen_before:
+                for _num_solution in range(1, len(suggested_solutions) + 1):
+                    _suggested_solution = suggested_solutions[str(_num_solution)]
+                    was_solution_tried_before = json.loads(
+                        self.generate_and_persist_file(
+                            section_title='Check if solution was tried before',
+                            template=template_was_solution_tried_before,
+                            file_name_s=['will_lead_to_different_actions.json'],
+                            tried_solutions='- "' + f'"{os.linesep}- "'.join(self.previous_solutions) + '"',
+                            suggested_solution=_suggested_solution,
+                            use_custom_system_message=False,
+                            response_format_example=response_format_was_solution_tried_before,
+                        )['will_lead_to_different_actions.json']
+                    )['will_lead_to_different_actions'].lower() == 'no'
+                    if not was_solution_tried_before:
+                        suggested_solution = _suggested_solution
+                        break
+            else:
+                suggested_solution = suggested_solutions['1']
+
+            if suggested_solution is None:
+                suggested_solution = f"solve error: {summarized_error}"
+        else:
+            suggested_solution = suggested_solutions['1']
+
+        return suggested_solution
 
     class MaxDebugTimeReachedException(BaseException):
         pass
@@ -413,7 +531,7 @@ pytest
             description=self.microservice_specification.task
         )['strategies.json']
         packages_list = [[pkg.strip().lower() for pkg in packages] for packages in json.loads(packages_json_string)]
-        packages_list = [[self.replace_with_gpt_3_5_turbo_if_possible(pkg) for pkg in packages] for packages in
+        packages_list = [[self.replace_with_tool_if_possible(pkg) for pkg in packages] for packages in
                          packages_list]
 
         packages_list = self.filter_packages_list(packages_list)
@@ -423,16 +541,16 @@ pytest
     # '/private/var/folders/f5/whmffl4d7q79s29jpyb6719m0000gn/T/pytest-of-florianhonicke/pytest-128/test_generation_level_0_mock_i0'
     # '/private/var/folders/f5/whmffl4d7q79s29jpyb6719m0000gn/T/pytest-of-florianhonicke/pytest-129/test_generation_level_0_mock_i0'
     def generate(self):
-        self.microservice_specification.task, self.microservice_specification.test = PM().refine_specification(self.microservice_specification.task)
         os.makedirs(self.microservice_root_path)
+        self.microservice_specification.task, self.microservice_specification.test = PM().refine_specification(self.microservice_specification.task)
         generated_name = self.generate_microservice_name(self.microservice_specification.task)
-        microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
+        self.microservice_name = f'{generated_name}{random.randint(0, 10_000_000)}'
         packages_list = self.get_possible_packages()
         for num_approach, packages in enumerate(packages_list):
             try:
-                self.generate_microservice(microservice_name, packages, num_approach)
-                final_version_path = self.debug_microservice(microservice_name, num_approach, packages)
-                self.generate_playground(microservice_name, final_version_path)
+                self.generate_microservice(packages, num_approach)
+                self.debug_microservice(num_approach, packages, self.self_healing)
+                self.generate_playground()
             except self.MaxDebugTimeReachedException:
                 print('Could not debug the Microservice with the approach:', packages)
                 if num_approach == len(packages_list) - 1:
@@ -457,9 +575,11 @@ You can now run or deploy your microservice:
 
 
     @staticmethod
-    def replace_with_gpt_3_5_turbo_if_possible(pkg):
+    def replace_with_tool_if_possible(pkg):
         if pkg in LANGUAGE_PACKAGES:
             return 'gpt_3_5_turbo'
+        if pkg in SEARCH_PACKAGES:
+            return 'google_custom_search'
         return pkg
 
     @staticmethod

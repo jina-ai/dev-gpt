@@ -1,0 +1,20 @@
+jtype: Flow
+with:
+  port: 8080
+  protocol: http
+jcloud:
+  version: 3.15.1.dev14
+  labels:
+    creator: microchain
+  name: gptdeploy
+gateway:
+  uses: jinaai+docker://auth0-unified-448f11965ce142b6/GatewayPositiveTweetModifierExecutor3163055:latest
+    
+executors:
+  - name: positivetweetmodifierexecutor3163055
+    uses: jinaai+docker://auth0-unified-448f11965ce142b6/PositiveTweetModifierExecutor3163055:latest
+
+    jcloud:
+      resources:
+        instance: C2
+        capacity: spot

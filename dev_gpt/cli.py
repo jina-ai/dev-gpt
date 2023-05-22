@@ -92,9 +92,16 @@ def deploy(path):
     Deployer().deploy(path)
 
 @main.command()
-@click.option('--key', required=True, help='Your OpenAI API key.')
-def configure(key):
-    set_api_key(key)
+@click.option('--openai-api-key', default=None, help='Your OpenAI API key.')
+@click.option('--google-api-key', default=None, help='Your Google API key.')
+@click.option('--google-cse-id', default=None, help='Your Google CSE ID.')
+def configure(openai_api_key, google_api_key, google_cse_id):
+    if openai_api_key:
+        set_api_key('OPENAI_API_KEY', openai_api_key)
+    if google_api_key:
+        set_api_key('GOOGLE_API_KEY', google_api_key)
+    if google_cse_id:
+        set_api_key('GOOGLE_CSE_ID', google_cse_id)
 
 
 if __name__ == '__main__':

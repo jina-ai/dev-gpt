@@ -98,11 +98,16 @@ def _push_executor(dir_path):
         'public': 'True',
         'private': 'False',
         'verbose': 'True',
-        'buildEnv': f'{{"OPENAI_API_KEY": "{os.environ["OPENAI_API_KEY"]}"}}',
+        'buildEnv': f'{{"OPENAI_API_KEY": "{os.environ["OPENAI_API_KEY"]}", "GOOGLE_API_KEY": "{os.environ.get("GOOGLE_API_KEY","")}", "GOOGLE_CSE_ID": "{os.environ.get("GOOGLE_CSE_ID","")}"}}',
         'md5sum': md5_digest,
     }
     with suppress_stdout():
         headers = get_request_header()
+        headers['jinameta-platform'] = 'Darwin'
+        headers['jinameta-platform-release'] = '21.1.0'
+        headers['jinameta-platform-version'] = 'Darwin Kernel Version 21.1.0: Wed Oct 13 17:33:23 PDT 2021; root:xnu-8019.41.5~1/RELEASE_X86_64'
+        headers['jinameta-architecture'] = 'x86_64'
+        headers['jinameta-processor'] = 'i386'
 
     resp = upload_file(
         'https://api.hubble.jina.ai/v2/rpc/executor.push',
@@ -251,7 +256,9 @@ executors:
     uses: {prefix}://{get_user_name(DEMO_TOKEN)}/{executor_name}:latest
     {"" if use_docker else "install-requirements: True"}
     env:
-      OPENAI_API_KEY: {os.environ['OPENAI_API_KEY']}
+      OPENAI_API_KEY: ${{{{ ENV.OPENAI_API_KEY }}}}
+      GOOGLE_API_KEY: ${{{{ ENV.GOOGLE_API_KEY }}}}
+      GOOGLE_CSE_ID: ${{{{ ENV.GOOGLE_CSE_ID }}}}
     jcloud:
       resources:
         instance: C2
