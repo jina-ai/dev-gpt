@@ -1,53 +1,53 @@
 import json
 import os
-import base64
+
 import streamlit as st
 from jina import Client, Document, DocumentArray
+import io
 
 st.set_page_config(
     page_title="<page title here>",
     page_icon="<page icon here>",
-    layout="<page layout here>",
-    initial_sidebar_state="<sidebar state here>",
+    layout="centered",
+    initial_sidebar_state="auto",
 )
 
 st.title("<thematic emoji here> <header title here>")
 st.markdown(
     "<10 word description here>"
-    "To deploy your own microservice, click [here](https://github.com/jina-ai/dev-gpt)."
+    "To generate and deploy your own microservice, click [here](https://github.com/jina-ai/dev-gpt)."
 )
-
-st.header("<another thematic emoji here> Input Parameters") # only if input parameters are needed
+st.subheader("<a unique thematic emoji here> <sub header title here>")  # only if input parameters are needed
 with st.form(key="input_form"):
-    <input parameter definition here>
+    # <input parameter definition here>
+    input_json_dict = {} #
 
-input_data = {
-    <input parameters here>
-}
-input_json = json.dumps(input_data)
+    input_json_dict_string = json.dumps(input_json_dict)
+    submitted = st.form_submit_button("<submit button text>")
 
 # Process input and call microservice
-if submit_button:
-    with st.spinner("Generating collage..."):
-
-
+if submitted:
+    with st.spinner("<spinner text here>..."):
         client = Client(host="http://localhost:8080")
-        d = Document(text=input_json)
+        d = Document(text=input_json_dict_string)
         response = client.post("/", inputs=DocumentArray([d]))
 
         output_data = json.loads(response[0].text)
-        <visualization of results>
+        # <visualization of results here>
 
 # Display curl command
 deployment_id = os.environ.get("K8S_NAMESPACE_NAME", "")
-host = (
+api_endpoint = (
     f"https://dev-gpt-{deployment_id.split('-')[1]}.wolf.jina.ai/post"
     if deployment_id
     else "http://localhost:8080/post"
 )
+
 with st.expander("See curl command"):
     st.markdown("You can use the following curl command to send a request to the microservice from the command line:")
+    escaped_input_json_dict_string = input_json_dict_string.replace('"', '\\"')
+
     st.code(
-        f'curl -X "POST" "{host}" -H "accept: application/json" -H "Content-Type: application/json" -d \'{{"data": [{{"text": "{input_json}"}}]}}\'',
+        f'curl -X "POST" "{api_endpoint}" -H "accept: application/json" -H "Content-Type: application/json" -d \'{{"data": [{{"text": "{escaped_input_json_dict_string}"}}]}}\'',
         language="bash",
     )
