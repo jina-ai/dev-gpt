@@ -250,7 +250,7 @@ metas:
             line.replace('{{APT_GET_PACKAGES}}', '').replace('{{DOCKER_BASE_IMAGE_VERSION}}', DOCKER_BASE_IMAGE_VERSION)
             for line in docker_file_template_lines
         ]
-        docker_file_content = '\n'.join(docker_file_template_lines)
+        docker_file_content = ''.join(docker_file_template_lines)
         persist_file(docker_file_content, os.path.join(self.cur_microservice_path, 'Dockerfile'))
 
         self.write_config_yml(self.microservice_name, self.cur_microservice_path)
@@ -259,12 +259,16 @@ metas:
 
 
     def add_missing_imports_post_process_fn(self, content_dict: dict):
-        for indicator, import_statement in INDICATOR_TO_IMPORT_STATEMENT.items():
-            for file_name, file_content in content_dict.items():
-                if indicator in file_content and import_statement not in file_content:
-                    content_dict[file_name] = f'{import_statement}\n{file_content}'
+        for file_name, file_content in content_dict.items():
+            file_content = self.add_missing_imports_for_file(file_content)
+            content_dict[file_name] = file_content
         return content_dict
 
+    def add_missing_imports_for_file(self, file_content):
+        for indicator, import_statement in INDICATOR_TO_IMPORT_STATEMENT.items():
+            if indicator in file_content and import_statement not in file_content:
+                file_content = f'{import_statement}\n{file_content}'
+        return file_content
 
     @staticmethod
     def read_docker_template():
@@ -295,12 +299,15 @@ pytest
     def generate_playground(self):
         print_colored('', '\n\n############# Playground #############', 'blue')
 
+        with open(os.path.join(os.path.dirname(__file__), 'static_files', 'gateway', 'app_template.py'), 'r', encoding='utf-8') as f:
+            playground_template = f.read()
         file_name_to_content = get_all_microservice_files_with_content(self.cur_microservice_path)
         conversation = self.gpt_session.get_conversation()
         conversation.chat(
             template_generate_playground.format(
-                code_files_wrapped=self.files_to_string(file_name_to_content, ['test_microservice.py']),
+                code_files_wrapped=self.files_to_string(file_name_to_content, ['test_microservice.py', 'microservice.py']),
                 microservice_name=self.microservice_name,
+                playground_template=playground_template,
             )
         )
         playground_content_raw = conversation.chat(
@@ -316,6 +323,7 @@ pytest
             playground_content = self.extract_content_from_result(
                 content_raw, 'app.py', match_single_block=True
             )
+        playground_content = self.add_missing_imports_for_file(playground_content)
 
         gateway_path = os.path.join(self.cur_microservice_path, 'gateway')
         shutil.copytree(os.path.join(os.path.dirname(__file__), 'static_files', 'gateway'), gateway_path)

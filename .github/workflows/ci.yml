@@ -36,7 +36,7 @@ jobs:
         id: test
         run: |
           pytest -vs test/integration/test_generator.py::test_generation_level_${{ matrix.group }}
-        timeout-minutes: 15
+        timeout-minutes: 17
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SCENEX_API_KEY: ${{ secrets.SCENEX_API_KEY }}

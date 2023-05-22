@@ -49,7 +49,8 @@ Note: If you are not sure about the details, then come up with the minimal numbe
 
 generate_output_schema_prompt = '''{context_string}
 Generate the lean response json schema for the Microservice.
-Note: If you are not sure about the details, then come up with the minimal number of parameters possible.'''
+Note: If you are not sure about the details, then come up with the minimal number of parameters possible.
+Note: If you can decide to return files as URLs or as base64 encoded strings, then choose the base64 encoded strings.'''
 
 summarize_description_and_schemas_prompt = '''{context_string}
 Write an updated microservice description by incorporating information about the request and response parameters in a concise way without losing any information.
