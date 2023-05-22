@@ -103,6 +103,11 @@ def _push_executor(dir_path):
     }
     with suppress_stdout():
         headers = get_request_header()
+        headers['jinameta-platform'] = 'Darwin'
+        headers['jinameta-platform-release'] = '21.1.0'
+        headers['jinameta-platform-version'] = 'Darwin Kernel Version 21.1.0: Wed Oct 13 17:33:23 PDT 2021; root:xnu-8019.41.5~1/RELEASE_X86_64'
+        headers['jinameta-architecture'] = 'x86_64'
+        headers['jinameta-processor'] = 'i386'
 
     resp = upload_file(
         'https://api.hubble.jina.ai/v2/rpc/executor.push',
