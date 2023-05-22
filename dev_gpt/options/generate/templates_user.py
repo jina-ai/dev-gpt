@@ -18,7 +18,7 @@ The implemented function and the test must not access a database.
 The implemented function and the test must not access a display.
 The implemented function and the test must not access external apis unless it is explicitly mentioned.
 The implemented function and the test must not be based on a large collection of hard-coded strings.
-The implemented function and the test must not load data from the local file system unless it was created by the implemented function itself.
+The implemented function and the test must not open files from the local file system unless it was created by the implemented function itself.
 The implemented function and the test must not use a pre-trained model unless it is explicitly mentioned in the description.
 The implemented function and the test must not train a model.
 The implemented function and the test must not contain prototype or placeholder implementations.
