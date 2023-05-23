@@ -10,7 +10,7 @@ from langchain.callbacks import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage, BaseMessage, AIMessage
-from openai.error import RateLimitError
+from openai.error import RateLimitError, APIError
 from requests.exceptions import ConnectionError, ChunkedEncodingError
 from urllib3.exceptions import InvalidChunkLength
 
@@ -149,7 +149,7 @@ class _GPTConversation:
                 response = self._chat(self.messages)
                 self.conversation_logger.log(self.messages, response)
                 break
-            except (ConnectionError, InvalidChunkLength, ChunkedEncodingError) as e:
+            except (ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError) as e:
                 print('There was a connection error. Retrying...')
                 if i == 9:
                     raise e
