@@ -28,6 +28,7 @@ FILE_AND_TAG_PAIRS = [
 
 INDICATOR_TO_IMPORT_STATEMENT = {
     'io.BytesIO': 'import io',
+    'BeautifulSoup': 'from bs4 import BeautifulSoup',
     'BytesIO': 'from io import BytesIO',
     'base64': 'import base64',
 }
