@@ -18,7 +18,7 @@ from jina import Flow
 
 from dev_gpt.constants import DEMO_TOKEN
 from dev_gpt.utils.io import suppress_stdout, is_docker_running
-from dev_gpt.utils.string_tools import print_colored
+from dev_gpt.utils.string_tools import print_colored, clean_large_words
 
 
 def wait_until_app_is_ready(url):
@@ -309,6 +309,7 @@ def clean_color_codes(response):
     response = re.sub(r'\x1b\[[0-9;]*m', '', response)
     return response
 
+
 def process_error_message(error_message):
     lines = error_message.split('\n')
 
@@ -330,10 +331,12 @@ def process_error_message(error_message):
 
     response = clean_color_codes(response)
 
+    # the following code makes sure that the error message is cleaned from irrelevant sequences of e.g. base64 strings.
+    response = clean_large_words(response)
+
     # the following code tests the case that the docker file is corrupted and can not be parsed
     # the method above will not return a relevant error message in this case
     # but the last line of the error message will start with "error"
-
     last_line = lines[-1]
     if not response and last_line.startswith('error: '):
         return last_line
