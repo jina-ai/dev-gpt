@@ -2,10 +2,10 @@ from langchain import PromptTemplate
 
 from dev_gpt.constants import IMPLEMENTATION_FILE_NAME
 
-general_guidelines_string = '''The code you write is production ready. Every file starts with comments describing what the code is doing before the first import. Comments can only be written within code blocks.
-Then all imports are listed.
-
-Start from top-level and then fully implement all methods.'''
+general_guidelines_string = '''\
+The code you write is production ready. 
+Every file starts with comments describing what the code is doing before the first import. 
+Comments can only be written within code blocks.'''
 
 
 not_allowed_docker_string = '''Note that the Dockerfile only has access to the files: microservice.py, requirements.txt, config.yml, test_microservice.py.
@@ -90,7 +90,7 @@ Note that you must obey the double asterisk and triple backtick syntax from like
 You must provide the complete {file_name} wrapped with the exact syntax shown above.'''
 
 
-gpt_35_turbo_usage_string = """If you need to use gpt_3_5_turbo, then use it like shown in the following example:
+gpt_35_turbo_usage_string = """Use the gpt_3_5_turbo like shown in the following example:
 ```
 from .gpt_3_5_turbo import GPT_3_5_Turbo
 
@@ -135,7 +135,6 @@ outputs a json dictionary string (that can be parsed with the python function js
 The function is called 'func' and has the following signature:
 def func(input_json_dict_string: str) -> str:
 The function must fulfill the following description: '{{microservice_description}}'.
-It will be tested with the following scenario: '{{test_description}}'.
 For the implementation use the following package(s): '{{packages}}'.
 
 The code must start with the following imports:
@@ -146,11 +145,6 @@ import requests
 Obey the following rules:
 {not_allowed_function_string}
 
-Your approach:
-1. Identify the core challenge when implementing the function.
-2. Think about solutions for these challenges.
-3. Decide for one of the solutions.
-4. Write the code for the function. Don't write code for the test.
 {gpt_35_turbo_usage_string if is_using_gpt_3_5_turbo else ''}
 {google_custom_search_usage_string if is_using_google_custom_search else ''}
 {template_code_wrapping_string}'''
