@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group: [0, 1, 2, 3, 4]
+        group: [0, 1, 2, 3, 4, 5_company_logos]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.8
@@ -28,11 +28,13 @@ jobs:
         id: test
         run: |
           pytest -vs test/integration/test_generator.py::test_generation_level_${{ matrix.group }}
-        timeout-minutes: 15
+        timeout-minutes: 17
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SCENEX_API_KEY: ${{ secrets.SCENEX_API_KEY }}
           WHISPER_API_KEY: ${{ secrets.WHISPER_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
 
   test_unit:
     runs-on: ubuntu-latest
@@ -58,6 +60,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SCENEX_API_KEY: ${{ secrets.SCENEX_API_KEY }}
           WHISPER_API_KEY: ${{ secrets.WHISPER_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
 
   base-image-push:
     runs-on: ubuntu-latest

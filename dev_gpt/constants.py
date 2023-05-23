@@ -26,6 +26,13 @@ FILE_AND_TAG_PAIRS = [
     (STREAMLIT_FILE_NAME, STREAMLIT_FILE_TAG)
 ]
 
+INDICATOR_TO_IMPORT_STATEMENT = {
+    'io.BytesIO': 'import io',
+    'BeautifulSoup': 'from bs4 import BeautifulSoup',
+    'BytesIO': 'from io import BytesIO',
+    'base64': 'import base64',
+}
+
 FLOW_URL_PLACEHOLDER = 'jcloud.jina.ai'
 
 PRICING_GPT4_PROMPT = 0.03
@@ -43,15 +50,20 @@ DEMO_TOKEN = '45372338e04f5a41af949024db929d46'
 BLACKLISTED_PACKAGES = [
     'moderngl', 'pyopengl', 'pyglet', 'pythreejs', 'panda3d',  # because they need a screen,
     'tika',  # because it needs java
+    'clearbit'  # because of installation issues on latest version
 ]
 UNNECESSARY_PACKAGES = [
     'fastapi', 'uvicorn', 'starlette'  # because the wrappers are used instead
 ]
 
 LANGUAGE_PACKAGES = [
-    'allennlp', 'bertopic', 'fasttext', 'flair', 'gensim', 'nltk', 'openai',
+    'allennlp', 'bertopic', 'gpt-3', 'fasttext', 'flair', 'gensim', 'nltk', 'openai',
     'pattern', 'polyglot', 'pytorch-transformers', 'rasa', 'sentence-transformers',
     'spacy', 'stanza', 'summarizer', 'sumy', 'textblob', 'textstat', 'transformers',
     'vadersentiment'
+]
+
+SEARCH_PACKAGES = [
+    'googlesearch-python', 'google', 'googlesearch', 'google-api-python-client', 'pygooglenews', 'google-cloud'
 ]
 

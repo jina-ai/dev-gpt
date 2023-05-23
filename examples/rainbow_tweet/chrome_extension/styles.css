@@ -1,0 +1,78 @@
+.modify-button {
+  /* common styles */
+  border: none;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 3px;
+  background: transparent;  /* Make the button transparent */
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .modify-button {
+    color: white;  /* Light text for dark mode */
+  }
+}
+
+/* Light mode */
+@media (prefers-color-scheme: light) {
+  .modify-button {
+    color: #000;  /* Dark text for light mode */
+  }
+}
+
+
+/* Light mode colors (darker) */
+@keyframes rainbow-light {
+  0% { color: hsl(0, 100%, 30%); }
+  14% { color: hsl(60, 100%, 30%); }
+  28% { color: hsl(120, 100%, 30%); }
+  42% { color: hsl(180, 100%, 30%); }
+  57% { color: hsl(240, 100%, 30%); }
+  71% { color: hsl(300, 100%, 30%); }
+  85% { color: hsl(360, 100%, 30%); }
+  100% { color: hsl(0, 100%, 30%); }
+}
+
+/* Dark mode colors (brighter) */
+@keyframes rainbow-dark {
+  0% { color: hsl(0, 100%, 70%); }
+  14% { color: hsl(60, 100%, 70%); }
+  28% { color: hsl(120, 100%, 70%); }
+  42% { color: hsl(180, 100%, 70%); }
+  57% { color: hsl(240, 100%, 70%); }
+  71% { color: hsl(300, 100%, 70%); }
+  85% { color: hsl(360, 100%, 70%); }
+  100% { color: hsl(0, 100%, 70%); }
+}
+
+/* Apply light mode colors by default */
+.rainbow-text {
+  font-size: 200%;
+  animation: rainbow-light 7s linear infinite;
+  animation-delay: calc(.07s * var(--i));
+}
+
+/* Apply dark mode colors if user prefers dark mode */
+@media (prefers-color-scheme: dark) {
+  .rainbow-text {
+    animation: rainbow-dark 7s linear infinite;
+    animation-delay: calc(.07s * var(--i));
+  }
+}
+
+
+/*!* Rainbow colors for each letter *!*/
+/*!* Rainbow colors for each letter *!*/
+/*.rainbow0 { color: red; background-color: cyan; mix-blend-mode: difference; }*/
+/*.rainbow1 { color: orange; background-color: blue; mix-blend-mode: difference; }*/
+/*.rainbow2 { color: yellow; background-color: purple; mix-blend-mode: difference; }*/
+/*.rainbow3 { color: green; background-color: magenta; mix-blend-mode: difference; }*/
+/*.rainbow4 { color: blue; background-color: orange; mix-blend-mode: difference; }*/
+/*.rainbow5 { color: indigo; background-color: yellow; mix-blend-mode: difference; }*/
+/*.rainbow6 { color: violet; background-color: green; mix-blend-mode: difference; }*/

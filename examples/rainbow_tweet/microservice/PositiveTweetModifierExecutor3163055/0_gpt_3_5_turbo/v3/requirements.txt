@@ -1,0 +1,4 @@
+jina==3.15.1.dev14
+docarray==0.21.0
+openai==0.27.5
+pytest

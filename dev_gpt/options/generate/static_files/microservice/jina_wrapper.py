@@ -11,5 +11,5 @@ class DevGPTExecutor(Executor):
     @jina_requests()
     def endpoint(self, docs: DocumentArray, **kwargs) -> DocumentArray:
         for d in docs:
-            d.text = json.dumps(func(json.loads(d.text)))
+            d.text = func(d.text)
         return docs

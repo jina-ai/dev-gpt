@@ -10,12 +10,14 @@ from langchain.callbacks import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage, BaseMessage, AIMessage
-from openai.error import RateLimitError
+from openai.error import RateLimitError, APIError
 from requests.exceptions import ConnectionError, ChunkedEncodingError
 from urllib3.exceptions import InvalidChunkLength
 
 from dev_gpt.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
     PRICING_GPT3_5_TURBO_GENERATION, CHARS_PER_TOKEN
+from dev_gpt.options.generate.conversation_logger import ConversationLogger
+from dev_gpt.options.generate.parser import identity_parser
 from dev_gpt.options.generate.templates_system import template_system_message_base
 from dev_gpt.utils.string_tools import print_colored, get_template_parameters
 
@@ -24,7 +26,7 @@ def configure_openai_api_key():
     if 'OPENAI_API_KEY' not in os.environ:
         print_colored('You need to set OPENAI_API_KEY in your environment.', '''
 Run:
-dev-gpt configure --key <your_openai_api_key>
+dev-gpt configure --openai_api_key <your_openai_api_key>
 
 If you have updated it already, please restart your terminal.
 ''', 'red')
@@ -41,9 +43,10 @@ class GPTSession:
             cls._instance = super(GPTSession, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, model: str = 'gpt-4', ):
+    def __init__(self, log_file_path: str, model: str = 'gpt-4', ):
         if GPTSession._initialized:
             return
+        self.conversation_logger = ConversationLogger(log_file_path)
         if model == 'gpt-4' and self.is_gpt4_available():
             self.pricing_prompt = PRICING_GPT4_PROMPT
             self.pricing_generation = PRICING_GPT4_GENERATION
@@ -58,10 +61,13 @@ class GPTSession:
         self.chars_generation_so_far = 0
         GPTSession._initialized = True
 
+
+
+
     def get_conversation(self, messages: List[BaseMessage] = [], print_stream: bool = True, print_costs: bool = True):
         messages = deepcopy(messages)
         return _GPTConversation(
-            self.model_name, self.cost_callback, messages, print_stream, print_costs
+            self.model_name, self.cost_callback, messages, print_stream, print_costs, self.conversation_logger
         )
 
     @staticmethod
@@ -77,7 +83,7 @@ class GPTSession:
                         }]
                     )
                     break
-                except RateLimitError:
+                except (RateLimitError, openai.error.APIError):
                     sleep(1)
                     continue
             return True
@@ -107,7 +113,7 @@ class AssistantStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
 
 
 class _GPTConversation:
-    def __init__(self, model: str, cost_callback, messages: List[BaseMessage], print_stream, print_costs):
+    def __init__(self, model: str, cost_callback, messages: List[BaseMessage], print_stream, print_costs, conversation_logger: ConversationLogger = None):
         self._chat = ChatOpenAI(
             model_name=model,
             streaming=True,
@@ -119,6 +125,7 @@ class _GPTConversation:
         self.messages = messages
         self.print_stream = print_stream
         self.print_costs = print_costs
+        self.conversation_logger = conversation_logger
 
     def print_messages(self, messages):
         for i, message in enumerate(messages):
@@ -141,8 +148,9 @@ class _GPTConversation:
         for i in range(10):
             try:
                 response = self._chat(self.messages)
+                self.conversation_logger.log(self.messages, response)
                 break
-            except (ConnectionError, InvalidChunkLength, ChunkedEncodingError) as e:
+            except (ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError) as e:
                 print('There was a connection error. Retrying...')
                 if i == 9:
                     raise e
@@ -163,7 +171,7 @@ class _GPTConversation:
         return SystemMessage(content=system_message)
 
 
-def ask_gpt(prompt_template, parser, **kwargs):
+def ask_gpt(prompt_template: str, parser=identity_parser, **kwargs):
     template_parameters = get_template_parameters(prompt_template)
     if set(template_parameters) != set(kwargs.keys()):
         raise ValueError(
@@ -173,7 +181,7 @@ def ask_gpt(prompt_template, parser, **kwargs):
         if isinstance(value, dict):
             kwargs[key] = json.dumps(value, indent=4)
     prompt = prompt_template.format(**kwargs)
-    conversation = GPTSession().get_conversation(
+    conversation = GPTSession._instance.get_conversation(
         [],
         print_stream=os.environ['VERBOSE'].lower() == 'true',
         print_costs=False

@@ -18,7 +18,7 @@ from jina import Flow
 
 from dev_gpt.constants import DEMO_TOKEN
 from dev_gpt.utils.io import suppress_stdout, is_docker_running
-from dev_gpt.utils.string_tools import print_colored
+from dev_gpt.utils.string_tools import print_colored, clean_large_words
 
 
 def wait_until_app_is_ready(url):
@@ -98,11 +98,16 @@ def _push_executor(dir_path):
         'public': 'True',
         'private': 'False',
         'verbose': 'True',
-        'buildEnv': f'{{"OPENAI_API_KEY": "{os.environ["OPENAI_API_KEY"]}"}}',
+        'buildEnv': f'{{"OPENAI_API_KEY": "{os.environ["OPENAI_API_KEY"]}", "GOOGLE_API_KEY": "{os.environ.get("GOOGLE_API_KEY","")}", "GOOGLE_CSE_ID": "{os.environ.get("GOOGLE_CSE_ID","")}"}}',
         'md5sum': md5_digest,
     }
     with suppress_stdout():
         headers = get_request_header()
+        headers['jinameta-platform'] = 'Darwin'
+        headers['jinameta-platform-release'] = '21.1.0'
+        headers['jinameta-platform-version'] = 'Darwin Kernel Version 21.1.0: Wed Oct 13 17:33:23 PDT 2021; root:xnu-8019.41.5~1/RELEASE_X86_64'
+        headers['jinameta-architecture'] = 'x86_64'
+        headers['jinameta-processor'] = 'i386'
 
     resp = upload_file(
         'https://api.hubble.jina.ai/v2/rpc/executor.push',
@@ -251,7 +256,9 @@ executors:
     uses: {prefix}://{get_user_name(DEMO_TOKEN)}/{executor_name}:latest
     {"" if use_docker else "install-requirements: True"}
     env:
-      OPENAI_API_KEY: {os.environ['OPENAI_API_KEY']}
+      OPENAI_API_KEY: ${{{{ ENV.OPENAI_API_KEY }}}}
+      GOOGLE_API_KEY: ${{{{ ENV.GOOGLE_API_KEY }}}}
+      GOOGLE_CSE_ID: ${{{{ ENV.GOOGLE_CSE_ID }}}}
     jcloud:
       resources:
         instance: C2
@@ -302,6 +309,7 @@ def clean_color_codes(response):
     response = re.sub(r'\x1b\[[0-9;]*m', '', response)
     return response
 
+
 def process_error_message(error_message):
     lines = error_message.split('\n')
 
@@ -323,10 +331,12 @@ def process_error_message(error_message):
 
     response = clean_color_codes(response)
 
+    # the following code makes sure that the error message is cleaned from irrelevant sequences of e.g. base64 strings.
+    response = clean_large_words(response)
+
     # the following code tests the case that the docker file is corrupted and can not be parsed
     # the method above will not return a relevant error message in this case
     # but the last line of the error message will start with "error"
-
     last_line = lines[-1]
     if not response and last_line.startswith('error: '):
         return last_line

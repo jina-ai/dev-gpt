@@ -3,7 +3,7 @@ import json
 from dev_gpt.apis.gpt import ask_gpt
 from dev_gpt.options.generate.parser import identity_parser
 from dev_gpt.options.generate.prompt_factory import context_to_string
-
+from dev_gpt.options.generate.tools.tools import get_available_tools
 
 
 def auto_refine_description(context):
@@ -36,10 +36,13 @@ def auto_refine_description(context):
 better_description_prompt = f'''{{context_string}}
 Update the description of the Microservice to make it more precise without adding or removing information.
 Note: the output must be a list of tasks the Microservice has to perform.
-Example for the description: "return the average temperature of the 5 days weather forecast for a given location."
-1. get the 5 days weather forcast from the https://openweathermap.org/ API
-2. extract the temperature from the response
-3. calculate the average temperature'''
+Note: you can uses two tools if necessary:
+{get_available_tools()}
+Example for the description: "return an image representing the current weather for a given location."
+1. get the current weather information from the https://openweathermap.org/ API
+2. generate a Google search query to find the image matching the weather information and the location by using gpt-3.5-turbo
+3. find the image by using the Google search API
+4. return the image as a base64 encoded string'''
 
 generate_request_schema_prompt = '''{context_string}
 Generate the lean request json schema of the Microservice.
@@ -47,7 +50,8 @@ Note: If you are not sure about the details, then come up with the minimal numbe
 
 generate_output_schema_prompt = '''{context_string}
 Generate the lean response json schema for the Microservice.
-Note: If you are not sure about the details, then come up with the minimal number of parameters possible.'''
+Note: If you are not sure about the details, then come up with the minimal number of parameters possible.
+Note: If you can decide to return files as URLs or as base64 encoded strings, then choose the base64 encoded strings.'''
 
 summarize_description_and_schemas_prompt = '''{context_string}
 Write an updated microservice description by incorporating information about the request and response parameters in a concise way without losing any information.

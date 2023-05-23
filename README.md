@@ -49,13 +49,14 @@ Your imagination is the limit!
 <a href="https://pypistats.org/packages/dev-gpt" target="_blank">
     <img src="https://img.shields.io/pypi/dm/dev-gpt?color=%2334D058&label=pypi%20downloads" alt="Downloads">
 </a>
-<a href="https://discord.gg/ESn8ED6Fyn" target="_blank">
-    <img src="https://img.shields.io/badge/chat_on-Discord-7289DA?logo=discord&logoColor=white" alt="Discord Chat">
-</a>
+<a href="https://discord.jina.ai"><img src="https://img.shields.io/discord/1106542220112302130?logo=discord&logoColor=white&style=flat-square"></a>
+
 
 </p>
 
-Welcome to Dev GPT, where we bring your ideas to life with the power of advanced artificial intelligence! Our automated development team is designed to create microservices tailored to your specific needs, making your software development process seamless and efficient. Comprised of a virtual Product Manager, Developer, and DevOps, our AI team ensures that every aspect of your project is covered, from concept to deployment.
+Welcome to Dev-GPT, where we bring your ideas to life with the power of advanced artificial intelligence! 
+Our automated development team is designed to create microservices tailored to your specific needs, making your software development process seamless and efficient. 
+Comprised of a virtual Product Manager, Developer, and DevOps, our AI team ensures that every aspect of your project is covered, from concept to deployment.
 
 ## Quickstart
 
@@ -66,8 +67,13 @@ dev-gpt generate
 
 ### Requirements
 - OpenAI key with access to gpt-3.5-turbo or gpt-4
+- if you want to enable your microservice to search for web content, 
+you need to set the GOOGLE_API_KEY and GOOGLE_CSE_ID environment variables.
+More information can be found [here](https://developers.google.com/custom-search/v1/overview).
 ```bash
-dev-gpt configure --key <your openai api key>
+dev-gpt configure --openai_api_key <your openai api key>
+dev-gpt configure --google_api_key <google api key> (optional if you want to use google search)
+dev-gpt configure --google_cse_id <google cse id> (optional if you want to use google search)
 ```
 
 If you set the environment variable `OPENAI_API_KEY`, the configuration step can be skipped.
