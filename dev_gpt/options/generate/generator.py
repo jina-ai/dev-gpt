@@ -12,7 +12,7 @@ from langchain.schema import SystemMessage, AIMessage
 from pydantic.dataclasses import dataclass
 
 from dev_gpt.apis import gpt
-from dev_gpt.apis.gpt import _GPTConversation
+from dev_gpt.apis.gpt import _GPTConversation, ask_gpt
 from dev_gpt.apis.jina_cloud import process_error_message, push_executor, is_executor_in_hub
 from dev_gpt.apis.pypi import is_package_on_pypi, clean_requirements_txt
 from dev_gpt.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES, MAX_DEBUGGING_ITERATIONS, \
@@ -512,14 +512,7 @@ pytest
         return 'yes' in answer.lower()
 
     def generate_microservice_name(self, description):
-        name = self.generate_and_persist_file(
-            section_title='Generate microservice name',
-            template=template_generate_microservice_name,
-            destination_folder=self.microservice_root_path,
-            file_name_s=['name.txt'],
-            description=description
-        )['name.txt']
-        return name
+        return ask_gpt(template_generate_microservice_name, description=description)
 
     def get_possible_packages(self):
         print_colored('', '\n\n############# What packages to use? #############', 'blue')
@@ -538,8 +531,8 @@ pytest
         packages_list = self.remove_duplicates_from_packages_list(packages_list)
         packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
         return packages_list
-    # '/private/var/folders/f5/whmffl4d7q79s29jpyb6719m0000gn/T/pytest-of-florianhonicke/pytest-128/test_generation_level_0_mock_i0'
-    # '/private/var/folders/f5/whmffl4d7q79s29jpyb6719m0000gn/T/pytest-of-florianhonicke/pytest-129/test_generation_level_0_mock_i0'
+
+
     def generate(self):
         os.makedirs(self.microservice_root_path)
         self.microservice_specification.task, self.microservice_specification.test = PM().refine_specification(self.microservice_specification.task)

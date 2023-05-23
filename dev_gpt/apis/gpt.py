@@ -17,6 +17,7 @@ from urllib3.exceptions import InvalidChunkLength
 from dev_gpt.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
     PRICING_GPT3_5_TURBO_GENERATION, CHARS_PER_TOKEN
 from dev_gpt.options.generate.conversation_logger import ConversationLogger
+from dev_gpt.options.generate.parser import identity_parser
 from dev_gpt.options.generate.templates_system import template_system_message_base
 from dev_gpt.utils.string_tools import print_colored, get_template_parameters
 
@@ -170,7 +171,7 @@ class _GPTConversation:
         return SystemMessage(content=system_message)
 
 
-def ask_gpt(prompt_template, parser, **kwargs):
+def ask_gpt(prompt_template: str, parser=identity_parser, **kwargs):
     template_parameters = get_template_parameters(prompt_template)
     if set(template_parameters) != set(kwargs.keys()):
         raise ValueError(

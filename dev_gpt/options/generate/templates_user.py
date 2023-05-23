@@ -28,27 +28,25 @@ The implemented function and the test must not have a __main__ function.
 The implemented function and the test must use gpt_3_5_turbo if the task requires the processing of language (e.g., understanding, generation, summarization, transformation, translation, modification or classification). Other language models are not allowed.
 The implemented function must follow a clean and elegant coding style.'''
 
+plain_response_format_prompt = '''The response must be raw text and not fenced by markdown or html'''
 
-template_generate_microservice_name = PromptTemplate.from_template(
-    '''Generate a name for the executor matching the description:
-"{description}"
+template_generate_microservice_name = f'''\
+Generate a name for the executor matching the description:
+"{{description}}"
 The executor name must fulfill the following criteria:
 - camel case
 - start with a capital letter
 - only consists of lower and upper case characters
 - end with Executor.
-
-Your response must exactly match the following block code format (double asterisks for the file name and triple backticks for the file block):
-**name.txt**
-```
-<name here>
-```
-Example for: "Get a png as input and return a vectorized version as svg.":
-**name.txt**
+{plain_response_format_prompt}
+Positive example:
+PngToSvgExecutor
+Negative example:
 ```
 PngToSvgExecutor
-```'''
-)
+```
+'''
+
 
 # todo split into multiple calls. One for brainstorming - one for the final answer
 template_generate_possible_packages = PromptTemplate.from_template(
