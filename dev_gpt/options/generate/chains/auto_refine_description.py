@@ -38,10 +38,11 @@ Update the description of the Microservice to make it more precise without addin
 Note: the output must be a list of tasks the Microservice has to perform.
 Note: you can uses two tools if necessary:
 {get_available_tools()}
-Example for the description: "return a description of the average temperature of the 5 days weather forecast for a given location."
-1. get the 5 days weather forcast from the https://openweathermap.org/ API
-2. extract the temperature from the response
-3. calculate the average temperature'''
+Example for the description: "return an image representing the current weather for a given location."
+1. get the current weather information from the https://openweathermap.org/ API
+2. generate a Google search query to find the image matching the weather information and the location by using gpt-3.5-turbo
+3. find the image by using the Google search API
+4. return the image as a base64 encoded string'''
 
 generate_request_schema_prompt = '''{context_string}
 Generate the lean request json schema of the Microservice.
