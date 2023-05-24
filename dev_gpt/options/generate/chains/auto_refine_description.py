@@ -1,7 +1,7 @@
 import json
 
 from dev_gpt.apis.gpt import ask_gpt
-from dev_gpt.options.generate.parser import identity_parser
+from dev_gpt.options.generate.parser import identity_parser, optional_tripple_back_tick_parser
 from dev_gpt.options.generate.prompt_factory import context_to_string
 from dev_gpt.options.generate.tools.tools import get_available_tools
 
@@ -14,12 +14,12 @@ def auto_refine_description(context):
     )
     context['request_schema'] = ask_gpt(
         generate_request_schema_prompt,
-        identity_parser,
+        optional_tripple_back_tick_parser,
         context_string=context_to_string(context)
     )
     context['response_schema'] = ask_gpt(
         generate_output_schema_prompt,
-        identity_parser,
+        optional_tripple_back_tick_parser,
         context_string=context_to_string(context)
     )
     context['microservice_description'] = ask_gpt(
@@ -36,12 +36,13 @@ def auto_refine_description(context):
 better_description_prompt = f'''{{context_string}}
 Update the description of the Microservice to make it more precise without adding or removing information.
 Note: the output must be a list of tasks the Microservice has to perform.
-Note: you can uses two tools if necessary:
+Note: you can uses the following tools if necessary:
 {get_available_tools()}
-Example for the description: "return an image representing the current weather for a given location."
+Example for the description: "return an image representing the current weather for a given location." \
+when the tools gpt-3.5-turbo and google-search are available:
 1. get the current weather information from the https://openweathermap.org/ API
-2. generate a Google search query to find the image matching the weather information and the location by using gpt-3.5-turbo
-3. find the image by using the Google search API
+2. generate a Google search query to find the image matching the weather information and the location by using gpt-3.5-turbo (a)
+3. find the image by using the Google search API (b)
 4. return the image as a base64 encoded string'''
 
 generate_request_schema_prompt = '''{context_string}

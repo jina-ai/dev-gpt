@@ -15,20 +15,18 @@ def is_question_false(question):
 
 def answer_yes_no_question(text, question):
     pros_and_cons = ask_gpt(
-        pros_and_cons_prompt.format(
-            question=question,
-            text=text,
-        ),
-        identity_parser,
+        pros_and_cons_prompt,
+        question=question,
+        text=text,
     )
 
     return ask_gpt(
-        question_prompt.format(
-            text=text,
-            question=question,
-            pros_and_cons=pros_and_cons,
-        ),
-        boolean_parser)
+        question_prompt,
+        boolean_parser,
+        text=text,
+        question=question,
+        pros_and_cons=pros_and_cons,
+    )
 
 pros_and_cons_prompt = '''\
 # Context
@@ -42,5 +40,7 @@ question_prompt = '''\
 {text}
 # Question
 {question}
+# Pros and Cons
+{pros_and_cons}
 Note: You must answer "yes" or "no".
 '''
