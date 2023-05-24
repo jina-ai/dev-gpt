@@ -174,11 +174,10 @@ def test_generation_level_5_company_logos(microservice_dir, mock_input_sequence)
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
         f'''\
-Given a list of email addresses, get all company names from them.
+Given a list of email addresses, get all unique company names from them.
 For all companies, get the company logo.
 All logos need to be arranged on a square.
-The square is returned as png.
-''',
+The square is returned as png.''',
         str(microservice_dir),
         'gpt-3.5-turbo',
         # self_healing=False,

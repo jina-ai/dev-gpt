@@ -8,7 +8,6 @@ def context_to_string(context):
     for k, v in context.items():
         if isinstance(v, dict):
             v = json.dumps(v, indent=4)
-        v = make_prompt_friendly(v)
         context_strings.append(f'''\
 {k}:
 ```
