@@ -562,9 +562,10 @@ You can now run or deploy your microservice:
             return 0
 
     def summarize_error(self, error):
-        conversation = self.gpt_session.get_conversation()
-        error_summary = conversation.chat(template_summarize_error.format(error=error))
-        return error_summary
+        return error
+        # conversation = self.gpt_session.get_conversation()
+        # error_summary = conversation.chat(template_summarize_error.format(error=error))
+        # return error_summary
 
 
     @staticmethod
