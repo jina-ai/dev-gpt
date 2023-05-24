@@ -1,5 +1,5 @@
 <h1 align="center">
-Dev GPT: Your Automated Development Team
+Dev-GPT: Your Automated Development Team
 </h1>
 
 <p align="center" style="color: red; font-weight: bold;">
