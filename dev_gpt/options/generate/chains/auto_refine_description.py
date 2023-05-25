@@ -47,7 +47,7 @@ when the tools gpt-3.5-turbo and google-search are available:
 
 generate_request_schema_prompt = '''{context_string}
 Generate the lean request json schema of the Microservice.
-Note: If you are not sure about the details, then come up with the minimal number of parameters possible.'''
+Note: If you are not sure about the details, then come up with the minimal number of parameters possible (could be even no parameters).'''
 
 generate_output_schema_prompt = '''{context_string}
 Generate the lean response json schema for the Microservice.
