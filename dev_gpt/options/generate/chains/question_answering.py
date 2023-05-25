@@ -44,5 +44,5 @@ question_prompt = '''\
 
 # Question
 Based on the pros and cons, answer the following question: {question}
-Note: You must answer the question correctly by saying "yes" or "no".
+Note: You must answer the question correctly by saying something like "since <explanagion>, the answer is yes" or "since <explanagion>, the answer is no".
 '''
