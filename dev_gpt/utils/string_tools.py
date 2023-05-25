@@ -1,6 +1,7 @@
 import os
 import platform
 import string
+import re
 
 if platform.system() == "Windows":
     os.system("color")
@@ -40,3 +41,9 @@ def get_template_parameters(formatted_string):
             parameters.append(field_name)
 
     return parameters
+
+def clean_large_words(text):
+    """Large words like base64 strings are returned by omitting the middle part of the word."""
+    pattern = r'\b([a-zA-Z0-9+/]{20})([a-zA-Z0-9+/]{200,})([a-zA-Z0-9+/]{20})\b'
+    cleaned_text = re.sub(pattern, r'\1...\3', text)
+    return cleaned_text
