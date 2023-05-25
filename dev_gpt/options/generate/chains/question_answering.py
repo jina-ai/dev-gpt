@@ -32,11 +32,8 @@ pros_and_cons_prompt = '''\
 # Context
 {text}
 
-# Question
-{question}
-
-Note: You must not answer the question with yes or no.
-Note: You must give up to 5 bullet points (10 words) arguing why the question should be answered with yes or no.'''
+Give up to 5 bullet points (10 words) arguing why the question should be answered with yes or no.
+{question}'''
 
 question_prompt = '''\
 # Context
