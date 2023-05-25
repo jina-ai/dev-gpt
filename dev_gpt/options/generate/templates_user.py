@@ -135,6 +135,7 @@ outputs a json dictionary string (that can be parsed with the python function js
 The function is called 'func' and has the following signature:
 def func(input_json_dict_string: str) -> str:
 The function must fulfill the following description: '{{microservice_description}}'.
+The function must pass the following test condition: '{{test_description}}'.
 For the implementation use the following package(s): '{{packages}}'.
 
 The code must start with the following imports:
