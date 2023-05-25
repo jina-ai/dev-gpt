@@ -38,9 +38,11 @@ Note: You must not answer the question. Instead, give up to 5 bullet points (10 
 question_prompt = '''\
 # Context
 {text}
-# Question
-{question}
+
 # Pros and Cons
 {pros_and_cons}
-Note: You must answer "yes" or "no".
+
+# Question
+Based on the pros and cons, answer the following question: {question}
+Note: You must answer the question correctly by saying "yes" or "no".
 '''

@@ -59,4 +59,5 @@ Write an updated microservice description by incorporating information about the
 Note: You must not mention any details about algorithms or the technical implementation.
 Note: You must not mention that there is a request and response JSON schema
 Note: You must not use any formatting like triple backticks.
-Note: If an external API is mentioned in the description, then you must mention the API in the updated description as well.'''
+Note: If Google Custom Search or gpt-3.5-turbo is mentioned in the description, then you must mention them in the updated description as well.
+Note: If an external API besides Google Custom Search and gpt-3.5-turbo is mentioned in the description, then you must mention the API in the updated description as well.'''

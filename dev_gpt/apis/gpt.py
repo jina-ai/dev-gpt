@@ -182,7 +182,7 @@ def ask_gpt(prompt_template: str, parser=identity_parser, **kwargs):
             kwargs[key] = json.dumps(value, indent=4)
     prompt = prompt_template.format(**kwargs)
     conversation = GPTSession._instance.get_conversation(
-        [],
+        [SystemMessage(content='You are a helpful AI assistant that follows instructions from the user exactly.')],
         print_stream=os.environ['VERBOSE'].lower() == 'true',
         print_costs=False
     )

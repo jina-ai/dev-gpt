@@ -52,15 +52,19 @@ Description of the microservice:
         )
 
         test_description += self.user_input_extension_if_needed(
-            context,
-            microservice_description,
+            {
+                'Microservice description': microservice_description,
+                'Request schema': context['request_schema'],
+                'Response schema': context['response_schema'],
+            },
             condition_question='Does the request schema provided include a property that represents a file?',
             question_gen='Generate a question that requests for an example file url.',
             extension_name='Input Example',
         )
         microservice_description += self.user_input_extension_if_needed(
-            context,
-            microservice_description,
+            {
+                'Microservice description': microservice_description,
+            },
             condition_question='''\
 Does the microservice send requests to an API beside the Google Custom Search API and gpt-3.5-turbo?''',
             question_gen='Generate a question that asks for the endpoint of the external API and an example of a request and response when interacting with the external API.',
@@ -72,18 +76,13 @@ Does the microservice send requests to an API beside the Google Custom Search AP
     def user_input_extension_if_needed(
             self,
             context,
-            microservice_description,
             condition_question,
             question_gen,
             extension_name,
             post_transformation_fn=None
     ):
         user_answer = get_user_input_if_needed(
-            context={
-                'Microservice description': microservice_description,
-                'Request schema': context['request_schema'],
-                'Response schema': context['response_schema'],
-            },
+            context=context,
             conditions=[
                 is_question_true(condition_question),
             ],
