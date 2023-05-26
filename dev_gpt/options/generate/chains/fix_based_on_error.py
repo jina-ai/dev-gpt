@@ -27,6 +27,20 @@ Error message:
 Your task:
 You must return the fixed {content_type}.
 Most importantly, you are not allowed to return something else - only the fixed {content_type}.
+
+Positive example:
+**solution.json**
+```json
+{
+    "key1": "value1",
+    "key2": "value2"
+}
+Negative example:
+{
+    "key1": "value1",
+    "key2": "value2"
+} 
 '''
+
 
 

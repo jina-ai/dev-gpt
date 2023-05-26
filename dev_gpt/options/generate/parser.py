@@ -23,5 +23,9 @@ def json_parser(x):
     return json.loads(x)
 
 def self_healing_json_parser(original_json_string):
-    return fix_based_on_error_chain('I want to load my JSON string using json.loads(x) but get the following error:', 'JSON',
-                                    original_json_string, parser=json_parser)
+    return fix_based_on_error_chain(
+        'I want to load my JSON string using json.loads(x) but get the following error:',
+        'JSON',
+        original_json_string,
+        parser=json_parser
+    )
