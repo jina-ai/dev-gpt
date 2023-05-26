@@ -523,15 +523,19 @@ pytest
             file_name_s=['strategies.json'],
             description=self.microservice_specification.task
         )['strategies.json']
-        packages_list = [[pkg.strip().lower() for pkg in packages] for packages in json.loads(packages_json_string)]
-        packages_list = [[self.replace_with_tool_if_possible(pkg) for pkg in packages] for packages in
-                         packages_list]
-
-        packages_list = self.filter_packages_list(packages_list)
-        packages_list = self.remove_duplicates_from_packages_list(packages_list)
-        packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
+        packages_list = self.process_packages_json_string(packages_json_string)
         return packages_list
 
+    @staticmethod
+    def process_packages_json_string(packages_json_string):
+        packages_list = [[pkg.strip().lower().replace('-', '_') for pkg in packages] for packages in json.loads(packages_json_string)]
+        packages_list = [[Generator.replace_with_tool_if_possible(pkg) for pkg in packages] for packages in
+                         packages_list]
+
+        packages_list = Generator.filter_packages_list(packages_list)
+        packages_list = Generator.remove_duplicates_from_packages_list(packages_list)
+        packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
+        return packages_list
 
     def generate(self):
         os.makedirs(self.microservice_root_path)
@@ -592,6 +596,7 @@ You can now run or deploy your microservice:
                    and (  # all packages must be on pypi or it is gpt_3_5_turbo
                            is_package_on_pypi(package)
                            or package == 'gpt_3_5_turbo'
+                           or package == 'google_custom_search'
                    )
             ] for packages in packages_list
         ]

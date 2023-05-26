@@ -39,10 +39,10 @@ Note: the output must be a list of tasks the Microservice has to perform.
 Note: you must uses the following tools if necessary:
 {get_available_tools()}
 Example for the description: "return an image representing the current weather for a given location." \
-when the tools gpt-3.5-turbo and google-search are available:
+when the tools gpt_3_5_turbo and google_custom_search are available:
 1. get the current weather information from the https://openweathermap.org/ API
-2. generate a Google search query to find the image matching the weather information and the location by using gpt-3.5-turbo (a)
-3. find the image by using the Google search API (b)
+2. generate a Google search query to find the image matching the weather information and the location by using gpt_3_5_turbo (a)
+3. find the image by using the google_custom_search (b)
 4. return the image as a base64 encoded string'''
 
 generate_request_schema_prompt = '''{context_string}
@@ -59,5 +59,5 @@ Write an updated microservice description by incorporating information about the
 Note: You must not mention any details about algorithms or the technical implementation.
 Note: You must not mention that there is a request and response JSON schema
 Note: You must not use any formatting like triple backticks.
-Note: If Google Custom Search or gpt-3.5-turbo is mentioned in the description, then you must mention them in the updated description as well.
-Note: If an external API besides Google Custom Search and gpt-3.5-turbo is mentioned in the description, then you must mention the API in the updated description as well.'''
+Note: If google_custom_search or gpt_3_5_turbo is mentioned in the description, then you must mention them in the updated description as well.
+Note: If an external API besides google_custom_search and gpt_3_5_turbo is mentioned in the description, then you must mention the API in the updated description as well.'''
