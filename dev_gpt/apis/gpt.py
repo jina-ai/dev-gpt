@@ -83,7 +83,7 @@ class GPTSession:
                         }]
                     )
                     break
-                except (RateLimitError, openai.error.APIError):
+                except (RateLimitError, openai.error.APIError, ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError, openai.error.Timeout):
                     sleep(1)
                     continue
             return True
@@ -152,7 +152,7 @@ class _GPTConversation:
                 response = self._chat(self.messages)
                 self.conversation_logger.log(self.messages, response)
                 break
-            except (ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError) as e:
+            except (RateLimitError, openai.error.APIError, ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError, openai.error.Timeout) as e:
                 print('There was a connection error. Retrying...')
                 if i == 9:
                     raise e
