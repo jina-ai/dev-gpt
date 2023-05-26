@@ -20,6 +20,7 @@ from dev_gpt.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES,
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
     IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES, DOCKER_BASE_IMAGE_VERSION, SEARCH_PACKAGES, \
     INDICATOR_TO_IMPORT_STATEMENT
+from dev_gpt.options.generate.conversation_logger import Timer
 from dev_gpt.options.generate.pm.pm import PM
 from dev_gpt.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
@@ -355,10 +356,14 @@ pytest
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
             print('Trying to debug the microservice. Might take a while...')
+            print(f'{Timer().get_time_since_start()} - Clean requirements.txt...')
             clean_requirements_txt(self.cur_microservice_path)
+            print(f'{Timer().get_time_since_start()} - Build executor...')
             log_hubble = push_executor(self.cur_microservice_path)
+            print(f'{Timer().get_time_since_start()} - Analyze logs...')
             error = process_error_message(log_hubble)
             if error:
+                print('Handling error...')
                 if not self_healing:
                     print(error)
                     raise Exception('Self-healing is disabled. Please fix the error manually.')
