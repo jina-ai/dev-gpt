@@ -18,3 +18,18 @@ def test_package_parsing():
         ['gpt_3_5_turbo'],
     ]):
         assert set(parsed) == set(expected)
+
+def test_package_parsing_blacklist():
+    packages_json_string = '''\
+    [
+      ["Flask"],
+      [],
+      []
+    ]'''
+
+    parsed_packages = Generator.process_packages_json_string(packages_json_string)
+    assert parsed_packages == [
+        [],
+        [],
+        [],
+    ]

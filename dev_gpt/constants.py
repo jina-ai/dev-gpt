@@ -53,7 +53,7 @@ BLACKLISTED_PACKAGES = [
     'clearbit'  # because of installation issues on latest version
 ]
 UNNECESSARY_PACKAGES = [
-    'fastapi', 'uvicorn', 'starlette'  # because the wrappers are used instead
+    'flask', 'fastapi', 'uvicorn', 'starlette'  # because the wrappers are used instead
 ]
 
 LANGUAGE_PACKAGES = [
