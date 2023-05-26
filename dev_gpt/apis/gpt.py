@@ -118,6 +118,7 @@ class _GPTConversation:
             model_name=model,
             streaming=True,
             callback_manager=CallbackManager([AssistantStreamingStdOutCallbackHandler()] if print_stream else []),
+            request_timeout=10,
             verbose=True,
             temperature=0,
         )
