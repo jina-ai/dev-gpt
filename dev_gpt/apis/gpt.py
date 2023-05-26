@@ -16,7 +16,7 @@ from urllib3.exceptions import InvalidChunkLength
 
 from dev_gpt.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
     PRICING_GPT3_5_TURBO_GENERATION, CHARS_PER_TOKEN
-from dev_gpt.options.generate.conversation_logger import ConversationLogger
+from dev_gpt.options.generate.conversation_logger import ConversationLogger, Timer
 from dev_gpt.options.generate.parser import identity_parser
 from dev_gpt.options.generate.templates_system import template_system_message_base
 from dev_gpt.utils.string_tools import print_colored, get_template_parameters
@@ -128,14 +128,15 @@ class _GPTConversation:
         self.conversation_logger = conversation_logger
 
     def print_messages(self, messages):
+        t = Timer().get_time_since_start()
         for i, message in enumerate(messages):
             if os.environ['VERBOSE'].lower() == 'true':
                 if isinstance(message, SystemMessage):
-                    print_colored(f'({i}) system - prompt', message.content, 'magenta')
+                    print_colored(f'{t} - ({i}) system - prompt', message.content, 'magenta')
                 elif isinstance(message, HumanMessage):
-                    print_colored(f'({i}) user - prompt', message.content, 'blue')
+                    print_colored(f'{t} - ({i}) user - prompt', message.content, 'blue')
                 elif isinstance(message, AIMessage):
-                    print_colored(f'({i}) assistant - prompt', message.content, 'green')
+                    print_colored(f'{t} - ({i}) assistant - prompt', message.content, 'green')
 
     def chat(self, prompt: str, role: str = 'user'):
         MassageClass = HumanMessage if role == 'user' else SystemMessage
@@ -143,7 +144,7 @@ class _GPTConversation:
         self.messages.append(chat_message)
         self.print_messages(self.messages)
         if self.print_stream:
-            print_colored('assistant', '', 'green', end='')
+            print_colored(f'{Timer().get_time_since_start()} - assistant', '', 'green', end='')
         print('thinking...')
         for i in range(10):
             try:

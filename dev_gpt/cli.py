@@ -7,6 +7,8 @@ import click
 from dev_gpt.apis.gpt import configure_openai_api_key
 from dev_gpt.apis.jina_cloud import jina_auth_login
 from dev_gpt.options.configure.key_handling import set_api_key
+from dev_gpt.options.generate.conversation_logger import Timer
+
 
 def openai_api_key_needed(func):
     def wrapper(*args, **kwargs):
@@ -44,6 +46,7 @@ def path_param(func):
 @click.pass_context
 @exception_interceptor
 def main(ctx):
+    Timer() # start timer
     if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
 
