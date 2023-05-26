@@ -5,7 +5,7 @@ from dev_gpt.options.generate.chains.question_answering import is_question_true
 from dev_gpt.options.generate.chains.translation import translation
 from dev_gpt.options.generate.chains.user_confirmation_feedback_loop import user_feedback_loop
 from dev_gpt.options.generate.chains.get_user_input_if_needed import get_user_input_if_needed
-from dev_gpt.options.generate.parser import identity_parser, json_parser
+from dev_gpt.options.generate.parser import identity_parser, json_parser, self_healing_json_parser
 from dev_gpt.options.generate.pm.task_tree_schema import TaskTree
 from dev_gpt.options.generate.prompt_factory import make_prompt_friendly
 from dev_gpt.options.generate.ui import get_random_employee
@@ -156,7 +156,7 @@ def construct_sub_task_tree(self, microservice_description):
     )
     sub_task_tree_updated = ask_gpt(
         sub_task_tree_update_prompt,
-        json_parser,
+        self_healing_json_parser,
         microservice_description=microservice_description,
         # nlp_fns=nlp_fns,
         sub_task_tree=sub_task_tree_dict, solutions=solutions

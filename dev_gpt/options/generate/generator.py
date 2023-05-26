@@ -21,7 +21,7 @@ from dev_gpt.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES,
     IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES, DOCKER_BASE_IMAGE_VERSION, SEARCH_PACKAGES, \
     INDICATOR_TO_IMPORT_STATEMENT
 from dev_gpt.options.generate.conversation_logger import Timer
-from dev_gpt.options.generate.parser import json_parser
+from dev_gpt.options.generate.parser import json_parser, self_healing_json_parser
 from dev_gpt.options.generate.pm.pm import PM
 from dev_gpt.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
@@ -451,7 +451,7 @@ pytest
                 response_format_example=response_format_suggest_solutions,
             )
 
-        suggested_solutions = json_parser(json_string)['solutions.json']
+        suggested_solutions = self_healing_json_parser(json_string)['solutions.json']
 
         if len(self.previous_errors) > 0:
             was_error_seen_before = json.loads(
