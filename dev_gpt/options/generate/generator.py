@@ -440,18 +440,17 @@ pytest
                 self.previous_solutions.append(suggested_solution)
 
     def generate_solution_suggestion(self, summarized_error, all_files_string):
-        json_string = self.generate_and_persist_file(
+        suggested_solutions = self.generate_and_persist_file(
                 section_title='Suggest solution for code issue',
                 template=template_suggest_solutions_code_issue,
-                file_name_s=['solutions.json'],
+                file_name_s=['not_needed'],
+                parse_result_fn=self_healing_json_parser,
                 summarized_error=summarized_error,
                 task_description=self.microservice_specification.task,
                 test_description=self.microservice_specification.test,
                 all_files_string=all_files_string,
                 response_format_example=response_format_suggest_solutions,
             )
-
-        suggested_solutions = self_healing_json_parser(json_string)['solutions.json']
 
         if len(self.previous_errors) > 0:
             was_error_seen_before = json.loads(

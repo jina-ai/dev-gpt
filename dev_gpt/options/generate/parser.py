@@ -18,8 +18,8 @@ def boolean_parser(x):
 
 def json_parser(x):
     if '```' in x:
-        pattern = r'```(json)?(.+)```'
-        x = re.findall(pattern, x, re.DOTALL)[-1][-1]
+        pattern = r'([\[\{].+[\]\}])'
+        x = re.findall(pattern, x, re.DOTALL)[-1]
     return json.loads(x)
 
 def self_healing_json_parser(original_json_string):

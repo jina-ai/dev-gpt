@@ -332,7 +332,7 @@ Note: the first line you output must be: **apt-get-packages.json**
 )
 
 
-response_format_suggest_solutions = '''**solutions.json**
+response_format_suggest_solutions = '''\
 ```json
 {{
     "1": "<best solution>",
@@ -369,7 +369,7 @@ Note that any changes needed to make the test pass must be written under the con
 After thinking about the possible solutions, output them as JSON ranked from best to worst.
 You must use the following format:
 ''' + response_format_suggest_solutions + '''
-Ensure the response starts with **solutions.json** and can be parsed by Python json.loads'''
+Ensure the response can be parsed by Python json.loads'''
 )
 
 
