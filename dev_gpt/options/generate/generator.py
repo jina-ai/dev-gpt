@@ -21,6 +21,7 @@ from dev_gpt.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES,
     IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES, DOCKER_BASE_IMAGE_VERSION, SEARCH_PACKAGES, \
     INDICATOR_TO_IMPORT_STATEMENT
 from dev_gpt.options.generate.conversation_logger import Timer
+from dev_gpt.options.generate.parser import json_parser
 from dev_gpt.options.generate.pm.pm import PM
 from dev_gpt.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
@@ -439,8 +440,7 @@ pytest
                 self.previous_solutions.append(suggested_solution)
 
     def generate_solution_suggestion(self, summarized_error, all_files_string):
-        suggested_solutions = json.loads(
-            self.generate_and_persist_file(
+        json_string = self.generate_and_persist_file(
                 section_title='Suggest solution for code issue',
                 template=template_suggest_solutions_code_issue,
                 file_name_s=['solutions.json'],
@@ -449,8 +449,9 @@ pytest
                 test_description=self.microservice_specification.test,
                 all_files_string=all_files_string,
                 response_format_example=response_format_suggest_solutions,
-            )['solutions.json']
-        )
+            )
+
+        suggested_solutions = json_parser(json_string)['solutions.json']
 
         if len(self.previous_errors) > 0:
             was_error_seen_before = json.loads(

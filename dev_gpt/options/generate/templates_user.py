@@ -310,14 +310,22 @@ Output the apt-get packages that need to be placed at {{APT_GET_PACKAGES}} as js
 ```json
 {{"packages": ["<package1>", "<package2>"]}}
 ```
-Example:
-Error is about missing package `libgl1-mesa-glx`.
-The output is:
+
+Example output for an error is about missing package `libgl1-mesa-glx`:
 **apt-get-packages.json**
 ```json
 {{"packages": [libgl1-mesa-glx]}}
 ```
-Only output content of the apt-get-packages.json file. Ensure the response can be parsed by Python json.loads
+
+Negative example1:
+```json
+{{"packages": [libgl1-mesa-glx]}}
+```
+
+Negative example2:
+{{"packages": [libgl1-mesa-glx]}}
+
+Note: Only output content of the apt-get-packages.json file.
 Note: you must not output the content of any other. Especially don't output the Dockerfile or requirements.txt. 
 Note: the first line you output must be: **apt-get-packages.json**
 '''
