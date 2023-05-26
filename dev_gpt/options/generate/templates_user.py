@@ -52,30 +52,19 @@ template_generate_possible_packages = PromptTemplate.from_template(
     '''Here is the task description of the problem you need to solve:
 "{description}"
 1. Write down up to 3 different strategies to solve the task. For each strategy write down how it solves the core problems.
-Note that packages are preferred over external apis except if it is mentioned in the description.
-2. For each strategy list up to 3 Python packages that are specifically designed or have functionalities to solve the complete core problems.
-3. For each package think if it fulfills the following requirements:
-a) specifically designed or have functionalities to solve the complete core problem.
-b) has a stable api among different versions
-c) does not have system requirements
-d) can solve the task when running in a docker container
-e) the implementation of the core problem using the package would obey the following rules:
-''' + not_allowed_function_string + '''
-
-When answering, just write "yes" or "no".
-
-4. For each approach, list the required python package combinations as discibed in the following.
-You must output the package combinations as json wrapped into triple backticks ``` and name it **strategies.json**. \
+Note that packages are preferred over external apis except they are mentioned in the description.
+2. Write down the strategies.json which is a list of required python package combinations.
 Note that you can also leave a list empty to indicate that one of the strategies does not require any package and can be done in plain python.
-Write the output using double asterisks and triple backticks like this:
+Note that if gpt_3_5_turbo or google_custom_search are mentioned in the description, then they must be part of each strategy in strategies.json.
+Example:
 **strategies.json**
 ```
 [
   ["package1", "package2", "package3"],
   ["package4", "package5"],
-  ["package6", "package7", "package8", "package9"],
+  ["package6", "package7", "gpt_3_5_turbo"],
   [],
-  ["package10"]
+  ["google_custom_search"]
 ]
 ```''')
 
@@ -100,7 +89,7 @@ When you get asked something like 'Who was having a date with <X>?', then you an
 You must not answer something else - only the json.
 \'\'\')
 
-generated_string = gpt_3_5_turbo(prompt_string="example user prompt") # prompt_string is the only parameter
+generated_string = gpt_3_5_turbo("example user prompt") # prompt_string is the only parameter
 ```
 """
 
