@@ -53,7 +53,7 @@ BLACKLISTED_PACKAGES = [
     'clearbit'  # because of installation issues on latest version
 ]
 UNNECESSARY_PACKAGES = [
-    'flask', 'flask_restful', 'http.server', 'flask_json', 'flask_cors', 'fastapi', 'uvicorn', 'starlette'  # because the wrappers are used instead
+    'jinja2', 'werkzeug', 'flask', 'flask_restful', 'http.server', 'flask_json', 'flask_cors', 'fastapi', 'uvicorn', 'starlette'  # because the wrappers are used instead
 ]
 
 LANGUAGE_PACKAGES = [
