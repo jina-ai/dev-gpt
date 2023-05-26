@@ -228,25 +228,24 @@ The output would be:
 
 
 template_summarize_error = PromptTemplate.from_template(
-    '''Your task is to condense an error encountered during the docker build process. The error message is as follows:
+    '''Error message:
 "{error}"
-Your task is to summarize the error message as compact and informative as possible \
-while maintaining all information necessary to debug the core issue (100 words).
-It should also provide some additional context regarding the specific file and line number where the error occurred. \
+You must filter the lines of the error message. Only keep lines that are really essential for solving the error.
 Note that you must not suggest a solution to the error.
-Warnings are not worth mentioning.'''
+Note: you must not keep lines that mention warnings.
+Note: clean the formatting of the lines like #17 2.063'''
 )
 
 
 template_is_dependency_issue = PromptTemplate.from_template(
     '''Your task is to assist in identifying the root cause of a Docker build error for a python application.
-The error message is as follows:
-
-{summarized_error}
-
 You are given the following files:
 
 {all_files_string}
+
+The error message is as follows:
+
+{summarized_error}
 
 Is this error happening because a PACKAGE_MANAGER package is missing or failed to install? 
 1. Write down one bullet point on why the error might happen because a PACKAGE_MANAGER package is missing or failed to install.
