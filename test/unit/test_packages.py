@@ -22,7 +22,7 @@ def test_package_parsing():
 def test_package_parsing_blacklist():
     packages_json_string = '''\
     [
-      ["Flask"],
+      ["Flask, flask_restful, flask_json"],
       [],
       []
     ]'''
