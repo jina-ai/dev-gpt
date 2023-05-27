@@ -2,15 +2,14 @@ from dev_gpt.apis.gpt import ask_gpt
 from dev_gpt.options.generate.parser import identity_parser
 
 
-def user_feedback_loop(context, current_description):
+def user_feedback_loop(current_description):
     while (user_feedback := get_user_feedback(current_description)):
-        context['user_feedback'] = user_feedback
         current_description = ask_gpt(
             add_feedback_prompt,
             identity_parser,
-            **context
+            microservice_description=current_description,
+            user_feedback=user_feedback,
         )
-        del context['user_feedback']
     return current_description
 
 def get_user_feedback(microservice_description):

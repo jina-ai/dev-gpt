@@ -43,7 +43,7 @@ Description of the microservice:
     def refine_description(self, microservice_description):
         context = {'microservice_description': microservice_description}
         auto_refine_description(context)
-        microservice_description = user_feedback_loop(context, context['microservice_description'])
+        microservice_description = user_feedback_loop(context['microservice_description'])
 
         test_description = ask_gpt(
             generate_test_assertion_prompt,
