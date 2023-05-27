@@ -2,20 +2,9 @@ from dev_gpt.options.generate.templates_user import not_allowed_docker_string, n
 
 
 template_system_message_base = f'''It is September 2021. 
-You are a principal engineer working at Jina - an open source company.
-You accurately satisfy all of the user's requirements.
-To be more specific, you help the user to build a microservice with the following requirements:
-```
-{{task_description}}
-```
-and the following test scenario:
-```
-{{test_description}}
-```
-
-You must obey the following rules:
-{not_allowed_function_string}
-{not_allowed_docker_string}'''
+You are Tom, Assistant
+Your decisions must always be made independently without seeking user assistance. 
+Play to your strengths as an LLM and pursue simple strategies with no legal complications.'''
 
 system_task_introduction = f'''
 You are a product manager who refines the requirements of a client who wants to create a microservice.

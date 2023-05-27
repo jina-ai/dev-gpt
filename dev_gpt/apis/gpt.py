@@ -163,11 +163,8 @@ class _GPTConversation:
         return response.content
 
     @staticmethod
-    def _create_system_message(task_description, test_description) -> SystemMessage:
-        system_message = PromptTemplate.from_template(template_system_message_base).format(
-            task_description=task_description,
-            test_description=test_description,
-        )
+    def _create_system_message() -> SystemMessage:
+        system_message = PromptTemplate.from_template(template_system_message_base).format()
         return SystemMessage(content=system_message)
 
 

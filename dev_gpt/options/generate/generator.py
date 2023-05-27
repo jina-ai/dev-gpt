@@ -131,10 +131,7 @@ metas:
 
         print_colored('', f'\n\n############# {section_title} #############', 'blue')
         if use_custom_system_message:
-            system_introduction_message = _GPTConversation._create_system_message(
-                self.microservice_specification.task,
-                self.microservice_specification.test
-            )
+            system_introduction_message = _GPTConversation._create_system_message()
         else:
             system_introduction_message = SystemMessage(content='You are a helpful assistant.')
         conversation = self.gpt_session.get_conversation(
