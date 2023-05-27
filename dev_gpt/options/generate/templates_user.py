@@ -48,8 +48,8 @@ PngToSvgExecutor
 
 
 # todo split into multiple calls. One for brainstorming - one for the final answer
-template_generate_possible_packages = PromptTemplate.from_template(
-    '''Here is the task description of the problem you need to solve:
+template_generate_possible_packages = '''\
+Here is the task description of the problem you need to solve:
 "{description}"
 1. Write down up to 3 different strategies to solve the task. For each strategy write down how it solves the core problems.
 Note that packages are preferred over external apis except they are mentioned in the description.
@@ -66,7 +66,7 @@ Example:
   [],
   ["google_custom_search"]
 ]
-```''')
+```'''
 
 
 template_code_wrapping_string = '''The code will go into {file_name_purpose}.
@@ -330,36 +330,38 @@ response_format_suggest_solutions = '''\
 ```'''
 
 
-template_suggest_solutions_code_issue = PromptTemplate.from_template(
-    '''General rules:
-''' + not_allowed_function_string + '''
+template_suggest_solutions_code_issue = f'''\
+General rules:
+{not_allowed_function_string}
 
 Here is the description of the task the function must solve:
-{task_description}
+{{task_description}}
 
 Here is the test scenario the function must pass:
-{test_description}
+{{test_description}}
 Here are all the files I use:
-{all_files_string}
+{{all_files_string}}
 
 
 Here is the summary of the error that occurred:
-{summarized_error}
+{{summarized_error}}
 
 You should suggest 3 to 5 possible solution approaches on how to solve it.
 Obey the following rules:
 Do not implement the solution.
 You have no access to the documentation of the package.
 You must not change the Dockerfile.
-Note that any changes needed to make the test pass must be written under the constraint that ''' + IMPLEMENTATION_FILE_NAME +  ''' will be used in a different file as well.
-''' + f'{not_allowed_function_string}\n{not_allowed_docker_string}\n{gpt_35_turbo_usage_string}' + '''
+Note that any changes needed to make the test pass must be written under the constraint that {IMPLEMENTATION_FILE_NAME} will be used in a different file as well.
+{not_allowed_function_string}
+{not_allowed_docker_string}
+{gpt_35_turbo_usage_string}
 
 
 After thinking about the possible solutions, output them as JSON ranked from best to worst.
 You must use the following format:
-''' + response_format_suggest_solutions + '''
+{response_format_suggest_solutions}
 Ensure the response can be parsed by Python json.loads'''
-)
+
 
 
 response_format_was_error_seen_before = '''**was_error_seen_before.json**

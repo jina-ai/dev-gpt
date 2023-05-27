@@ -286,6 +286,12 @@ metas:
         return {DOCKER_FILE_NAME: docker_file_template.replace('{{APT_GET_PACKAGES}}', '{APT_GET_PACKAGES}').replace('{{DOCKER_BASE_IMAGE_VERSION}}', DOCKER_BASE_IMAGE_VERSION).format(
             APT_GET_PACKAGES=packages)}
 
+    def get_parse_result_fn_dockerfile_json_parser(self, file_name):
+        def parse_result_fn_self_healing_json_parser(content_raw: str):
+            json_string = self_healing_json_parser(content_raw)
+            return {file_name: json_string}
+        return parse_result_fn_self_healing_json_parser
+
     def parse_result_fn_requirements(self, content_raw: str):
         content_parsed = self.extract_content_from_result(content_raw, 'requirements.txt', match_single_block=True)
 
@@ -440,17 +446,13 @@ pytest
                 self.previous_solutions.append(suggested_solution)
 
     def generate_solution_suggestion(self, summarized_error, all_files_string):
-        suggested_solutions = self.generate_and_persist_file(
-                section_title='Suggest solution for code issue',
-                template=template_suggest_solutions_code_issue,
-                file_name_s=['not_needed'],
-                parse_result_fn=self_healing_json_parser,
-                summarized_error=summarized_error,
-                task_description=self.microservice_specification.task,
-                test_description=self.microservice_specification.test,
-                all_files_string=all_files_string,
-                response_format_example=response_format_suggest_solutions,
-            )
+        suggested_solutions = ask_gpt(
+            template_suggest_solutions_code_issue,
+            self_healing_json_parser,
+            task_description=self.microservice_specification.task,
+            test_description=self.microservice_specification.test,
+            all_files_string=all_files_string,
+        )
 
         if len(self.previous_errors) > 0:
             was_error_seen_before = json.loads(
@@ -521,19 +523,13 @@ pytest
 
     def get_possible_packages(self):
         print_colored('', '\n\n############# What packages to use? #############', 'blue')
-        packages_json_string = self.generate_and_persist_file(
-            section_title='Generate possible packages',
-            template=template_generate_possible_packages,
-            destination_folder=self.microservice_root_path,
-            file_name_s=['strategies.json'],
-            description=self.microservice_specification.task
-        )['strategies.json']
-        packages_list = self.process_packages_json_string(packages_json_string)
+        packages_json = ask_gpt(template_generate_possible_packages, self_healing_json_parser, description=self.microservice_specification.task)
+        packages_list = self.process_packages_json_string(packages_json)
         return packages_list
 
     @staticmethod
-    def process_packages_json_string(packages_json_string):
-        packages_list = [[pkg.strip().lower().replace('-', '_') for pkg in packages] for packages in json.loads(packages_json_string)]
+    def process_packages_json_string(packages_json):
+        packages_list = [[pkg.strip().lower().replace('-', '_') for pkg in packages] for packages in packages_json]
         packages_list = [[Generator.replace_with_tool_if_possible(pkg) for pkg in packages] for packages in
                          packages_list]
 
