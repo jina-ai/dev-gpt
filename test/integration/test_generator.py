@@ -41,10 +41,7 @@ def test_generation_level_1(microservice_dir, mock_input_sequence):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        '''Input is a tweet that might contain passive aggressive language. The output is the positive version of that tweet.
-Example tweet: 
-\'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 
-But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
+        '''Input is a tweet that contains passive aggressive language. The output is the positive version of that tweet.''',
         str(microservice_dir),
         'gpt-3.5-turbo',
         # self_healing=False,

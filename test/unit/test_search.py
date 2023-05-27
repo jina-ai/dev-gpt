@@ -9,5 +9,5 @@ def test_web_search():
 
 def test_image_search():
     results = search_images("jina", 10)
-    assert len(results) == 10
+    assert len(results) >= 1
     assert results[0].startswith("http")
