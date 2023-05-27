@@ -35,9 +35,17 @@ def get_latest_package_version(package_name):
         if upload_time.year <= 2020 or (upload_time.year == 2021 and upload_time.month <= 9):  # knowledge cutoff 2021-09 (including september)
             valid_versions.append(v)
 
-    v = max(valid_versions, key=version.parse) if valid_versions else None
+    v = max(valid_versions, key=parse_version) if valid_versions else None
     return v
 
+def parse_version(version_string):
+    """
+    Parses a version string and returns a tuple of integers.
+    """
+    try:
+        return version.parse(version_string)
+    except version.InvalidVersion:
+        return version.parse("0.0.0")
 
 def clean_requirements_txt(previous_microservice_path):
     """
