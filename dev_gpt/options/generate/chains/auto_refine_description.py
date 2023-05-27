@@ -46,8 +46,9 @@ when the tools gpt_3_5_turbo and google_custom_search are available:
 4. return the image as a base64 encoded string'''
 
 generate_request_schema_prompt = '''{context_string}
-Generate the lean request json schema of the Microservice.
-Note: If you are not sure about the details, then come up with the minimal number of parameters possible (could be even no parameters).'''
+Generate the lean request json schema of the Microservice.k
+Note: If you are not sure about the details, then come up with the minimal number of parameters possible (could be even no parameters).
+Note: If you can decide to receive files as URLs or as base64 encoded strings, then choose the base64 encoded strings.'''
 
 generate_output_schema_prompt = '''{context_string}
 Generate the lean response json schema for the Microservice.
