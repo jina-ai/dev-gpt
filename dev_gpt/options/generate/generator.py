@@ -452,6 +452,7 @@ pytest
             task_description=self.microservice_specification.task,
             test_description=self.microservice_specification.test,
             all_files_string=all_files_string,
+            summarized_error=summarized_error,
         )
 
         if len(self.previous_errors) > 0:
