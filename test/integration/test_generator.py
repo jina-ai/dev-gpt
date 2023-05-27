@@ -164,7 +164,8 @@ def test_generation_level_4(microservice_dir, mock_input_sequence):
 4. Return the the audio file as base64 encoded binary.
 ''',
         str(microservice_dir),
-        'gpt-3.5-turbo',
+        # 'gpt-3.5-turbo',
+        'gpt-4',
         # self_healing=False,
     )
     assert generator.generate() == 0
