@@ -8,7 +8,7 @@ from dev_gpt.options.generate.generator import Generator
 # The cognitive difficulty level is determined by the number of requirements the microservice has.
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
-def test_generation_level_0(microservice_dir, mock_input_sequence):
+def test_generation_level_0_test(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -29,19 +29,19 @@ def test_generation_level_0(microservice_dir, mock_input_sequence):
 
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
-def test_generation_level_1(microservice_dir, mock_input_sequence):
+def test_generation_level_1_positive_tweet(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
     pip packages: ❌
     environment: ❌
-    GPT-3.5-turbo: ✅ (for summarizing the text)
+    GPT-3.5-turbo: ✅ (for modifying the text)
     APIs: ❌
     Databases: ❌
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        '''Input is a tweet that might contain passive aggressive language. The output is the positive version of that tweet.
+        '''Input is a tweet that might contain passive-aggressive language. The output is the positive version of that tweet.
 Example tweet: 
 \'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 
 But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
@@ -52,9 +52,8 @@ But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
     assert generator.generate() == 0
 
 
-@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://www.africau.edu/images/default/sample.pdf']],
-                         indirect=True)
-def test_generation_level_2(microservice_dir, mock_input_sequence):
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://www.africau.edu/images/default/sample.pdf']], indirect=True)
+def test_generation_level_2_pdf_summarization(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -97,7 +96,7 @@ def test_generation_level_2_svg(microservice_dir, mock_input_sequence):
 
 
 @pytest.mark.parametrize('mock_input_sequence', [['y', 'yfinance.Ticker("MSFT").info']], indirect=True)
-def test_generation_level_3(microservice_dir, mock_input_sequence):
+def test_generation_level_3_fin_api(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ✅ (calculate the average closing price)
@@ -144,7 +143,7 @@ print('This is the text from the audio file:', response.text)'''
     ],
     indirect=True
 )
-def test_generation_level_4(microservice_dir, mock_input_sequence):
+def test_generation_level_4_audio_summarization(microservice_dir, mock_input_sequence):
     """
     Requirements:
     coding challenge: ❌
@@ -160,10 +159,10 @@ def test_generation_level_4(microservice_dir, mock_input_sequence):
 1. convert it to text using the Whisper API.
 2. Summarize the text (~50 words) while still maintaining the key facts.
 3. Create an audio file of the summarized text using a tts library.
-4. Return the the audio file as base64 encoded binary.
+4. Return the audio file as base64 encoded binary.
 ''',
         str(microservice_dir),
-        'gpt-4',
+        'gpt-3.5-turbo',
         # self_healing=False,
     )
     assert generator.generate() == 0
@@ -184,10 +183,29 @@ The square is returned as png.''',
     )
     assert generator.generate() == 0
 
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png']], indirect=True)
+def test_generation_level_4_svg(microservice_dir, mock_input_sequence):
+    """
+    Requirements:
+    coding challenge: ✅✅ (involves three steps - segmentation, shape creation)
+    pip packages: ✅ (svg package)
+    environment: ✅ (svg dependencies)
+    GPT-3.5-turbo: ❌
+    APIs: ❌
+    Databases: ❌
+    """
+    os.environ['VERBOSE'] = 'true'
+    generator = Generator(
+        f'''Given a png image, convert it into an svg image in a sophisticated way.''',
+        str(microservice_dir),
+        'gpt-3.5-turbo',
+        # self_healing=False,
 
-@pytest.mark.parametrize('mock_input_sequence', [['y',
-                                                  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/560px-PNG_transparency_demonstration_1.png']],
-                         indirect=True)
+    )
+    assert generator.generate() == 0
+
+
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/560px-PNG_transparency_demonstration_1.png']], indirect=True)
 def test_generation_level_5(microservice_dir, mock_input_sequence):
     """
     Requirements:

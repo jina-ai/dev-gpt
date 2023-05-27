@@ -10,7 +10,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group: [0, 1, 2, 3, 4, 5_company_logos]
+        group: [
+          0_test,
+          1_positive_tweet,
+          2_pdf_summarization,
+          3_fin_api,
+          4_audio_summarization,
+          4_svg,
+          5_company_logos
+        ]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.8
