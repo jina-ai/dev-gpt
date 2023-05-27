@@ -66,7 +66,7 @@ def test_generation_level_2(microservice_dir, mock_input_sequence):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        "The input is a PDF and the output the summarized text (50 words).",
+        "The input is a PDF and the output the summarized text.",
         str(microservice_dir),
         'gpt-3.5-turbo',
         # self_healing=False,
