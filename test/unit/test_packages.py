@@ -20,12 +20,11 @@ def test_package_parsing():
         assert set(parsed) == set(expected)
 
 def test_package_parsing_blacklist():
-    packages_json_string = '''\
-    [
+    packages_json_string = [
       ["Flask, flask_restful, flask_json, flask_cors, http.server"],
       [],
       []
-    ]'''
+    ]
 
     parsed_packages = Generator.process_packages_json_string(packages_json_string)
     assert parsed_packages == [
