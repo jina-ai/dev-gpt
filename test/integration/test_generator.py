@@ -129,17 +129,9 @@ Example input: 'AAPL'
             'y',
             'https://www2.cs.uic.edu/~i101/SoundFiles/taunt.wav',
             f'''\
-import requests
-url = "https://transcribe.whisperapi.com"
-headers = {{
-'Authorization': 'Bearer {os.environ['WHISPER_API_KEY']}'
-}}
-data = {{
-  "url": "URL_OF_STORED_AUDIO_FILE"
-}}
-response = requests.post(url, headers=headers, data=data)
-assert response.status_code == 200
-print('This is the text from the audio file:', response.text)'''
+import openai
+audio_file= open("/path/to/file/audio.mp3", "rb")
+transcript = openai.Audio.transcribe("whisper-1", audio_file)'''
         ]
     ],
     indirect=True
@@ -158,12 +150,12 @@ def test_generation_level_4(microservice_dir, mock_input_sequence):
     generator = Generator(
         f'''Given an audio file (1min wav) of speech, 
 1. convert it to text using the Whisper API.
-2. Summarize the text (~50 words) while still maintaining the key facts.
+2. Summarize the text while still maintaining the key facts.
 3. Create an audio file of the summarized text using a tts library.
 4. Return the the audio file as base64 encoded binary.
 ''',
         str(microservice_dir),
-        'gpt-4',
+        'gpt-3.5-turbo',
         # self_healing=False,
     )
     assert generator.generate() == 0

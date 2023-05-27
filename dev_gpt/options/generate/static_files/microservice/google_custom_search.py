@@ -20,8 +20,23 @@ def google_search(search_term, search_type, top_n):
     return response.json()
 
 def search_images(search_term, top_n):
-    response = google_search(search_term, search_type="image", top_n=top_n)
-    return [item["link"] for item in response["items"]]
+    """
+    Returns only images that have a 200 response code.
+    """
+    response = google_search(search_term, search_type="image", top_n=10)
+    image_urls = []
+    for item in response["items"]:
+        if len(image_urls) >= top_n:
+            break
+        try:
+            response = requests.head(item["link"], timeout=2)
+            if response.status_code == 200:
+                image_urls.append(
+                    item["link"]
+                )
+        except requests.exceptions.RequestException:
+            pass
+    return image_urls
 
 def search_web(search_term, top_n):
     response = google_search(search_term, search_type="web", top_n=top_n)
