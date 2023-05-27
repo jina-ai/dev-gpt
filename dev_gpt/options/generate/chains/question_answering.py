@@ -31,16 +31,19 @@ def answer_yes_no_question(text, question):
 pros_and_cons_prompt = '''\
 # Context
 {text}
-# Question
-{question}
-Note: You must not answer the question. Instead, give up to 5 bullet points (10 words) arguing why the question should be answered with true or false.'''
+
+Give up to 5 bullet points (10 words) arguing why the question should be answered with yes or no.
+{question}'''
 
 question_prompt = '''\
 # Context
 {text}
+
 # Question
 {question}
+
 # Pros and Cons
 {pros_and_cons}
+
 Note: You must answer "yes" or "no".
 '''

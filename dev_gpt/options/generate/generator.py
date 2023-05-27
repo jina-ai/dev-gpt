@@ -20,6 +20,7 @@ from dev_gpt.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES,
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
     IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES, DOCKER_BASE_IMAGE_VERSION, SEARCH_PACKAGES, \
     INDICATOR_TO_IMPORT_STATEMENT
+from dev_gpt.options.generate.chains.question_answering import answer_yes_no_question
 from dev_gpt.options.generate.pm.pm import PM
 from dev_gpt.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
@@ -500,16 +501,18 @@ pytest
                 [em in summarized_error for em in ['ModuleNotFoundError', 'ImportError']]):
             return True
 
-        print_colored('', f'Is it a {package_manager} dependency issue?', 'blue')
-        conversation = self.gpt_session.get_conversation()
-        answer_raw = conversation.chat(
-            template_is_dependency_issue.format(summarized_error=summarized_error,
-                                                all_files_string=dock_req_string).replace('PACKAGE_MANAGER',
-                                                                                          package_manager)
+        question = f'Is it a {package_manager} dependency issue?'
+        print_colored('', question, 'blue')
+
+        return answer_yes_no_question(
+            f'''\
+Files:
+{dock_req_string}
+
+Summarized error message:
+{summarized_error}''',
+            question
         )
-        answer_json_string = self.extract_content_from_result(answer_raw, 'response.json', match_single_block=True, )
-        answer = json.loads(answer_json_string)['dependency_installation_failure']
-        return 'yes' in answer.lower()
 
     def generate_microservice_name(self, description):
         return ask_gpt(template_generate_microservice_name, description=description)
