@@ -19,21 +19,26 @@ def answer_yes_no_question(text, question):
         question=question,
         text=text,
     )
+    # count words "yes" and "no" in pros and cons
+    yes_count = pros_and_cons.lower().count('yes')
+    no_count = pros_and_cons.lower().count('no')
+    return yes_count > no_count
 
-    return ask_gpt(
-        question_prompt,
-        boolean_parser,
-        text=text,
-        question=question,
-        pros_and_cons=pros_and_cons,
-    )
+    # return ask_gpt(
+    #     question_prompt,
+    #     boolean_parser,
+    #     text=text,
+    #     question=question,
+    #     pros_and_cons=pros_and_cons,
+    # )
 
 pros_and_cons_prompt = '''\
 # Context
 {text}
 # Question
 {question}
-Note: You must not answer the question. Instead, give up to 5 bullet points (10 words) arguing why the question should be answered with true or false.'''
+Note: You must not answer the question. Instead, give up to 5 bullet points (10 words) arguing why the question should be answered with yes or no. \
+Each bullet point ends with either "- yes" or "- no".'''
 
 question_prompt = '''\
 # Context
