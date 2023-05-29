@@ -66,7 +66,7 @@ Description of the microservice:
                 'Microservice description': microservice_description,
             },
             condition_question='''\
-Does the microservice send requests to an API beside the google_custom_search and gpt_3_5_turbo?''',
+Besides interacting with the Google Custom Search and GPT-3.5 Turbo APIs, does the microservice make requests to any other APIs?''',
             question_gen='Generate a question that asks for the endpoint of the external API and an example of a request and response when interacting with the external API.',
             extension_name='Example of API usage',
             post_transformation_fn=translation(from_format='api instruction', to_format='python code snippet raw without formatting')
