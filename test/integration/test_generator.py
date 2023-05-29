@@ -160,8 +160,8 @@ def test_generation_level_4(microservice_dir, mock_input_sequence):
     generator = Generator(
         f'''Given an audio file (1min wav) of speech, 
 1. convert it to text using the Whisper API.
-2. Summarize the text while still maintaining the key facts.
-3. Create an audio file of the summarized text using via tts.
+2. Summarize the text (~50 words) while still maintaining the key facts.
+3. Create an audio file of the summarized text using a tts library.
 4. Return the the audio file as base64 encoded binary.
 ''',
         str(microservice_dir),
