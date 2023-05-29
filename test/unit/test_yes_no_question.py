@@ -17,7 +17,7 @@ The summary is returned as a string. \
 The microservice uses the Yahoo Finance API to fetch the stock data and Python libraries to calculate the average closing price and generate the summary. \
 The request parameter is "stock_symbol" and the response parameter is "summary".
 ```
-''', 'Besides interacting with the Google Custom Search and GPT-3.5 Turbo APIs, does the microservice make requests to any other APIs?'
+''', 'Based on the microservice description, does the microservice interface with APIs?'
     )
 
 def test_answer_yes_no_question_2(tmpdir):
