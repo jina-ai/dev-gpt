@@ -71,14 +71,14 @@ Description of the microservice:
                     'Microservice description': microservice_description,
                 },
                 conditions=[
-                    lambda:True
+                    lambda _:True
                 ],
                 question_gen=f'Generate a question that asks for the endpoint for {api} and an example of a request and response when interacting with the API.',
                 extension_name=f'Instructions for {api}',
                 post_transformation_fn=translation(from_format='api instruction',
                                                    to_format='python code snippet raw without formatting')
             )
-            return microservice_description, test_description
+        return microservice_description, test_description
 
     @staticmethod
     def get_used_apis(microservice_description):
