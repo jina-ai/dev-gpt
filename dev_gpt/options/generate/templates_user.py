@@ -548,19 +548,26 @@ Note that prompt.json must only contain one question.
 '''
 )
 
-generate_used_tools_prompt = '''\
+generate_used_apis_prompt = '''\
 Microservice description: 
 {microservice_description}
 
 Question:
-Respond with a list as JSON idicating which of the APIs [google_custom_search, gpt_3_5_turbo] are mentioned in the description.
-Example 1:
-["google_custom_search", "gpt_3_5_turbo"]
-Example 2:
-["google_custom_search"]
-Example 3:
-["gpt_3_5_turbo"]
-Example 4:
-[]
+Respond with a list as JSON indicating which web APIs (e.g. google_custom_search, gpt_3_5_turbo) are mentioned in the description.
+Positive Example 1:
+{{
+  "mentioned_apis": ["google_custom_search", "gpt_3_5_turbo"]
+}}
+Positive Example 2:
+{{
+    "mentioned_apis": ["google_custom_search"]
+}}
+Positive Example 3:
+{{
+    "mentioned_apis": ["gpt_3_5_turbo"]
+}}
+Positive Example 4:
+{{
+    "mentioned_apis": []
+}}
 '''
-
