@@ -78,7 +78,8 @@ Description of the microservice:
         )
         return microservice_description, test_description
 
-    def get_used_tools(self, microservice_description):
+    @staticmethod
+    def get_used_tools(microservice_description):
         return ask_gpt(
             generate_used_tools_prompt,
             self_healing_json_parser,
