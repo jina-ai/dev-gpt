@@ -64,7 +64,9 @@ Description of the microservice:
             question_gen='Generate a question that requests for an example file url.',
             extension_name='Input Example',
         )
-        used_apis_beside_tools = [x for x in self.get_used_apis(microservice_description) if x not in ['google_custom_search', 'gpt_3_5_turbo']]
+        used_apis_beside_tools = [
+            x for x in self.get_used_apis(microservice_description) if any(t in x.lower() for t in ['gpt', 'search', 'google'])
+        ]
         for api in used_apis_beside_tools:
             microservice_description += self.user_input_extension_if_needed(
                 {

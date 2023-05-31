@@ -554,6 +554,7 @@ Microservice description:
 
 Question:
 Respond with a list as JSON indicating which web APIs (e.g. google_custom_search, gpt_3_5_turbo) are mentioned in the description.
+Note that local libraries are not web APIs and must not be mentioned. 
 Positive Example 1:
 {{
   "mentioned_apis": ["google_custom_search", "gpt_3_5_turbo"]
