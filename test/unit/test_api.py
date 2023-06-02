@@ -58,6 +58,8 @@ requests
 streamlit
 # invalid version 1.0beta5prerelease
 google-api-python-client
+# with comment
+language-tool-python==2.5.3  # requires Java
 """
     requirements_clean = """\
 jina==111.222.333
@@ -67,7 +69,8 @@ pydub~=0.25.1
 pdfminer.six~=20201018
 requests~=2.26.0
 streamlit~=0.89.0
-google-api-python-client~=2.23.0"""
+google-api-python-client~=2.23.0
+language-tool-python==2.5.3"""
     requirements_txt_path = os.path.join(tmpdir, "requirements.txt")
     with open(requirements_txt_path, "w", encoding="utf-8") as f:
         f.write(requirements_content)

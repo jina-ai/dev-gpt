@@ -60,8 +60,11 @@ def clean_requirements_txt(previous_microservice_path):
     updated_requirements = []
 
     for line in requirements_txt.split('\n'):
+        # replace comment at the end of the line
+        pattern = r'#.+'
+        line = re.sub(pattern, '', line)
         line = line.strip()
-        if not line or line.startswith('#'):
+        if not line:
             continue
 
         split = re.split(r'==|>=|<=|>|<|~=', line)
