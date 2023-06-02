@@ -65,7 +65,7 @@ Description of the microservice:
             extension_name='Input Example',
         )
         used_apis_beside_tools = [
-            x for x in self.get_used_apis(microservice_description) if any(t in x.lower() for t in ['gpt', 'search', 'google'])
+            x for x in self.get_used_apis(microservice_description) if not any(t in x.lower() for t in ['gpt', 'search', 'google'])
         ]
         for api in used_apis_beside_tools:
             microservice_description += self.user_input_extension_if_needed(
