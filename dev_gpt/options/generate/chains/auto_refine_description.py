@@ -12,6 +12,7 @@ def auto_refine_description(context):
         identity_parser,
         context_string=context_to_string(context)
     )
+
     context['request_schema'] = ask_gpt(
         generate_request_schema_prompt,
         optional_tripple_back_tick_parser,

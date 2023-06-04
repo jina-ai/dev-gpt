@@ -93,7 +93,7 @@ def test_generation_level_2_svg(microservice_dir, mock_input_sequence):
     assert generator.generate() == 0
 
 
-@pytest.mark.parametrize('mock_input_sequence', [['y', 'yfinance.Ticker("MSFT").info']], indirect=True)
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'ticker = yf.Ticker(symbol); data = ticker.history(start=start_date, end=end_date); [row[\'Close\'] for row in data.to_dict(\'records\')]']], indirect=True)
 def test_generation_level_3(microservice_dir, mock_input_sequence):
     """
     Requirements:
