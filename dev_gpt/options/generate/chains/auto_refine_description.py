@@ -38,8 +38,6 @@ Update the description of the Microservice to make it more precise without addin
 Note: the output must be a list of tasks the Microservice has to perform.
 Note: you must uses the following tools if necessary:
 {get_available_tools()}
-Note: if you use gpt then mention it as gpt_3_5_turbo.
-Note: if you use search then mention it as google_custom_search.
 Example for the description: "return an image representing the current weather for a given location." \
 when the tools gpt_3_5_turbo and google_custom_search are available:
 1. get the current weather information from the https://openweathermap.org/ API
