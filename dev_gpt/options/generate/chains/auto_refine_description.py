@@ -1,18 +1,26 @@
 import json
 
 from dev_gpt.apis.gpt import ask_gpt
+from dev_gpt.constants import TOOL_TO_ALIASES
 from dev_gpt.options.generate.parser import identity_parser, optional_tripple_back_tick_parser
 from dev_gpt.options.generate.prompt_factory import context_to_string
 from dev_gpt.options.generate.tools.tools import get_available_tools
 
 
-def auto_refine_description(context):
-    context['microservice_description'] = ask_gpt(
+def enhance_description(context):
+    enhanced_description = ask_gpt(
         better_description_prompt,
         identity_parser,
         context_string=context_to_string(context)
     )
+    for tool_name, aliases in TOOL_TO_ALIASES.items():
+        for alias in aliases:
+            enhanced_description = enhanced_description.replace(alias, tool_name)
+    return enhanced_description
 
+
+def auto_refine_description(context):
+    context['microservice_description'] = enhance_description(context)
     context['request_schema'] = ask_gpt(
         generate_request_schema_prompt,
         optional_tripple_back_tick_parser,
@@ -61,5 +69,4 @@ Write an updated microservice description by incorporating information about the
 Note: You must not mention any details about algorithms or the technical implementation.
 Note: You must not mention that there is a request and response JSON schema
 Note: You must not use any formatting like triple backticks.
-Note: If google_custom_search or gpt_3_5_turbo is mentioned in the description, then you must mention them in the updated description as well.
-Note: If an external API besides google_custom_search and gpt_3_5_turbo is mentioned in the description, then you must mention the API in the updated description as well.'''
+Note: If an external API like google_custom_search or gpt_3_5_turbo is mentioned in the description, then you must mention the API in the updated description as well.'''
