@@ -4,9 +4,7 @@ from dev_gpt.apis.gpt import GPTSession
 from dev_gpt.options.generate.chains.question_answering import answer_yes_no_question
 
 
-def test_answer_yes_no_question(tmpdir):
-    os.environ['VERBOSE'] = 'true'
-    GPTSession(os.path.join(str(tmpdir), 'log.json'), model='gpt-3.5-turbo')
+def test_answer_yes_no_question(init_gpt):
     assert answer_yes_no_question(
         '''\
 Microservice description:
@@ -20,9 +18,7 @@ The request parameter is "stock_symbol" and the response parameter is "summary".
 ''', 'Based on the microservice description, does the microservice interface with APIs?'
     )
 
-def test_answer_yes_no_question_2(tmpdir):
-    os.environ['VERBOSE'] = 'true'
-    GPTSession(os.path.join(str(tmpdir), 'log.json'), model='gpt-3.5-turbo')
+def test_answer_yes_no_question_2(init_gpt):
     assert not answer_yes_no_question(
         '''\
 Microservice description:

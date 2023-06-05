@@ -71,8 +71,14 @@ Note: If you are not sure about the details, then come up with the minimal numbe
 Note: If you can decide to return files as URLs or as base64 encoded strings, then choose the base64 encoded strings.'''
 
 summarize_description_and_schemas_prompt = '''{context_string}
-Write an updated microservice description by incorporating information about the request and response parameters in a concise way without losing any information.
-Note: You must not mention any details about algorithms or the technical implementation.
-Note: You must not mention that there is a request and response JSON schema
-Note: You must not use any formatting like triple backticks.
-Note: If an external API like google_custom_search or gpt_3_5_turbo is mentioned in the description, then you must mention the API in the updated description as well.'''
+Please write an updated microservice description by incorporating information about the request and response parameters in a concise manner, ensuring all information from the existing description is maintained.
+
+Constraints:
+
+- Do not mention any details about algorithms or the technical implementation.
+- Refrain from indicating there is a request and response JSON schema.
+- Avoid using any special formatting such as triple backticks.
+- If a specific tool or API (e.g. google_custom_search, gpt_3_5_turbo) is referred to in the original description, \
+include it in the updated description using the exact name given. \
+For instance, if the original description mentions 'gpt_3_5_turbo', \
+the updated description should also specify 'gpt_3_5_turbo'.'''
