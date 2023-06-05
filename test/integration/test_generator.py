@@ -23,7 +23,7 @@ def test_generation_level_0(microservice_dir, mock_input_sequence):
         "The microservice is very simple, it does not take anything as input and only outputs the word 'test'",
         microservice_dir,
         'gpt-3.5-turbo',
-        self_healing=False,
+        # self_healing=False,
     )
     assert generator.generate() == 0
 

@@ -61,7 +61,7 @@ UNNECESSARY_PACKAGES = [
 ]
 
 LANGUAGE_PACKAGES = [
-    'allennlp', 'bertopic', 'gpt-3', 'fasttext', 'flair', 'gensim', 'nltk', 'openai',
+    'allennlp', 'bert-for-tf2', 'bertopic', 'gpt-3', 'fasttext', 'flair', 'gensim', 'nltk', 'openai',
     'pattern', 'polyglot', 'pytorch-transformers', 'rasa', 'sentence-transformers',
     'spacy', 'stanza', 'summarizer', 'sumy', 'textblob', 'textstat', 'transformers',
     'vadersentiment', 'language-tool-python'
