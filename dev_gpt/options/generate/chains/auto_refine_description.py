@@ -43,10 +43,16 @@ def auto_refine_description(context):
 
 
 better_description_prompt = f'''{{context_string}}
-Update the description of the Microservice to make it more precise without adding or removing information.
-Note: the output must be a list of tasks the Microservice has to perform.
-Note: you must uses the following tools if necessary:
+Based on this description, update the tasks for the Microservice to be more precise. This update should neither add nor remove information.
+
+Constraints:
+
+- The output must be a list of tasks that the Microservice has to perform.
+- The updated description must be unambiguous, using precise language and direct instructions.
+- Use of non-specific formulations, such as 'like', 'such as', is strictly not allowed.
+- The tools that can be used in the updated description:
 {get_available_tools()}
+- Note: You are not required to use all tools for every task. Use them only when necessary.
 Example for the description: "return an image representing the current weather for a given location." \
 when the tools gpt_3_5_turbo and google_custom_search are available:
 1. get the current weather information from the https://openweathermap.org/ API

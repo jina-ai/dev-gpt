@@ -12,3 +12,4 @@ def test_better_description(tmpdir):
         'microservice_description': 'Input is a tweet that contains passive aggressive language. The output is the positive version of that tweet.'
     })
     assert 'gpt_3_5_turbo' in better_description
+    assert 'such as' not in better_description
