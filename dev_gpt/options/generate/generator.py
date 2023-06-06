@@ -525,17 +525,18 @@ pytest
     def get_possible_packages(self):
         print_colored('', '\n\n############# What packages to use? #############', 'blue')
         packages_json = ask_gpt(template_generate_possible_packages, self_healing_json_parser, description=self.microservice_specification.task)
-        packages_list = self.process_packages_json_string(packages_json)
+        packages_list = self.process_packages_json_string(packages_json, self.microservice_specification.task)
         return packages_list
 
     @staticmethod
-    def process_packages_json_string(packages_json):
+    def process_packages_json_string(packages_json, task_description):
         packages_list = [[pkg.strip().lower().replace('-', '_') for pkg in packages] for packages in packages_json]
         packages_list = [[Generator.replace_with_tool_if_possible(pkg) for pkg in packages] for packages in
                          packages_list]
 
         packages_list = Generator.filter_packages_list(packages_list)
         packages_list = Generator.remove_duplicates_from_packages_list(packages_list)
+        packages_list = Generator.add_tools_if_missing(packages_list, task_description)
         packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
         return packages_list
 
@@ -607,6 +608,14 @@ You can now run or deploy your microservice:
     @staticmethod
     def remove_duplicates_from_packages_list(packages_list):
         return [list(set(packages)) for packages in packages_list]
+
+    @classmethod
+    def add_tools_if_missing(cls, packages_list, task_description):
+        for packages in packages_list:
+            for tool in ['gpt_3_5_turbo', 'google_custom_search']:
+                if tool not in packages and tool in task_description:
+                    packages.append(tool)
+        return packages_list
 
 #     def create_prototype_implementation(self):
 #         microservice_py_lines = ['''\

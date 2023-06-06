@@ -72,6 +72,7 @@ SEARCH_PACKAGES = [
 ]
 
 TOOL_TO_ALIASES = {
-    'gpt_3_5_turbo': ['gpt-3', 'GPT-3']
+    'gpt_3_5_turbo': ['gpt-3', 'GPT-3'],
+    'google_custom_search': ['Google Custom Search API']
 }
 
