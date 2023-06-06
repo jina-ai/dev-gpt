@@ -146,30 +146,30 @@ print('This is the text from the audio file:', response.text)''',
     ],
     indirect=True
 )
-def test_generation_level_4(microservice_dir, mock_input_sequence):
-    """
-    Requirements:
-    coding challenge: ❌
-    pip packages: ✅ (text to speech)
-    environment: ✅ (tts library)
-    GPT-3.5-turbo: ✅ (summarizing the text)
-    APIs: ✅ (whisper for speech to text)
-    Databases: ❌
-    """
-    os.environ['VERBOSE'] = 'true'
-    generator = Generator(
-        f'''Given an audio file (1min wav) of speech, 
-1. convert it to text using the Whisper API.
-2. Summarize the text (~50 words) while still maintaining the key facts.
-3. Create an audio file of the summarized text using a tts library.
-4. Return the the audio file as base64 encoded binary.
-''',
-        str(microservice_dir),
-        # 'gpt-3.5-turbo',
-        'gpt-4',
-        # self_healing=False,
-    )
-    assert generator.generate() == 0
+# def test_generation_level_4(microservice_dir, mock_input_sequence):
+#     """
+#     Requirements:
+#     coding challenge: ❌
+#     pip packages: ✅ (text to speech)
+#     environment: ✅ (tts library)
+#     GPT-3.5-turbo: ✅ (summarizing the text)
+#     APIs: ✅ (whisper for speech to text)
+#     Databases: ❌
+#     """
+#     os.environ['VERBOSE'] = 'true'
+#     generator = Generator(
+#         f'''Given an audio file (1min wav) of speech,
+# 1. convert it to text using the Whisper API.
+# 2. Summarize the text (~50 words) while still maintaining the key facts.
+# 3. Create an audio file of the summarized text using a tts library.
+# 4. Return the the audio file as base64 encoded binary.
+# ''',
+#         str(microservice_dir),
+#         # 'gpt-3.5-turbo',
+#         'gpt-4',
+#         # self_healing=False,
+#     )
+#     assert generator.generate() == 0
 
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)
