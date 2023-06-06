@@ -9,7 +9,7 @@ def test_package_parsing():
       ["gpt_3_5_turbo"]
     ]
 
-    parsed_packages = Generator.process_packages_json_string(packages_json)
+    parsed_packages = Generator.process_packages_json_string(packages_json, '')
     for parsed, expected in zip(parsed_packages, [
         ['pypdf2', 'gpt_3_5_turbo'],
         ['pdfminer.six', 'gpt_3_5_turbo'],
@@ -25,7 +25,7 @@ def test_package_parsing_blacklist():
       []
     ]
 
-    parsed_packages = Generator.process_packages_json_string(packages_json_string)
+    parsed_packages = Generator.process_packages_json_string(packages_json_string, '')
     assert parsed_packages == [
         [],
         [],
