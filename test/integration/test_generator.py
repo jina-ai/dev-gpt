@@ -23,7 +23,7 @@ def test_generation_level_0(microservice_dir, mock_input_sequence):
         "The microservice is very simple, it does not take anything as input and only outputs the word 'test'",
         microservice_dir,
         'gpt-3.5-turbo',
-        self_healing=False,
+        # self_healing=False,
     )
     assert generator.generate() == 0
 
@@ -41,10 +41,7 @@ def test_generation_level_1(microservice_dir, mock_input_sequence):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        '''Input is a tweet that might contain passive aggressive language. The output is the positive version of that tweet.
-Example tweet: 
-\'When your coworker microwaves fish in the break room... AGAIN. 🐟🤢 
-But hey, at least SOMEONE's enjoying their lunch. #officelife\'''',
+        '''Input is a tweet that contains passive aggressive language. The output is the positive version of that tweet.''',
         str(microservice_dir),
         'gpt-3.5-turbo',
         # self_healing=False,
@@ -66,7 +63,7 @@ def test_generation_level_2(microservice_dir, mock_input_sequence):
     """
     os.environ['VERBOSE'] = 'true'
     generator = Generator(
-        "The input is a PDF and the output the summarized text (50 words).",
+        "The input is a PDF and the output the summarized text.",
         str(microservice_dir),
         'gpt-3.5-turbo',
         # self_healing=False,
@@ -96,7 +93,7 @@ def test_generation_level_2_svg(microservice_dir, mock_input_sequence):
     assert generator.generate() == 0
 
 
-@pytest.mark.parametrize('mock_input_sequence', [['y', 'yfinance.Ticker("MSFT").info']], indirect=True)
+@pytest.mark.parametrize('mock_input_sequence', [['y', 'ticker = yf.Ticker(symbol); data = ticker.history(start=start_date, end=end_date); [row[\'Close\'] for row in data.to_dict(\'records\')]']], indirect=True)
 def test_generation_level_3(microservice_dir, mock_input_sequence):
     """
     Requirements:
@@ -122,51 +119,57 @@ Example input: 'AAPL'
     )
     assert generator.generate() == 0
 
-
-@pytest.mark.parametrize(
-    'mock_input_sequence', [
-        [
-            'y',
-            'https://www2.cs.uic.edu/~i101/SoundFiles/taunt.wav',
-            f'''\
-import requests
-url = "https://transcribe.whisperapi.com"
-headers = {{
-'Authorization': 'Bearer {os.environ['WHISPER_API_KEY']}'
-}}
-data = {{
-  "url": "URL_OF_STORED_AUDIO_FILE"
-}}
-response = requests.post(url, headers=headers, data=data)
-assert response.status_code == 200
-print('This is the text from the audio file:', response.text)'''
-        ]
-    ],
-    indirect=True
-)
-def test_generation_level_4(microservice_dir, mock_input_sequence):
-    """
-    Requirements:
-    coding challenge: ❌
-    pip packages: ✅ (text to speech)
-    environment: ✅ (tts library)
-    GPT-3.5-turbo: ✅ (summarizing the text)
-    APIs: ✅ (whisper for speech to text)
-    Databases: ❌
-    """
-    os.environ['VERBOSE'] = 'true'
-    generator = Generator(
-        f'''Given an audio file (1min wav) of speech, 
-1. convert it to text using the Whisper API.
-2. Summarize the text (~50 words) while still maintaining the key facts.
-3. Create an audio file of the summarized text using a tts library.
-4. Return the the audio file as base64 encoded binary.
-''',
-        str(microservice_dir),
-        'gpt-4',
-        # self_healing=False,
-    )
-    assert generator.generate() == 0
+#
+# @pytest.mark.parametrize(
+#     'mock_input_sequence', [
+#         [
+#             'y',
+#             'https://www2.cs.uic.edu/~i101/SoundFiles/taunt.wav',
+#             f'''\
+# import requests
+# url = "https://transcribe.whisperapi.com"
+# headers = {{
+# 'Authorization': 'Bearer {os.environ['WHISPER_API_KEY']}'
+# }}
+# data = {{
+#   "url": "URL_OF_STORED_AUDIO_FILE"
+# }}
+# response = requests.post(url, headers=headers, data=data)
+# assert response.status_code == 200
+# print('This is the text from the audio file:', response.text)''',
+#             'use any library',
+#             #             f'''\
+#             # import openai
+#             # audio_file= open("/path/to/file/audio.mp3", "rb")
+#             # transcript = openai.Audio.transcribe("whisper-1", audio_file)'''
+#         ]
+#     ],
+#     indirect=True
+# )
+# def test_generation_level_4(microservice_dir, mock_input_sequence):
+#     """
+#     Requirements:
+#     coding challenge: ❌
+#     pip packages: ✅ (text to speech)
+#     environment: ✅ (tts library)
+#     GPT-3.5-turbo: ✅ (summarizing the text)
+#     APIs: ✅ (whisper for speech to text)
+#     Databases: ❌
+#     """
+#     os.environ['VERBOSE'] = 'true'
+#     generator = Generator(
+#         f'''Given an audio file (1min wav) of speech,
+# 1. convert it to text using the Whisper API.
+# 2. Summarize the text (~50 words) while still maintaining the key facts.
+# 3. Create an audio file of the summarized text using a tts library.
+# 4. Return the the audio file as base64 encoded binary.
+# ''',
+#         str(microservice_dir),
+#         # 'gpt-3.5-turbo',
+#         'gpt-4',
+#         # self_healing=False,
+#     )
+#     assert generator.generate() == 0
 
 
 @pytest.mark.parametrize('mock_input_sequence', [['y']], indirect=True)

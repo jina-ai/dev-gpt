@@ -1,13 +1,14 @@
 from dev_gpt.apis import gpt
 from dev_gpt.apis.gpt import ask_gpt
 from dev_gpt.options.generate.chains.auto_refine_description import auto_refine_description
+from dev_gpt.options.generate.chains.get_user_input_if_needed import get_user_input_if_needed
 from dev_gpt.options.generate.chains.question_answering import is_question_true
 from dev_gpt.options.generate.chains.translation import translation
 from dev_gpt.options.generate.chains.user_confirmation_feedback_loop import user_feedback_loop
-from dev_gpt.options.generate.chains.get_user_input_if_needed import get_user_input_if_needed
-from dev_gpt.options.generate.parser import identity_parser, json_parser
+from dev_gpt.options.generate.parser import identity_parser, json_parser, self_healing_json_parser
 from dev_gpt.options.generate.pm.task_tree_schema import TaskTree
 from dev_gpt.options.generate.prompt_factory import make_prompt_friendly
+from dev_gpt.options.generate.templates_user import generate_used_apis_prompt
 from dev_gpt.options.generate.ui import get_random_employee
 
 
@@ -52,41 +53,54 @@ Description of the microservice:
         )
 
         test_description += self.user_input_extension_if_needed(
-            context,
-            microservice_description,
-            condition_question='Does the request schema provided include a property that represents a file?',
+            {
+                'Microservice description': microservice_description,
+                'Request schema': context['request_schema'],
+                'Response schema': context['response_schema'],
+            },
+            conditions = [
+                is_question_true('Does the request schema provided include a property that represents a file?'),
+            ],
             question_gen='Generate a question that requests for an example file url.',
             extension_name='Input Example',
         )
-        microservice_description += self.user_input_extension_if_needed(
-            context,
-            microservice_description,
-            condition_question='''\
-Does the microservice send requests to an API beside the Google Custom Search API and gpt-3.5-turbo?''',
-            question_gen='Generate a question that asks for the endpoint of the external API and an example of a request and response when interacting with the external API.',
-            extension_name='Example of API usage',
-            post_transformation_fn=translation(from_format='api instruction', to_format='python code snippet raw without formatting')
-        )
+        used_apis_beside_tools = [
+            x for x in self.get_used_apis(microservice_description) if not any(t in x.lower() for t in ['gpt', 'search', 'google'])
+        ]
+        for api in used_apis_beside_tools:
+            microservice_description += self.user_input_extension_if_needed(
+                {
+                    'Microservice description': microservice_description,
+                },
+                conditions=[
+                    lambda _:True
+                ],
+                question_gen=f'Generate a question that asks for the endpoint for {api} and an example of a request and response when interacting with the API.',
+                extension_name=f'Instructions for {api}',
+                post_transformation_fn=translation(from_format='api instruction',
+                                                   to_format='python code snippet raw without formatting')
+            )
         return microservice_description, test_description
+
+    @staticmethod
+    def get_used_apis(microservice_description):
+        return ask_gpt(
+            generate_used_apis_prompt,
+            self_healing_json_parser,
+            microservice_description=microservice_description
+        )['mentioned_apis']
 
     def user_input_extension_if_needed(
             self,
             context,
-            microservice_description,
-            condition_question,
+            conditions,
             question_gen,
             extension_name,
             post_transformation_fn=None
     ):
         user_answer = get_user_input_if_needed(
-            context={
-                'Microservice description': microservice_description,
-                'Request schema': context['request_schema'],
-                'Response schema': context['response_schema'],
-            },
-            conditions=[
-                is_question_true(condition_question),
-            ],
+            context=context,
+            conditions=conditions,
             question_gen_prompt_part=question_gen,
         )
         if user_answer:
@@ -104,8 +118,6 @@ Microservice description:
 {microservice_description}
 ```'''
 
-
-
 generate_test_assertion_prompt = client_description + '''
 Request json schema:
 ```
@@ -121,6 +133,7 @@ Note: you must not use any formatting like triple backticks.
 Note: the generated description must be less than 30 words long.
 Example:
 "Input for func is a base64 encoded image. The test asserts that the output of func is of type 'str'".'''
+
 
 # def get_nlp_fns(self, microservice_description):
 #     return ask_gpt(
@@ -157,7 +170,7 @@ def construct_sub_task_tree(self, microservice_description):
     )
     sub_task_tree_updated = ask_gpt(
         sub_task_tree_update_prompt,
-        json_parser,
+        self_healing_json_parser,
         microservice_description=microservice_description,
         # nlp_fns=nlp_fns,
         sub_task_tree=sub_task_tree_dict, solutions=solutions
@@ -167,6 +180,7 @@ def construct_sub_task_tree(self, microservice_description):
 
     sub_task_tree = TaskTree.parse_obj(sub_task_tree_updated)
     return sub_task_tree
+
 
 # def get_additional_task_info(self, sub_task_description):
 #     additional_info_dict = self.get_additional_infos(
@@ -256,7 +270,6 @@ def construct_sub_task_tree(self, microservice_description):
 #             return user_feedback
 #         else:
 #             print('Sorry, I can not handle this feedback. Please formulate it more precisely.')
-
 
 
 # better_description_prompt = client_description + '''

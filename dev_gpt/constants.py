@@ -50,20 +50,29 @@ DEMO_TOKEN = '45372338e04f5a41af949024db929d46'
 BLACKLISTED_PACKAGES = [
     'moderngl', 'pyopengl', 'pyglet', 'pythreejs', 'panda3d',  # because they need a screen,
     'tika',  # because it needs java
-    'clearbit'  # because of installation issues on latest version
+    'clearbit',  # because of installation issues on latest version
+    'pyttsx3',  # after engine.save_to_file(summarized_text, "summarized_audio.wav"); engine.runAndWait() "summarized_audio.wav" does not exist
 ]
+
 UNNECESSARY_PACKAGES = [
-    'fastapi', 'uvicorn', 'starlette'  # because the wrappers are used instead
+    'jinja2', 'werkzeug', 'flask', 'flask_restful', 'http.server', 'flask_json', 'flask_cors', 'fastapi', 'uvicorn', 'starlette',  # because the wrappers are used instead
+    'pypng', # if we provide access to the documentation all should be fine but for now it is too hard to use since the import is png
+
 ]
 
 LANGUAGE_PACKAGES = [
-    'allennlp', 'bertopic', 'gpt-3', 'fasttext', 'flair', 'gensim', 'nltk', 'openai',
+    'allennlp', 'bert-for-tf2', 'bertopic', 'gpt-3', 'fasttext', 'flair', 'gensim', 'nltk', 'openai',
     'pattern', 'polyglot', 'pytorch-transformers', 'rasa', 'sentence-transformers',
     'spacy', 'stanza', 'summarizer', 'sumy', 'textblob', 'textstat', 'transformers',
-    'vadersentiment'
+    'vadersentiment', 'language-tool-python'
 ]
 
 SEARCH_PACKAGES = [
     'googlesearch-python', 'google', 'googlesearch', 'google-api-python-client', 'pygooglenews', 'google-cloud'
 ]
+
+TOOL_TO_ALIASES = {
+    'gpt_3_5_turbo': ['gpt-3', 'GPT-3'],
+    'google_custom_search': ['Google Custom Search API']
+}
 

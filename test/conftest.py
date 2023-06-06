@@ -3,6 +3,8 @@ from typing import List, Generator
 
 import pytest
 
+from dev_gpt.apis.gpt import GPTSession
+
 
 def input_generator(input_sequence: list) -> Generator[str, None, None]:
     """
@@ -34,3 +36,7 @@ def microservice_dir(tmpdir) -> str:
     """
     return os.path.join(str(tmpdir), "microservice")
 
+@pytest.fixture
+def init_gpt(tmpdir):
+    os.environ['VERBOSE'] = 'true'
+    GPTSession(os.path.join(str(tmpdir), 'log.json'), model='gpt-3.5-turbo')

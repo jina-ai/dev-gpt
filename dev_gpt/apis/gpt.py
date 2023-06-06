@@ -16,7 +16,7 @@ from urllib3.exceptions import InvalidChunkLength
 
 from dev_gpt.constants import PRICING_GPT4_PROMPT, PRICING_GPT4_GENERATION, PRICING_GPT3_5_TURBO_PROMPT, \
     PRICING_GPT3_5_TURBO_GENERATION, CHARS_PER_TOKEN
-from dev_gpt.options.generate.conversation_logger import ConversationLogger
+from dev_gpt.options.generate.conversation_logger import ConversationLogger, Timer
 from dev_gpt.options.generate.parser import identity_parser
 from dev_gpt.options.generate.templates_system import template_system_message_base
 from dev_gpt.utils.string_tools import print_colored, get_template_parameters
@@ -83,7 +83,7 @@ class GPTSession:
                         }]
                     )
                     break
-                except (RateLimitError, openai.error.APIError):
+                except (RateLimitError, openai.error.APIError, ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError, openai.error.Timeout):
                     sleep(1)
                     continue
             return True
@@ -118,6 +118,7 @@ class _GPTConversation:
             model_name=model,
             streaming=True,
             callback_manager=CallbackManager([AssistantStreamingStdOutCallbackHandler()] if print_stream else []),
+            request_timeout=10,
             verbose=True,
             temperature=0,
         )
@@ -128,14 +129,15 @@ class _GPTConversation:
         self.conversation_logger = conversation_logger
 
     def print_messages(self, messages):
+        t = Timer().get_time_since_start()
         for i, message in enumerate(messages):
             if os.environ['VERBOSE'].lower() == 'true':
                 if isinstance(message, SystemMessage):
-                    print_colored(f'({i}) system - prompt', message.content, 'magenta')
+                    print_colored(f'{t} - ({i}) system - prompt', message.content, 'magenta')
                 elif isinstance(message, HumanMessage):
-                    print_colored(f'({i}) user - prompt', message.content, 'blue')
+                    print_colored(f'{t} - ({i}) user - prompt', message.content, 'blue')
                 elif isinstance(message, AIMessage):
-                    print_colored(f'({i}) assistant - prompt', message.content, 'green')
+                    print_colored(f'{t} - ({i}) assistant - prompt', message.content, 'green')
 
     def chat(self, prompt: str, role: str = 'user'):
         MassageClass = HumanMessage if role == 'user' else SystemMessage
@@ -143,14 +145,14 @@ class _GPTConversation:
         self.messages.append(chat_message)
         self.print_messages(self.messages)
         if self.print_stream:
-            print_colored('assistant', '', 'green', end='')
+            print_colored(f'{Timer().get_time_since_start()} - assistant', '', 'green', end='')
         print('thinking...')
         for i in range(10):
             try:
                 response = self._chat(self.messages)
                 self.conversation_logger.log(self.messages, response)
                 break
-            except (ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError) as e:
+            except (RateLimitError, openai.error.APIError, ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError, openai.error.Timeout) as e:
                 print('There was a connection error. Retrying...')
                 if i == 9:
                     raise e
@@ -165,8 +167,8 @@ class _GPTConversation:
     @staticmethod
     def _create_system_message(task_description, test_description) -> SystemMessage:
         system_message = PromptTemplate.from_template(template_system_message_base).format(
-            task_description=task_description,
-            test_description=test_description,
+            # task_description=task_description,
+            # test_description=test_description,
         )
         return SystemMessage(content=system_message)
 
@@ -182,7 +184,7 @@ def ask_gpt(prompt_template: str, parser=identity_parser, **kwargs):
             kwargs[key] = json.dumps(value, indent=4)
     prompt = prompt_template.format(**kwargs)
     conversation = GPTSession._instance.get_conversation(
-        [],
+        [SystemMessage(content='You are a helpful AI assistant that follows instructions from the user exactly.')],
         print_stream=os.environ['VERBOSE'].lower() == 'true',
         print_costs=False
     )

@@ -20,6 +20,8 @@ from dev_gpt.constants import FILE_AND_TAG_PAIRS, NUM_IMPLEMENTATION_STRATEGIES,
     REQUIREMENTS_FILE_NAME, REQUIREMENTS_FILE_TAG, DOCKER_FILE_NAME, IMPLEMENTATION_FILE_NAME, \
     IMPLEMENTATION_FILE_TAG, LANGUAGE_PACKAGES, UNNECESSARY_PACKAGES, DOCKER_BASE_IMAGE_VERSION, SEARCH_PACKAGES, \
     INDICATOR_TO_IMPORT_STATEMENT
+from dev_gpt.options.generate.conversation_logger import Timer
+from dev_gpt.options.generate.parser import json_parser, self_healing_json_parser
 from dev_gpt.options.generate.pm.pm import PM
 from dev_gpt.options.generate.templates_user import template_generate_microservice_name, \
     template_generate_possible_packages, \
@@ -284,6 +286,12 @@ metas:
         return {DOCKER_FILE_NAME: docker_file_template.replace('{{APT_GET_PACKAGES}}', '{APT_GET_PACKAGES}').replace('{{DOCKER_BASE_IMAGE_VERSION}}', DOCKER_BASE_IMAGE_VERSION).format(
             APT_GET_PACKAGES=packages)}
 
+    def get_parse_result_fn_dockerfile_json_parser(self, file_name):
+        def parse_result_fn_self_healing_json_parser(content_raw: str):
+            json_string = self_healing_json_parser(content_raw)
+            return {file_name: json_string}
+        return parse_result_fn_self_healing_json_parser
+
     def parse_result_fn_requirements(self, content_raw: str):
         content_parsed = self.extract_content_from_result(content_raw, 'requirements.txt', match_single_block=True)
 
@@ -355,10 +363,14 @@ pytest
         for i in range(1, MAX_DEBUGGING_ITERATIONS):
             print('Debugging iteration', i)
             print('Trying to debug the microservice. Might take a while...')
+            print(f'{Timer().get_time_since_start()} - Clean requirements.txt...')
             clean_requirements_txt(self.cur_microservice_path)
+            print(f'{Timer().get_time_since_start()} - Build executor...')
             log_hubble = push_executor(self.cur_microservice_path)
+            print(f'{Timer().get_time_since_start()} - Analyze logs...')
             error = process_error_message(log_hubble)
             if error:
+                print('Handling error...')
                 if not self_healing:
                     print(error)
                     raise Exception('Self-healing is disabled. Please fix the error manually.')
@@ -434,17 +446,13 @@ pytest
                 self.previous_solutions.append(suggested_solution)
 
     def generate_solution_suggestion(self, summarized_error, all_files_string):
-        suggested_solutions = json.loads(
-            self.generate_and_persist_file(
-                section_title='Suggest solution for code issue',
-                template=template_suggest_solutions_code_issue,
-                file_name_s=['solutions.json'],
-                summarized_error=summarized_error,
-                task_description=self.microservice_specification.task,
-                test_description=self.microservice_specification.test,
-                all_files_string=all_files_string,
-                response_format_example=response_format_suggest_solutions,
-            )['solutions.json']
+        suggested_solutions = ask_gpt(
+            template_suggest_solutions_code_issue,
+            self_healing_json_parser,
+            task_description=self.microservice_specification.task,
+            test_description=self.microservice_specification.test,
+            all_files_string=all_files_string,
+            summarized_error=summarized_error,
         )
 
         if len(self.previous_errors) > 0:
@@ -516,22 +524,21 @@ pytest
 
     def get_possible_packages(self):
         print_colored('', '\n\n############# What packages to use? #############', 'blue')
-        packages_json_string = self.generate_and_persist_file(
-            section_title='Generate possible packages',
-            template=template_generate_possible_packages,
-            destination_folder=self.microservice_root_path,
-            file_name_s=['strategies.json'],
-            description=self.microservice_specification.task
-        )['strategies.json']
-        packages_list = [[pkg.strip().lower() for pkg in packages] for packages in json.loads(packages_json_string)]
-        packages_list = [[self.replace_with_tool_if_possible(pkg) for pkg in packages] for packages in
-                         packages_list]
-
-        packages_list = self.filter_packages_list(packages_list)
-        packages_list = self.remove_duplicates_from_packages_list(packages_list)
-        packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
+        packages_json = ask_gpt(template_generate_possible_packages, self_healing_json_parser, description=self.microservice_specification.task)
+        packages_list = self.process_packages_json_string(packages_json, self.microservice_specification.task)
         return packages_list
 
+    @staticmethod
+    def process_packages_json_string(packages_json, task_description):
+        packages_list = [[pkg.strip().lower().replace('-', '_') for pkg in packages] for packages in packages_json]
+        packages_list = [[Generator.replace_with_tool_if_possible(pkg) for pkg in packages] for packages in
+                         packages_list]
+
+        packages_list = Generator.filter_packages_list(packages_list)
+        packages_list = Generator.remove_duplicates_from_packages_list(packages_list)
+        packages_list = Generator.add_tools_if_missing(packages_list, task_description)
+        packages_list = packages_list[:NUM_IMPLEMENTATION_STRATEGIES]
+        return packages_list
 
     def generate(self):
         os.makedirs(self.microservice_root_path)
@@ -592,6 +599,7 @@ You can now run or deploy your microservice:
                    and (  # all packages must be on pypi or it is gpt_3_5_turbo
                            is_package_on_pypi(package)
                            or package == 'gpt_3_5_turbo'
+                           or package == 'google_custom_search'
                    )
             ] for packages in packages_list
         ]
@@ -600,6 +608,14 @@ You can now run or deploy your microservice:
     @staticmethod
     def remove_duplicates_from_packages_list(packages_list):
         return [list(set(packages)) for packages in packages_list]
+
+    @classmethod
+    def add_tools_if_missing(cls, packages_list, task_description):
+        for packages in packages_list:
+            for tool in ['gpt_3_5_turbo', 'google_custom_search']:
+                if tool not in packages and tool in task_description:
+                    packages.append(tool)
+        return packages_list
 
 #     def create_prototype_implementation(self):
 #         microservice_py_lines = ['''\

@@ -33,14 +33,16 @@ pros_and_cons_prompt = '''\
 {text}
 # Question
 {question}
-Note: You must not answer the question. Instead, give up to 5 bullet points (10 words) arguing why the question should be answered with true or false.'''
+Note: You must not answer the question. Instead, give between 1 and 5 bullet points (5 words each) arguing why the question should be answered with yes or no.'''
 
 question_prompt = '''\
 # Context
 {text}
-# Question
-{question}
+
 # Pros and Cons
 {pros_and_cons}
-Note: You must answer "yes" or "no".
+
+# Question
+Based on the pros and cons, answer the following question: {question}
+Note: You must answer the question correctly by saying something like "since <explanagion>, the answer is yes" or "since <explanagion>, the answer is no".
 '''

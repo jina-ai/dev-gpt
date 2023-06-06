@@ -23,7 +23,6 @@ The implemented function and the test must not use a pre-trained model unless it
 The implemented function and the test must not train a model.
 The implemented function and the test must not contain prototype or placeholder implementations.
 The implemented function and the test must run in a docker container based on debian.
-The implemented function and the test must not use libraries like Flask.
 The implemented function and the test must not have a __main__ function.
 The implemented function and the test must use gpt_3_5_turbo if the task requires the processing of language (e.g., understanding, generation, summarization, transformation, translation, modification or classification). Other language models are not allowed.
 The implemented function must follow a clean and elegant coding style.'''
@@ -49,36 +48,25 @@ PngToSvgExecutor
 
 
 # todo split into multiple calls. One for brainstorming - one for the final answer
-template_generate_possible_packages = PromptTemplate.from_template(
-    '''Here is the task description of the problem you need to solve:
+template_generate_possible_packages = '''\
+Here is the task description of the problem you need to solve:
 "{description}"
 1. Write down up to 3 different strategies to solve the task. For each strategy write down how it solves the core problems.
-Note that packages are preferred over external apis except if it is mentioned in the description.
-2. For each strategy list up to 3 Python packages that are specifically designed or have functionalities to solve the complete core problems.
-3. For each package think if it fulfills the following requirements:
-a) specifically designed or have functionalities to solve the complete core problem.
-b) has a stable api among different versions
-c) does not have system requirements
-d) can solve the task when running in a docker container
-e) the implementation of the core problem using the package would obey the following rules:
-''' + not_allowed_function_string + '''
-
-When answering, just write "yes" or "no".
-
-4. For each approach, list the required python package combinations as discibed in the following.
-You must output the package combinations as json wrapped into triple backticks ``` and name it **strategies.json**. \
+Note that packages are preferred over external apis except they are mentioned in the description.
+2. Write down the strategies.json which is a list of required python package combinations.
 Note that you can also leave a list empty to indicate that one of the strategies does not require any package and can be done in plain python.
-Write the output using double asterisks and triple backticks like this:
+Note that if gpt_3_5_turbo or google_custom_search are mentioned in the description, then they must be part of each strategy in strategies.json.
+Example:
 **strategies.json**
 ```
 [
   ["package1", "package2", "package3"],
   ["package4", "package5"],
-  ["package6", "package7", "package8", "package9"],
+  ["package6", "package7", "gpt_3_5_turbo"],
   [],
-  ["package10"]
+  ["google_custom_search"]
 ]
-```''')
+```'''
 
 
 template_code_wrapping_string = '''The code will go into {file_name_purpose}.
@@ -101,7 +89,7 @@ When you get asked something like 'Who was having a date with <X>?', then you an
 You must not answer something else - only the json.
 \'\'\')
 
-generated_string = gpt_3_5_turbo(prompt_string="example user prompt") # prompt_string is the only parameter
+generated_string = gpt_3_5_turbo("example user prompt") # prompt_string is the only parameter
 ```
 """
 
@@ -135,6 +123,7 @@ outputs a json dictionary string (that can be parsed with the python function js
 The function is called 'func' and has the following signature:
 def func(input_json_dict_string: str) -> str:
 The function must fulfill the following description: '{{microservice_description}}'.
+The function must pass the following test condition: '{{test_description}}'.
 For the implementation use the following package(s): '{{packages}}'.
 
 The code must start with the following imports:
@@ -310,21 +299,29 @@ Output the apt-get packages that need to be placed at {{APT_GET_PACKAGES}} as js
 ```json
 {{"packages": ["<package1>", "<package2>"]}}
 ```
-Example:
-Error is about missing package `libgl1-mesa-glx`.
-The output is:
+
+Example output for an error is about missing package `libgl1-mesa-glx`:
 **apt-get-packages.json**
 ```json
 {{"packages": [libgl1-mesa-glx]}}
 ```
-Only output content of the apt-get-packages.json file. Ensure the response can be parsed by Python json.loads
+
+Negative example1:
+```json
+{{"packages": [libgl1-mesa-glx]}}
+```
+
+Negative example2:
+{{"packages": [libgl1-mesa-glx]}}
+
+Note: Only output content of the apt-get-packages.json file.
 Note: you must not output the content of any other. Especially don't output the Dockerfile or requirements.txt. 
 Note: the first line you output must be: **apt-get-packages.json**
 '''
 )
 
 
-response_format_suggest_solutions = '''**solutions.json**
+response_format_suggest_solutions = '''\
 ```json
 {{
     "1": "<best solution>",
@@ -333,36 +330,38 @@ response_format_suggest_solutions = '''**solutions.json**
 ```'''
 
 
-template_suggest_solutions_code_issue = PromptTemplate.from_template(
-    '''General rules:
-''' + not_allowed_function_string + '''
+template_suggest_solutions_code_issue = f'''\
+General rules:
+{not_allowed_function_string}
 
 Here is the description of the task the function must solve:
-{task_description}
+{{task_description}}
 
 Here is the test scenario the function must pass:
-{test_description}
+{{test_description}}
 Here are all the files I use:
-{all_files_string}
+{{all_files_string}}
 
 
 Here is the summary of the error that occurred:
-{summarized_error}
+{{summarized_error}}
 
 You should suggest 3 to 5 possible solution approaches on how to solve it.
 Obey the following rules:
 Do not implement the solution.
 You have no access to the documentation of the package.
 You must not change the Dockerfile.
-Note that any changes needed to make the test pass must be written under the constraint that ''' + IMPLEMENTATION_FILE_NAME +  ''' will be used in a different file as well.
-''' + f'{not_allowed_function_string}\n{not_allowed_docker_string}\n{gpt_35_turbo_usage_string}' + '''
+Note that any changes needed to make the test pass must be written under the constraint that {IMPLEMENTATION_FILE_NAME} will be used in a different file as well.
+{not_allowed_function_string}
+{not_allowed_docker_string}
+{gpt_35_turbo_usage_string}
 
 
 After thinking about the possible solutions, output them as JSON ranked from best to worst.
 You must use the following format:
-''' + response_format_suggest_solutions + '''
-Ensure the response starts with **solutions.json** and can be parsed by Python json.loads'''
-)
+{response_format_suggest_solutions}
+Ensure the response can be parsed by Python json.loads'''
+
 
 
 response_format_was_error_seen_before = '''**was_error_seen_before.json**
@@ -548,3 +547,28 @@ Note that prompt.json must only contain one question.
 {custom_suffix}
 '''
 )
+
+generate_used_apis_prompt = '''\
+Microservice description: 
+{microservice_description}
+
+Question:
+Respond with a list as JSON indicating which web APIs (e.g. google_custom_search, gpt_3_5_turbo) are mentioned in the description.
+Note that local libraries are not web APIs and must not be mentioned. 
+Positive Example 1:
+{{
+  "mentioned_apis": ["google_custom_search", "gpt_3_5_turbo"]
+}}
+Positive Example 2:
+{{
+    "mentioned_apis": ["google_custom_search"]
+}}
+Positive Example 3:
+{{
+    "mentioned_apis": ["gpt_3_5_turbo"]
+}}
+Positive Example 4:
+{{
+    "mentioned_apis": []
+}}
+'''
