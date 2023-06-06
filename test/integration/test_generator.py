@@ -119,33 +119,33 @@ Example input: 'AAPL'
     )
     assert generator.generate() == 0
 
-
-@pytest.mark.parametrize(
-    'mock_input_sequence', [
-        [
-            'y',
-            'https://www2.cs.uic.edu/~i101/SoundFiles/taunt.wav',
-            f'''\
-import requests
-url = "https://transcribe.whisperapi.com"
-headers = {{
-'Authorization': 'Bearer {os.environ['WHISPER_API_KEY']}'
-}}
-data = {{
-  "url": "URL_OF_STORED_AUDIO_FILE"
-}}
-response = requests.post(url, headers=headers, data=data)
-assert response.status_code == 200
-print('This is the text from the audio file:', response.text)''',
-            'use any library',
-            #             f'''\
-            # import openai
-            # audio_file= open("/path/to/file/audio.mp3", "rb")
-            # transcript = openai.Audio.transcribe("whisper-1", audio_file)'''
-        ]
-    ],
-    indirect=True
-)
+#
+# @pytest.mark.parametrize(
+#     'mock_input_sequence', [
+#         [
+#             'y',
+#             'https://www2.cs.uic.edu/~i101/SoundFiles/taunt.wav',
+#             f'''\
+# import requests
+# url = "https://transcribe.whisperapi.com"
+# headers = {{
+# 'Authorization': 'Bearer {os.environ['WHISPER_API_KEY']}'
+# }}
+# data = {{
+#   "url": "URL_OF_STORED_AUDIO_FILE"
+# }}
+# response = requests.post(url, headers=headers, data=data)
+# assert response.status_code == 200
+# print('This is the text from the audio file:', response.text)''',
+#             'use any library',
+#             #             f'''\
+#             # import openai
+#             # audio_file= open("/path/to/file/audio.mp3", "rb")
+#             # transcript = openai.Audio.transcribe("whisper-1", audio_file)'''
+#         ]
+#     ],
+#     indirect=True
+# )
 # def test_generation_level_4(microservice_dir, mock_input_sequence):
 #     """
 #     Requirements:
