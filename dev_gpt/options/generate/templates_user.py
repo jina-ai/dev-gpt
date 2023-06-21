@@ -457,12 +457,8 @@ Most importantly: You must generate the complete app.py file using the following
 
 template_chain_of_thought = PromptTemplate.from_template(
     '''\
-1. write down an extensive list (5 words per item) of obvious and non-obvious observations about {file_name_purpose} that could need an adjustment. 
-2. Explain why. (5 words per item)
-3. Think if all the changes are required
-4. decide for the changes you want to make, but you are not allowed disregard the instructions in the previous message.
-5. Write the whole content of {file_name_purpose} - even if you decided to change only a small thing or even nothing.
-Note: Be very hesitant to change the code. Only make a change if you are sure that it is necessary.
+1. Review each part of the playground and look for bugs like missing imports, wrong data types,... 
+2. Write the whole content of {file_name_purpose} - even if you decided to change only a small thing or even nothing.
 Note: Output only {file_name_purpose}
 ''' + '\n' + template_code_wrapping_string + '''
 
