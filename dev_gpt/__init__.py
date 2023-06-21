@@ -1,3 +1,3 @@
-__version__ = '0.18.43'
+__version__ = '0.18.44'
 
 from dev_gpt.cli import main
