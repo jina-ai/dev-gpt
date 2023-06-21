@@ -559,7 +559,7 @@ pytest
                                   'red')
                     return -1
                 continue
-            command = 'dev-gpt' if sys.argv[0] == 'dev-gpt' else 'python main.py'
+            command = 'dev-gpt' if any(['main.py' in arg for arg in sys.argv]) else 'dev-gpt'
             print(f'''
 You can now run or deploy your microservice:
 {command} run --path {self.microservice_root_path}
