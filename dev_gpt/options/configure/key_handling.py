@@ -104,7 +104,7 @@ Please restart your Command Prompt to apply the changes.
                    )
 
     elif system_platform in ["linux", "darwin"]:
-        if f"{name}" in os.environ or is_key_set_in_config_file(key):
+        if f"{name}" in os.environ or is_key_set_in_config_file(name, key):
             if not click.confirm(f"{name} is already set. Do you want to overwrite it?"):
                 click.echo("Aborted.")
                 return
