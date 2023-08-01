@@ -244,7 +244,7 @@ with:
   port: 8080
   protocol: http
 jcloud:
-  version: 3.15.1.dev14
+  version: 3.16.0
   labels:
     creator: microchain
   name: dev-gpt
