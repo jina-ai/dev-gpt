@@ -1,4 +1,4 @@
-FROM jinaai/jina:3.15.1-dev14-py39-standard
+FROM jinaai/jina:3.16.0-py39-standard
 
 # update pip
 RUN pip install --upgrade pip

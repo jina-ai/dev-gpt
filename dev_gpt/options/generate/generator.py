@@ -298,7 +298,7 @@ metas:
         lines = content_parsed.split('\n')
         lines = [line for line in lines if
                  not any([pkg in line for pkg in ['jina', 'docarray', 'openai', 'pytest', 'gpt_3_5_turbo']])]
-        content_modified = f'''jina==3.15.1.dev14
+        content_modified = f'''jina==3.16.0
 docarray==0.21.0
 openai==0.27.5
 pytest
