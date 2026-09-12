@@ -10,7 +10,7 @@ from langchain.callbacks import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage, BaseMessage, AIMessage
-from openai.error import RateLimitError, APIError
+from openai import RateLimitError, APIError
 from requests.exceptions import ConnectionError, ChunkedEncodingError
 from urllib3.exceptions import InvalidChunkLength
 
@@ -20,6 +20,8 @@ from dev_gpt.options.generate.conversation_logger import ConversationLogger, Tim
 from dev_gpt.options.generate.parser import identity_parser
 from dev_gpt.options.generate.templates_system import template_system_message_base
 from dev_gpt.utils.string_tools import print_colored, get_template_parameters
+from openai import OpenAI
+client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY', ''))
 
 
 def configure_openai_api_key():
@@ -31,7 +33,7 @@ dev-gpt configure --openai_api_key <your_openai_api_key>
 If you have updated it already, please restart your terminal.
 ''', 'red')
         exit(1)
-    openai.api_key = os.environ['OPENAI_API_KEY']
+    client.api_key = os.environ['OPENAI_API_KEY']
 
 
 class GPTSession:
@@ -75,7 +77,7 @@ class GPTSession:
         try:
             for i in range(5):
                 try:
-                    openai.ChatCompletion.create(
+                    client.chat.completions.create(
                         model="gpt-4",
                         messages=[{
                             "role": 'system',
@@ -83,11 +85,11 @@ class GPTSession:
                         }]
                     )
                     break
-                except (RateLimitError, openai.error.APIError, ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError, openai.error.Timeout):
+                except (RateLimitError, openai.APIError, ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError, openai.APITimeoutError):
                     sleep(1)
                     continue
             return True
-        except openai.error.InvalidRequestError:
+        except openai.BadRequestError:
             return False
 
     def cost_callback(self, chars_prompt, chars_generation, print_costs: bool = True):
@@ -118,7 +120,7 @@ class _GPTConversation:
             model_name=model,
             streaming=True,
             callback_manager=CallbackManager([AssistantStreamingStdOutCallbackHandler()] if print_stream else []),
-            request_timeout=10,
+            timeout=10,
             verbose=True,
             temperature=0,
         )
@@ -152,7 +154,7 @@ class _GPTConversation:
                 response = self._chat(self.messages)
                 self.conversation_logger.log(self.messages, response)
                 break
-            except (RateLimitError, openai.error.APIError, ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError, openai.error.Timeout) as e:
+            except (RateLimitError, openai.APIError, ConnectionError, InvalidChunkLength, ChunkedEncodingError, APIError, openai.APITimeoutError) as e:
                 print('There was a connection error. Retrying...')
                 if i == 9:
                     raise e

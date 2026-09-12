@@ -3,10 +3,10 @@
 # The microservice then returns the updated, positive version of the tweet as output.
 import os
 
-import openai
 
 from .apis import GPT_3_5_Turbo
 import json
+from openai import OpenAI
 
 
 def func(input_json: str) -> str:
@@ -14,7 +14,7 @@ def func(input_json: str) -> str:
     input_data = json.loads(input_json)
 
     # Extract the OpenAI API key and tweet from the input data
-    openai.api_key = input_data["OPENAI_API_KEY"]
+    client = OpenAI(api_key=input_data["OPENAI_API_KEY"])
     print('key updated: ', input_data["OPENAI_API_KEY"])
     tweet = input_data["tweet"]
 

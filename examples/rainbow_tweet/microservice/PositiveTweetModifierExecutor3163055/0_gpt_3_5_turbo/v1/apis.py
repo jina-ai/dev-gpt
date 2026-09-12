@@ -1,8 +1,8 @@
 import os
-import openai
+from openai import OpenAI
 
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 class GPT_3_5_Turbo:
@@ -10,7 +10,7 @@ class GPT_3_5_Turbo:
         self.system = system
 
     def __call__(self, prompt: str) -> str:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{
                 "role": 'system',
@@ -20,4 +20,4 @@ class GPT_3_5_Turbo:
                 "content": prompt
             }]
         )
-        return response.choices[0]['message']['content']
+        return response.choices[0].message.content
